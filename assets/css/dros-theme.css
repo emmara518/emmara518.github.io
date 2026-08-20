@@ -240,33 +240,6 @@ nav a.active::after {
   background: var(--dros-brand);
   border-radius: 1px;
 }
-.dros-theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--dros-radius-full);
-  border: 1px solid var(--dros-border);
-  background: var(--dros-surface);
-  color: var(--dros-text-secondary);
-  cursor: pointer;
-  transition: all var(--dros-duration-fast) var(--dros-ease);
-  flex-shrink: 0;
-}
-.dros-theme-toggle:hover {
-  background: var(--dros-surface-hover);
-  color: var(--dros-text-primary);
-  border-color: var(--dros-border-strong);
-}
-.dros-theme-toggle:focus-visible {
-  outline: 2px solid var(--dros-brand);
-  outline-offset: 2px;
-}
-.dros-theme-toggle__icon {
-  width: 20px;
-  height: 20px;
-}
 .btn-custom,
 .btn-service {
   font-family: var(--dros-font-body) !important;
@@ -649,11 +622,7 @@ html.theme-transition *::after {
     height: 56px !important;
     padding: 0 12px !important;
   }
-  .dros-theme-toggle {
-    width: 36px;
-    height: 36px;
-  }
-  .btn-custom,
+.btn-custom,
   .btn-service {
     padding: 10px 20px !important;
     font-size: 0.875rem !important;
@@ -751,17 +720,21 @@ img[alt*="Ms"], img[alt="Ms##LOGO"] {
 }
 
 /* ── Section headers: mathematical accent ───────────── */
-.years__head, .home-years__title, .home-years-title__bg,
-[class*="years__title"], .years-section h2 {
+.content h2, .font-messiri.font-bold, .years__head, .home-years__title,
+.home-years-title__bg, [class*="years__title"], .years-section h2 {
   position: relative;
-  padding-inline-start: 14px;
 }
-.years__head::before, .home-years__title::before, .years-section h2::before {
+.content h2::before, .years-section h2::before {
   content: '∑';
   color: var(--dros-brand);
   font-weight: 700;
   margin-inline-end: 10px;
   display: inline-block;
+}
+
+/* about-section container: unify with elevated surface */
+.bg-Neutral-900, .dark\:bg-\[\#1C1B1F\] {
+  background-color: var(--dros-surface-elevated) !important;
 }
 
 /* ── Moving-line marquee: subtle red pulse ──────────── */
