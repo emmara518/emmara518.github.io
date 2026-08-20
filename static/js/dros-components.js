@@ -326,12 +326,15 @@
      ==================================================== */
   var navInstance = null;
   function bottomNavItems(path) {
+    var authed = detectAuth();
     var items = [
       { id: 'home', label: 'الرئيسية', href: '/', icon: 'home', active: path === '/' || path === '/home' },
-      { id: 'stages', label: 'المراحل', href: '/years/1', icon: 'grid', active: /^\/years/.test(path) || /^\/course/.test(path) || /^\/subject/.test(path) },
-      { id: 'panel', label: 'التقدم', action: 'cc', icon: 'gauge', active: /parent_dashboard|me|edit|change_password/.test(path) },
-      { id: 'more', label: 'المزيد', action: 'more', icon: 'dots', active: false }
+      { id: 'stages', label: 'المراحل', href: '/years/1', icon: 'grid', active: /^\/years/.test(path) || /^\/course/.test(path) || /^\/subject/.test(path) }
     ];
+    if (authed) {
+      items.push({ id: 'panel', label: 'التقدم', action: 'cc', icon: 'gauge', active: /parent_dashboard|me|edit|change_password/.test(path) });
+    }
+    items.push({ id: 'more', label: 'المزيد', action: 'more', icon: 'dots', active: false });
     return items;
   }
 
@@ -364,12 +367,10 @@
     DrosComponents.toggleMore = function () {
       if (!moreMenu || !moreMenu.parentNode) {
         moreMenu = el('div', 'dros-bottomnav__more');
-        moreMenu.innerHTML = [
-          ['/community', 'المجتمع'],
-          ['/prepaid_store', 'المتجر'],
-          ['/me/user', 'حسابي'],
-          ['/logout', 'تسجيل الخروج']
-        ].map(function (r) {
+        var links = detectAuth()
+          ? [['/community', 'المجتمع'], ['/prepaid_store', 'المتجر'], ['/me/user', 'حسابي'], ['/logout', 'تسجيل الخروج']]
+          : [['/login', 'تسجيل دخول'], ['/register', 'أكونت جديد'], ['/community', 'المجتمع'], ['/prepaid_store', 'المتجر']];
+        moreMenu.innerHTML = links.map(function (r) {
           return '<a href="' + r[0] + '">' + r[1] + '</a>';
         }).join('');
         doc.body.appendChild(moreMenu);
@@ -404,18 +405,14 @@
       mountMetrics();
       styleShowcase();
       var loggedIn = detectAuth();
+      mountBottomNav();
       if (loggedIn) {
-        mountBottomNav();
         buildCC();
         if (ccOpen) { var c = buildCC(); c.refresh(); }
       } else {
-        var navEl = qs('.dros-bottomnav');
-        if (navEl) { navEl.remove(); navEl = null; }
-        navInstance = null;
         if (ccInstance && ccInstance.el) { ccInstance.el.remove(); }
         ccInstance = null;
         ccOpen = false;
-        doc.body.classList.remove('dros-bottomnav-on');
       }
     },
     auth: function (v) {
@@ -463,7 +460,7 @@
       var mo = new MutationObserver(function () { authChanged(); styleShowcase(); });
       mo.observe(doc.body, { childList: true, subtree: true });
       setTimeout(function () {
-        if (authCache) mountBottomNav();
+        mountBottomNav();
         styleShowcase();
       }, 1500);
     }
