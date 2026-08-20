@@ -1,4 +1,147 @@
-/* DROS MATH Component Theme v2026 */
+﻿/* DROS MATH Component Theme v2026 */
+/* ─────────────────────────────────────────────────────
+   0. ORIGINAL SEMANTIC TOKEN REMAP
+   The original bundle CSS defines its own semantic tokens
+   (--color-*, --font-size-*). Redefining them here recolors
+   the ENTIRE app from a single point.
+   ───────────────────────────────────────────────────── */
+:root {
+  /* light surfaces: bg → surface → elevated → interactive */
+  --color-grey-1: #F0F1EE;
+  --color-grey-2: #E5E7EB;
+  --color-grey-3: #8A909C;
+  --color-dark-0: #050608;
+  --color-dark-1: #101217;
+  --color-dark-2: #0B0E13;
+  --color-dark-3: #161B24;
+  --color-dark-4: #5E6470;
+  --color-white: #FFFFFF;
+  --color-primary-container: #FFFFFF;
+  --color-secondary-container: #F2F3F0;
+  --color-third-container: #F7F7F5;
+  --color-outer-container: #F7F7F5;
+  --color-inner-container: #FFFFFF;
+  --color-middle-container: #E5E7EB;
+  --color-text-primary: #101217;
+  --color-text-secondary: #5E6470;
+  --color-footer: #143D4F;
+}
+body.darkmode,
+html.darkmode {
+  --color-grey-1: #0B0E13;
+  --color-grey-2: #11151C;
+  --color-grey-3: #68707D;
+  --color-white: #F7F7F8;
+  --color-dark-0: #050608;
+  --color-dark-1: #0B0E13;
+  --color-dark-2: #11151C;
+  --color-dark-3: #161B24;
+  --color-dark-4: #68707D;
+  --color-primary-container: #0B0E13;
+  --color-secondary-container: #11151C;
+  --color-third-container: #050608;
+  --color-outer-container: #050608;
+  --color-inner-container: #0B0E13;
+  --color-middle-container: #11151C;
+  --color-text-primary: #F7F7F8;
+  --color-text-secondary: #A7ADB8;
+  --color-footer: #050608;
+}
+
+/* Feature cards — red surface → neutral premium surface */
+.featureCard {
+  background: var(--dros-surface) !important;
+  color: var(--dros-text-primary) !important;
+  border: 1px solid var(--dros-border) !important;
+  border-radius: var(--dros-radius-xl) !important;
+  box-shadow: var(--dros-shadow-sm) !important;
+}
+html.darkmode .featureCard,
+body.darkmode .featureCard {
+  background: var(--dros-surface-elevated) !important;
+  border-color: var(--dros-border) !important;
+}
+.featureCard h3,
+.featureCard span {
+  color: var(--dros-text-primary) !important;
+}
+.featureCard p {
+  color: var(--dros-text-secondary) !important;
+}
+.featureCard svg {
+  color: var(--dros-brand) !important;
+  opacity: 0.9;
+}
+
+/* Teal years grid → neutral premium cards */
+.g-teal-400 {
+  background: transparent !important;
+}
+.g-teal-400 > *,
+.g-teal-400 [class*="card"],
+.g-teal-400 a {
+  background: var(--dros-surface) !important;
+  border: 1px solid var(--dros-border) !important;
+  border-radius: var(--dros-radius-xl) !important;
+  box-shadow: var(--dros-shadow-sm) !important;
+  transition: all var(--dros-duration-normal) var(--dros-ease) !important;
+}
+.g-teal-400 > *:hover {
+  border-color: var(--dros-brand-20) !important;
+  box-shadow: var(--dros-shadow-lg) !important;
+  transform: translateY(-3px);
+}
+html.darkmode .g-teal-400 > *,
+body.darkmode .g-teal-400 > * {
+  background: var(--dros-surface-elevated) !important;
+  border-color: var(--dros-border) !important;
+}
+
+/* Course cards */
+.bg-third-container {
+  background-color: var(--dros-surface) !important;
+}
+html.darkmode .bg-third-container,
+body.darkmode .bg-third-container {
+  background-color: var(--dros-surface-elevated) !important;
+}
+[class*="shadow-large"][class*="oblique"],
+.hover-shadow-larg {
+  box-shadow: var(--dros-shadow-md) !important;
+}
+
+/* Teal pill buttons → brand outline pills */
+a.border-teal-500,
+.border-teal-500 {
+  border-color: var(--dros-brand) !important;
+  color: var(--dros-brand) !important;
+}
+a.border-teal-500:hover,
+.hover\:bg-teal-500:hover,
+.hover:bg-teal-500:hover {
+  background-color: var(--dros-brand) !important;
+  border-color: var(--dros-brand) !important;
+  color: #fff !important;
+}
+
+/* Navbar links: darker in light, lighter in dark */
+.navbar a,
+nav a,
+header a,
+.navbar a:visited {
+  color: var(--dros-text-primary) !important;
+}
+html.darkmode .navbar a,
+body.darkmode .navbar a,
+html.darkmode nav a,
+body.darkmode nav a {
+  color: var(--dros-text-secondary) !important;
+}
+.navbar a:hover,
+nav a:hover {
+  color: var(--dros-brand) !important;
+}
+
 html {
   font-family: var(--dros-font-body);
   color: var(--dros-text-primary);
@@ -73,16 +216,10 @@ nav {
 .navbar a,
 nav a,
 header a {
-  color: var(--dros-text-secondary) !important;
   font-family: var(--dros-font-body);
   font-weight: 600;
   font-size: 0.9375rem;
   transition: color var(--dros-duration-fast) var(--dros-ease);
-}
-.navbar a:hover,
-nav a:hover,
-header a:hover {
-  color: var(--dros-brand) !important;
 }
 .navbar a.active,
 nav a.active,
@@ -145,19 +282,19 @@ nav a.active::after {
   color: var(--dros-text-inverse) !important;
   padding: 12px 28px !important;
   font-size: 1rem !important;
-  box-shadow: 0 2px 8px rgba(220,38,38,0.25) !important;
+  box-shadow: 0 2px 8px rgba(255,22,56,0.30) !important;
 }
 .btn-custom:hover,
 .btn-service:hover:not(.darkmode) {
   background: var(--dros-brand-hover) !important;
-  box-shadow: 0 4px 16px rgba(220,38,38,0.35) !important;
+  box-shadow: 0 4px 16px rgba(255,22,56,0.45) !important;
   transform: translateY(-1px);
 }
 .btn-custom:active,
 .btn-service:active:not(.darkmode) {
   background: var(--dros-brand-active) !important;
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(220,38,38,0.2) !important;
+  box-shadow: 0 1px 4px rgba(255,22,56,0.25) !important;
 }
 .btn-service.darkmode,
 .btn-ghost,
@@ -526,4 +663,170 @@ html.theme-transition *::after {
   .navbar, header, nav {
     height: 52px !important;
   }
+}
+
+/* ========================================================
+   21. MATHEMATICAL VISUAL LANGUAGE (per Master Spec)
+   Decorative + informational math primitives via CSS.
+   ======================================================== */
+
+/* ── Hero: mathematical command-center environment ──── */
+.md\:h-screen.min-h-screen.negative-nav-margin,
+.negative-nav-margin.relative.overflow-hidden {
+  background:
+    radial-gradient(ellipse 70% 55% at 72% 38%, rgba(255,22,56,0.10), transparent 62%),
+    radial-gradient(ellipse 50% 40% at 20% 20%, rgba(255,22,56,0.05), transparent 60%),
+    var(--dros-bg) !important;
+  position: relative;
+}
+
+/* math grid overlay */
+.md\:h-screen.min-h-screen.negative-nav-margin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--dros-math-grid);
+  background-size: var(--dros-math-grid-size) var(--dros-math-grid-size);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* equation chips floating in hero */
+.md\:h-screen.min-h-screen.negative-nav-margin::after {
+  content: '∑  f(x) = x² − 4x + 3  ·  a² + b² = c²  ·  ∫  ·  π  ·  √';
+  position: absolute;
+  bottom: 9%;
+  left: 4%;
+  right: 4%;
+  font-family: var(--dros-font-mono), var(--dros-font-body);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--dros-text-tertiary);
+  opacity: 0.55;
+  text-align: center;
+  direction: ltr;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* teacher: integrate into math environment with orbital rings */
+img[alt*="Ms"], img[alt="Ms##LOGO"] {
+  border-radius: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+/* orbital rings behind teacher photo */
+[class*="basis-3/4"], .flex-center-both.basis-full {
+  position: relative;
+}
+[class*="basis-3/4"]::before {
+  content: '';
+  position: absolute;
+  width: min(420px, 78vw);
+  height: min(420px, 78vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--dros-border);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+[class*="basis-3/4"]::after {
+  content: '';
+  position: absolute;
+  width: min(520px, 92vw);
+  height: min(180px, 40vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  border: 1px solid var(--dros-border-subtle);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Section headers: mathematical accent ───────────── */
+.years__head, .home-years__title, .home-years-title__bg,
+[class*="years__title"], .years-section h2 {
+  position: relative;
+  padding-inline-start: 14px;
+}
+.years__head::before, .home-years__title::before, .years-section h2::before {
+  content: '∑';
+  color: var(--dros-brand);
+  font-weight: 700;
+  margin-inline-end: 10px;
+  display: inline-block;
+}
+
+/* ── Moving-line marquee: subtle red pulse ──────────── */
+.moving-line {
+  border-top: 1px solid var(--dros-border-subtle);
+  border-bottom: 1px solid var(--dros-border-subtle);
+  background: var(--dros-surface) !important;
+}
+
+/* ── Metrics / large numbers: mathematical instrument ── */
+.font-big, .text-big, .font-bigmax {
+  font-family: var(--dros-font-display) !important;
+  font-weight: 700 !important;
+  color: var(--dros-text-primary) !important;
+  letter-spacing: -0.02em;
+}
+
+/* ── Premium card system (radius 14px, thin border, glow hover) ── */
+.featureCard, .years__card, .courses .years__card,
+[class*="shadow-large"], .community-category-card {
+  border-radius: var(--dros-radius-xl) !important;
+  border: 1px solid var(--dros-border) !important;
+  box-shadow: var(--dros-shadow-sm) !important;
+}
+.featureCard:hover, .years__card:hover,
+[class*="shadow-large"]:hover {
+  border-color: var(--dros-brand-20) !important;
+  box-shadow: var(--dros-shadow-lg), var(--dros-brand-glow) !important;
+  transform: translateY(-2px);
+}
+
+/* ── CTA glow ────────────────────────────────────────── */
+.btn-custom, .btn-service:not(.darkmode),
+.bg-Folly-500 {
+  box-shadow: 0 2px 18px rgba(255,22,56,0.35) !important;
+}
+.btn-custom:hover, .btn-service:not(.darkmode):hover {
+  box-shadow: 0 4px 26px rgba(255,22,56,0.5) !important;
+}
+
+/* ── Headings: strong geometric Arabic weight ────────── */
+h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
+.font-messiri, .font-graph, .font-h1, .font-h2 {
+  font-family: var(--dros-font-heading) !important;
+}
+
+/* ── Footer: keep brand deep tone, add math top-border ── */
+.footer {
+  border-top: 1px solid rgba(255,22,56,0.25);
+}
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,22,56,0.5), transparent);
+}
+
+/* ── Mobile hero equation line: wrap instead of overflow ── */
+@media (max-width: 640px) {
+  .md\:h-screen.min-h-screen.negative-nav-margin::after {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    bottom: 4%;
+  }
+  [class*="basis-3/4"]::before { width: 82vw; height: 82vw; }
+  [class*="basis-3/4"]::after { width: 96vw; height: 40vw; }
 }
