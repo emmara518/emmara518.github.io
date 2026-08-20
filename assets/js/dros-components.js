@@ -47,7 +47,8 @@
     gauge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>',
     dots: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-    arrowLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>'
+    arrowLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>',
+    arrowUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>'
   };
 
   function currentPath() {
@@ -404,6 +405,8 @@
       mountStage3D();
       mountMetrics();
       styleShowcase();
+      mountBackToTop();
+      mountReveal();
       var loggedIn = detectAuth();
       mountBottomNav();
       if (loggedIn) {
@@ -424,6 +427,48 @@
     },
     toggleMore: function () {}
   };
+
+  /* Back-to-top button (appears after scrolling, respects RTL + keyboard) */
+  function mountBackToTop() {
+    if (qs('.dros-top')) return;
+    var b = el('button', 'dros-top', ICONS.arrowUp);
+    b.type = 'button';
+    b.setAttribute('aria-label', 'العودة للأعلى');
+    b.setAttribute('title', 'العودة للأعلى');
+    b.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    doc.body.appendChild(b);
+    var onScroll = function () {
+      var y = window.scrollY || doc.documentElement.scrollTop || 0;
+      b.classList.toggle('dros-top--on', y > 500);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* Scroll-reveal: gentle fade-up for below-the-fold blocks */
+  function mountReveal() {
+    if (!window.IntersectionObserver) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var targets = [].slice.call(doc.querySelectorAll('section, .featureCard, .group, .years-section, .firstLine, .dros-metrics'))
+      .filter(function (el) {
+        if (el.classList.contains('dros-reveal')) return false;
+        var r = el.getBoundingClientRect();
+        return r.top > window.innerHeight * 0.92;
+      });
+    if (!targets.length) return;
+    targets.forEach(function (el) { el.classList.add('dros-reveal'); });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('dros-reveal--in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
+    targets.forEach(function (el) { io.observe(el); });
+  }
 
   /* Courses showcase band: flag the card so CSS can round corners + aura it */
   function styleShowcase() {

@@ -729,7 +729,7 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
    Frosted glass over the card image, gradient border,
    inner highlight, brand glow on hover.
    ======================================================== */
-.group a[href*="/years/"] > div[class*="bg-third-container"] {
+.group a[href*="/years/"] div[class*="bg-third-container"] {
   position: relative !important;
   overflow: hidden !important;
   border-radius: 20px !important;
@@ -747,7 +747,7 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
 }
 
 /* glass sheen across the top */
-.group a[href*="/years/"] > div[class*="bg-third-container"]::before {
+.group a[href*="/years/"] div[class*="bg-third-container"]::before {
   content: '';
   position: absolute;
   inset: 0 0 55% 0;
@@ -756,7 +756,7 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
 }
 
 /* gradient hairline on the glass edge */
-.group a[href*="/years/"] > div[class*="bg-third-container"]::after {
+.group a[href*="/years/"] div[class*="bg-third-container"]::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -774,7 +774,7 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
   opacity: 0.85;
 }
 
-.group:hover a[href*="/years/"] > div[class*="bg-third-container"] {
+.group:hover a[href*="/years/"] div[class*="bg-third-container"] {
   transform: translateY(-3px);
   border-color: rgba(255, 22, 56, 0.4) !important;
   box-shadow:
@@ -785,7 +785,7 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
 }
 
 /* light mode: milk glass */
-html:not(.darkmode) .group a[href*="/years/"] > div[class*="bg-third-container"] {
+html:not(.darkmode) .group a[href*="/years/"] div[class*="bg-third-container"] {
   background: rgba(255, 255, 255, 0.55) !important;
   border-color: rgba(255, 255, 255, 0.65) !important;
   box-shadow:
@@ -793,10 +793,10 @@ html:not(.darkmode) .group a[href*="/years/"] > div[class*="bg-third-container"]
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.6),
     0 12px 32px rgba(31, 38, 135, 0.10) !important;
 }
-html:not(.darkmode) .group a[href*="/years/"] > div[class*="bg-third-container"]::before {
+html:not(.darkmode) .group a[href*="/years/"] div[class*="bg-third-container"]::before {
   background: radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.85), transparent 60%);
 }
-html:not(.darkmode) .group:hover a[href*="/years/"] > div[class*="bg-third-container"] {
+html:not(.darkmode) .group:hover a[href*="/years/"] div[class*="bg-third-container"] {
   border-color: rgba(255, 22, 56, 0.35) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -806,16 +806,16 @@ html:not(.darkmode) .group:hover a[href*="/years/"] > div[class*="bg-third-conta
 
 /* no backdrop-filter support: more opaque fallback */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .group a[href*="/years/"] > div[class*="bg-third-container"] {
+  .group a[href*="/years/"] div[class*="bg-third-container"] {
     background: rgba(255, 255, 255, 0.12) !important;
   }
-  html:not(.darkmode) .group a[href*="/years/"] > div[class*="bg-third-container"] {
+  html:not(.darkmode) .group a[href*="/years/"] div[class*="bg-third-container"] {
     background: rgba(255, 255, 255, 0.92) !important;
   }
 }
 
 /* ── Course cards: premium system (no glass) ────────── */
-.group a[href*="/course/"] > div[class*="bg-third-container"] {
+.group a[href*="/course/"] div[class*="bg-third-container"] {
   position: relative !important;
   overflow: hidden !important;
   border-radius: var(--dros-radius-lg) !important;
@@ -826,7 +826,7 @@ html:not(.darkmode) .group:hover a[href*="/years/"] > div[class*="bg-third-conta
     box-shadow var(--dros-duration-normal) var(--dros-ease),
     border-color var(--dros-duration-normal) var(--dros-ease) !important;
 }
-.group:hover a[href*="/course/"] > div[class*="bg-third-container"] {
+.group:hover a[href*="/course/"] div[class*="bg-third-container"] {
   transform: translateY(-2px);
   border-color: rgba(255, 22, 56, 0.35) !important;
   box-shadow: var(--dros-shadow-lg), var(--dros-brand-glow) !important;
@@ -1212,7 +1212,7 @@ body.dros-bottomnav-on {
   pointer-events: none;
   box-shadow: var(--dros-shadow-sm);
 }
-.group a[href*="/years/"] > div[class*="bg-third-container"] {
+.group a[href*="/years/"] div[class*="bg-third-container"] {
   margin-top: 6px;
 }
 
@@ -1273,3 +1273,156 @@ html:not(.darkmode) .progress-bar__moving {
   opacity: 1 !important;
   display: block !important;
 }
+
+/* APPEND-MARKER */
+
+/* ========================================================
+   24. PRO 2026.2 — DENSITY · GLOW · POLISH
+   Vertical compression + glass fix + brand glow + UX refinements
+   ======================================================== */
+
+/* ── 24.1 VERTICAL DENSITY: cut scroll length ── */
+.md\:h-screen.min-h-screen { min-height: 72vh !important; }
+.min-h-screen.relative.overflow-hidden { min-height: 72vh !important; }
+.py-20 { padding-top: 3.25rem !important; padding-bottom: 3.25rem !important; }
+.py-16 { padding-top: 2.75rem !important; padding-bottom: 2.75rem !important; }
+.py-10 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.pt-20 { padding-top: 3.25rem !important; }
+.pb-20 { padding-bottom: 3.25rem !important; }
+.pb-16 { padding-bottom: 2.75rem !important; }
+.pb-10 { padding-bottom: 2rem !important; }
+.mb-20 { margin-bottom: 2.5rem !important; }
+.mb-16 { margin-bottom: 2rem !important; }
+.mb-14 { margin-bottom: 1.75rem !important; }
+.my-10 { margin-top: 1.25rem !important; margin-bottom: 1.25rem !important; }
+.space-y-10 > * + * { margin-top: 1.5rem !important; }
+.space-y-8 > * + * { margin-top: 1.25rem !important; }
+.gap-10 { gap: 1.5rem !important; }
+.gap-14 { gap: 2rem !important; }
+.gap-20 { gap: 2.5rem !important; }
+.footer { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+.footer .gap-20 { gap: 2rem !important; }
+a[href*="/years/"] img, a[href*="/course/"] img {
+  max-height: 190px !important;
+  object-fit: cover;
+  object-position: center;
+}
+a[href*="/years/"] .py-6, a[href*="/course/"] .py-6 { padding-top: 1.1rem !important; padding-bottom: 1.1rem !important; }
+a[href*="/years/"] .px-4, a[href*="/course/"] .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+a[href*="/course/"] .font-h3 { font-size: 1.05rem !important; line-height: 1.4 !important; }
+a[href*="/course/"] [class*="line-clamp"], a[href*="/course/"] .clr-text-secondary { -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.moving-line { padding: 2.25rem 0 !important; }
+.moving-line [class*="py-"] { padding-top: 0 !important; padding-bottom: 0 !important; }
+.firstLine { padding: 2rem 0 !important; }
+.w-screen.my-10 { margin-top: 1.25rem !important; margin-bottom: 1.25rem !important; }
+
+/* ── 24.2 GLASS FIX + BRAND GLOW (cards) ── */
+.group a[href*="/years/"] div[class*="bg-third-container"] {
+  will-change: transform, box-shadow;
+}
+.group a[href*="/course/"] div[class*="bg-third-container"] {
+  will-change: transform, box-shadow;
+}
+.group:hover a[href*="/course/"] div[class*="bg-third-container"] {
+  transform: translateY(-3px);
+  border-color: rgba(255, 22, 56, 0.45) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 22, 56, 0.14), 0 10px 34px rgba(255, 22, 56, 0.22) !important;
+}
+.group:hover a[href*="/years/"] div[class*="bg-third-container"] {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 18px 48px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 22, 56, 0.16),
+    0 10px 36px rgba(255, 22, 56, 0.28) !important;
+}
+html:not(.darkmode) .group:hover a[href*="/years/"] div[class*="bg-third-container"] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 18px 44px rgba(31, 38, 135, 0.16),
+    0 10px 32px rgba(255, 22, 56, 0.16) !important;
+}
+.group a[href*="/years/"] div[class*="bg-third-container"] .divider-2,
+.group a[href*="/course/"] div[class*="bg-third-container"] .divider-2 {
+  background: linear-gradient(90deg, transparent, rgba(255, 22, 56, 0.7), transparent) !important;
+  box-shadow: 0 0 8px rgba(255, 22, 56, 0.4);
+  height: 2px !important;
+}
+.group a[href*="/years/"] img, .group a[href*="/course/"] img {
+  transition: transform 0.5s ease, filter 0.5s ease;
+  filter: saturate(0.92) brightness(0.98);
+}
+.group:hover a[href*="/years/"] img, .group:hover a[href*="/course/"] img {
+  filter: saturate(1.15) brightness(1.04);
+}
+
+/* ── 24.3 NEW UX: back-to-top + scroll reveal ── */
+html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+.dros-top {
+  position: fixed;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  inset-inline-end: 16px;
+  z-index: 3800;
+  width: 46px; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 22, 56, 0.35);
+  background: var(--dros-surface-elevated);
+  color: var(--dros-text-primary);
+  cursor: pointer;
+  opacity: 0; pointer-events: none;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5);
+}
+.dros-top svg { width: 20px; height: 20px; }
+.dros-top:hover {
+  border-color: rgba(255, 22, 56, 0.7);
+  color: var(--dros-brand);
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.55), 0 0 16px rgba(255, 22, 56, 0.4);
+}
+.dros-top--on { opacity: 1; pointer-events: auto; transform: translateY(0); }
+@media (min-width: 769px) {
+  .dros-top { bottom: 28px; }
+}
+.dros-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+}
+.dros-reveal--in { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .dros-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ── 24.4 SYSTEM POLISH ── */
+::selection { background: rgba(255, 22, 56, 0.28); color: inherit; }
+html.darkmode ::selection { background: rgba(255, 22, 56, 0.45); }
+* { scrollbar-width: thin; scrollbar-color: rgba(255, 22, 56, 0.35) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 22, 56, 0.5), rgba(205, 24, 24, 0.35));
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid rgba(255, 22, 56, 0.6) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+a[href*="/years/"], a[href*="/course/"], .featureCard, .dros-metrics__item, .dros-cc__card {
+  contain: layout paint;
+}
+
+/* ── 24.5 BUTTONS + HEADINGS REFINEMENT ── */
+.font-h1 { letter-spacing: -0.01em; }
+[class*="font-h1"], h1, h2 { text-wrap: balance; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.dros-metrics { scroll-snap-type: x proximity; }
+.dros-metrics__item { scroll-snap-align: center; }
