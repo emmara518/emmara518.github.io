@@ -1,6 +1,29 @@
 ﻿/* DROS MATH Component Theme v2026 */
 /* ─────────────────────────────────────────────────────
-   0. ORIGINAL SEMANTIC TOKEN REMAP
+   0. BRAND FONT ALIASES
+   The bundle registers the display face as "Graphik";
+   this alias lets "GRAPHIK ARABIC" resolve to the same files.
+   ───────────────────────────────────────────────────── */
+@font-face {
+  font-family: "GRAPHIK ARABIC";
+  src: url("../fonts/GRAPHIK-ARABIC.b67d297a3108a3a63d1e.OTF") format("opentype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GRAPHIK ARABIC";
+  src: url("../fonts/GRAPHIK-ARABIC-MEDIUM.0af90140746203879b7c.OTF") format("opentype");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GRAPHIK ARABIC";
+  src: url("../fonts/GRAPHIK-ARABIC-SEMIBOLD.7d8631a6522f45d27d07.OTF") format("opentype");
+  font-weight: 600;
+  font-display: swap;
+}
+/* ─────────────────────────────────────────────────────
+   1. ORIGINAL SEMANTIC TOKEN REMAP
    The original bundle CSS defines its own semantic tokens
    (--color-*, --font-size-*). Redefining them here recolors
    the ENTIRE app from a single point.
