@@ -1,0 +1,370 @@
+/* ========================================================
+   DROS MATH — Mathematical Visual Primitives (reusable)
+   ========================================================
+   Reusable design primitives per Master Spec §7/§10/§13:
+   .dros-math-grid        coordinate grid backdrop
+   .dros-math-grid--fade  grid with radial fade mask
+   .dros-equation-chip    equation strip (LTR, mono)
+   .dros-math-rings       concentric orbital rings
+   .dros-coord-graph      coordinate axes + function curve
+   .dros-3d--cube/ring/sphere/pyramid/torus
+                          unified metallic 3D language
+                          (dark metallic, white edge, red rim)
+   All primitives respect dark/light + prefers-reduced-motion.
+   ======================================================== */
+
+/* ── Math grid ──────────────────────────────────────── */
+.dros-math-grid {
+  background-image: var(--dros-math-grid);
+  background-size: var(--dros-math-grid-size) var(--dros-math-grid-size);
+  background-position: center;
+}
+.dros-math-grid--fade {
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+}
+
+/* ── Equation chip ──────────────────────────────────── */
+.dros-equation-chip {
+  font-family: var(--dros-font-mono), var(--dros-font-body);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--dros-text-tertiary);
+  direction: ltr;
+  white-space: nowrap;
+}
+
+/* ── Orbital rings ──────────────────────────────────── */
+.dros-math-rings,
+.dros-math-rings--orbit {
+  position: relative;
+}
+.dros-math-rings::before {
+  content: '';
+  position: absolute;
+  width: min(420px, 78vw);
+  height: min(420px, 78vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--dros-border);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.dros-math-rings::after {
+  content: '';
+  position: absolute;
+  width: min(520px, 92vw);
+  height: min(180px, 40vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  border: 1px solid var(--dros-border-subtle);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Coordinate graph (axes + parabola) ─────────────── */
+.dros-coord-graph {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(var(--dros-border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dros-border-subtle) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dros-coord-graph::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--dros-border-strong);
+}
+.dros-coord-graph::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 1px;
+  background: var(--dros-border-strong);
+}
+
+/* ========================================================
+   HERO COMPOSITION (original selectors, now primitives)
+   ======================================================== */
+
+/* hero environment: red glows over base bg */
+.md\:h-screen.min-h-screen.negative-nav-margin,
+.negative-nav-margin.relative.overflow-hidden {
+  background:
+    radial-gradient(ellipse 70% 55% at 72% 38%, rgba(255, 22, 56, 0.10), transparent 62%),
+    radial-gradient(ellipse 50% 40% at 20% 20%, rgba(255, 22, 56, 0.05), transparent 60%),
+    var(--dros-bg) !important;
+  position: relative;
+}
+
+/* math grid overlay (uses .dros-math-grid primitive) */
+.md\:h-screen.min-h-screen.negative-nav-margin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--dros-math-grid);
+  background-size: var(--dros-math-grid-size) var(--dros-math-grid-size);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 40%, #000 20%, transparent 75%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* equation strip (uses .dros-equation-chip primitive) */
+.md\:h-screen.min-h-screen.negative-nav-margin::after {
+  content: '∑  f(x) = x² − 4x + 3  ·  a² + b² = c²  ·  ∫  ·  π  ·  √';
+  position: absolute;
+  bottom: 9%;
+  left: 4%;
+  right: 4%;
+  font-family: var(--dros-font-mono), var(--dros-font-body);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--dros-text-tertiary);
+  opacity: 0.55;
+  text-align: center;
+  direction: ltr;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* teacher photo: integrated into math environment */
+img[alt*="Ms"], img[alt="Ms##LOGO"] {
+  border-radius: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+/* orbital rings behind teacher (uses .dros-math-rings) */
+[class*="basis-3/4"], .flex-center-both.basis-full {
+  position: relative;
+}
+[class*="basis-3/4"]::before {
+  content: '';
+  position: absolute;
+  width: min(420px, 78vw);
+  height: min(420px, 78vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--dros-border);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+[class*="basis-3/4"]::after {
+  content: '';
+  position: absolute;
+  width: min(520px, 92vw);
+  height: min(180px, 40vw);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  border: 1px solid var(--dros-border-subtle);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================================
+   3D OBJECT SYSTEM (Master Spec §13)
+   one visual language: dark metallic + white edges +
+   controlled red rim light. Light mode: light metallic.
+   ======================================================== */
+.dros-3d {
+  display: inline-block;
+  position: relative;
+  isolation: isolate;
+  flex-shrink: 0;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+
+/* ── Cube (isometric, metallic + red rim) ───────────── */
+.dros-3d--cube {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(145deg, #3A4150 0%, #14181F 45%, #1E242E 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 14px rgba(255, 22, 56, 0.30);
+  transform: rotate(45deg) scale(0.85);
+  animation: dros3dFloat 6s ease-in-out infinite;
+}
+.dros-3d--cube::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  bottom: -2px;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #20262F 0%, #0B0E13 100%);
+  transform: skewY(45deg);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: -1;
+}
+.dros-3d--cube::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  bottom: -16px;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #171B23 0%, #0B0E13 100%);
+  transform: skewX(45deg);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 10px rgba(255, 22, 56, 0.18);
+  z-index: -2;
+}
+
+/* ── Ring / arch ────────────────────────────────────── */
+.dros-3d--ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 5px solid transparent;
+  background:
+    linear-gradient(var(--dros-surface), var(--dros-surface)) padding-box,
+    linear-gradient(160deg, #8B93A3, #2A2F3A 55%, #FF1638 130%) border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 12px rgba(255, 22, 56, 0.28);
+  transform: rotate(-18deg);
+  animation: dros3dFloat 7s ease-in-out infinite;
+}
+
+/* ── Sphere ─────────────────────────────────────────── */
+.dros-3d--sphere {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, #5A6272 0%, #242A34 38%, #10141B 78%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset -6px -8px 16px rgba(0, 0, 0, 0.55),
+    inset 6px 8px 14px rgba(255, 255, 255, 0.10),
+    0 0 14px rgba(255, 22, 56, 0.30);
+  animation: dros3dFloat 5.5s ease-in-out infinite;
+}
+
+/* ── Pyramid (exams) ────────────────────────────────── */
+.dros-3d--pyramid {
+  width: 0;
+  height: 0;
+  border-left: 17px solid transparent;
+  border-right: 17px solid transparent;
+  border-bottom: 30px solid #1A2029;
+  filter: drop-shadow(0 0 10px rgba(255, 22, 56, 0.35));
+  position: relative;
+  animation: dros3dFloat 6.5s ease-in-out infinite;
+}
+.dros-3d--pyramid::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -17px;
+  width: 34px;
+  height: 8px;
+  background: linear-gradient(90deg, #2A303B, #10141B);
+  transform: perspective(30px) rotateX(45deg);
+  box-shadow: 0 0 10px rgba(255, 22, 56, 0.20);
+}
+
+/* ── Torus (reviews, amber accent) ──────────────────── */
+.dros-3d--torus {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 5px solid transparent;
+  background:
+    linear-gradient(var(--dros-surface), var(--dros-surface)) padding-box,
+    linear-gradient(160deg, #E8C477, #6B5A2F 55%, #FF9D00 140%) border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 12px rgba(255, 157, 0, 0.22);
+  transform: rotate(24deg);
+  animation: dros3dFloat 7.5s ease-in-out infinite;
+}
+
+/* light mode: white metallic + soft shadows + red accents */
+html:not(.darkmode) .dros-3d--cube {
+  background: linear-gradient(145deg, #FFFFFF 0%, #D7DBE2 45%, #EDEFF3 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 18, 23, 0.10),
+    0 0 14px rgba(255, 22, 56, 0.18);
+}
+html:not(.darkmode) .dros-3d--cube::before {
+  background: linear-gradient(145deg, #C9CED6 0%, #E4E7EC 100%);
+  box-shadow: inset 0 0 0 1px rgba(16, 18, 23, 0.08);
+}
+html:not(.darkmode) .dros-3d--cube::after {
+  background: linear-gradient(145deg, #DDE1E7 0%, #E9EBEF 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 18, 23, 0.08),
+    inset 0 0 10px rgba(255, 22, 56, 0.12);
+}
+html:not(.darkmode) .dros-3d--ring {
+  background:
+    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(160deg, #AAB2C0, #E8EBEF 55%, #FF1638 130%) border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 18, 23, 0.10),
+    0 0 12px rgba(255, 22, 56, 0.16);
+}
+html:not(.darkmode) .dros-3d--sphere {
+  background:
+    radial-gradient(circle at 32% 28%, #FFFFFF 0%, #DDE1E7 38%, #B9BFC9 78%);
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 18, 23, 0.10),
+    inset -6px -8px 16px rgba(16, 18, 23, 0.12),
+    inset 6px 8px 14px rgba(255, 255, 255, 0.9),
+    0 0 14px rgba(255, 22, 56, 0.16);
+}
+html:not(.darkmode) .dros-3d--pyramid {
+  border-bottom-color: #DDE1E7;
+  filter: drop-shadow(0 0 8px rgba(255, 22, 56, 0.2));
+}
+html:not(.darkmode) .dros-3d--pyramid::before {
+  background: linear-gradient(90deg, #E4E7EC, #C9CED6);
+  box-shadow: 0 0 8px rgba(255, 22, 56, 0.12);
+}
+html:not(.darkmode) .dros-3d--torus {
+  background:
+    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(160deg, #F3E3B9, #E8E4D8 55%, #E8A33D 140%) border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(16, 18, 23, 0.10),
+    0 0 12px rgba(232, 163, 61, 0.18);
+}
+
+/* ── Motion ─────────────────────────────────────────── */
+@keyframes dros3dFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dros-3d, .dros-3d--cube, .dros-3d--ring,
+  .dros-3d--sphere, .dros-3d--pyramid, .dros-3d--torus {
+    animation: none !important;
+  }
+}
+
+/* ── Mobile hero equation (moved from dros-theme.css) ── */
+@media (max-width: 640px) {
+  .md\:h-screen.min-h-screen.negative-nav-margin::after {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    bottom: 4%;
+  }
+  [class*="basis-3/4"]::before { width: 82vw; height: 82vw; }
+  [class*="basis-3/4"]::after { width: 96vw; height: 40vw; }
+}
