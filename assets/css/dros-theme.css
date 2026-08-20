@@ -1211,14 +1211,42 @@ html:not(.darkmode) .progress-bar__moving {
     0 0 14px rgba(255, 22, 56, 0.35) !important;
 }
 
-/* ── Footer: keep brand deep tone, add math top-border ── */
+/* ── Footer: command-deck redesign (replaces legacy teal #143D4F) ── */
 .footer {
-  border-top: 1px solid rgba(255,22,56,0.25);
+  background:
+    radial-gradient(80% 120% at 50% 0%, rgba(255, 22, 56, 0.10) 0%, rgba(255, 22, 56, 0) 55%),
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(180deg, #0B0E13 0%, #050608 100%) !important;
+  background-size: auto, 44px 44px, 44px 44px, auto;
+  border-top: 1px solid rgba(255, 22, 56, 0.35) !important;
 }
 .footer::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,22,56,0.5), transparent);
+  height: 2px;
+  background: linear-gradient(90deg, transparent 5%, rgba(255, 22, 56, 0.7), transparent 95%);
+  box-shadow: 0 0 12px rgba(255, 22, 56, 0.5);
+}
+.footer a {
+  transition: color 0.2s ease;
+}
+.footer a:hover {
+  color: #FF6B7A !important;
+}
+
+/* ── Courses showcase band: rounded command deck + brand aura ── */
+.dros-showcase {
+  border-radius: 55px !important;
+  border: 1px solid rgba(255, 22, 56, 0.25) !important;
+  box-shadow: 0 40px 90px -40px rgba(205, 24, 24, 0.45);
+}
+.dros-showcase > [class*="bg-[#CD1818]"] {
+  background:
+    radial-gradient(120% 130% at 50% 0%, rgba(255, 22, 56, 0.32) 0%, rgba(255, 22, 56, 0) 58%),
+    linear-gradient(180deg, rgba(255, 22, 56, 0.12), rgba(255, 22, 56, 0) 45%) !important;
+  opacity: 1 !important;
+}
+.firstLine > [class*="bg-[#CD1818]"] {
+  background: radial-gradient(90% 120% at 50% 50%, rgba(255, 22, 56, 0.16) 0%, rgba(255, 22, 56, 0) 70%) !important;
+  opacity: 1 !important;
+  display: block !important;
 }

@@ -402,6 +402,7 @@
     refresh: function () {
       mountStage3D();
       mountMetrics();
+      styleShowcase();
       var loggedIn = detectAuth();
       if (loggedIn) {
         mountBottomNav();
@@ -427,6 +428,15 @@
     toggleMore: function () {}
   };
 
+  /* Courses showcase band: flag the card so CSS can round corners + aura it */
+  function styleShowcase() {
+    var found = null;
+    [].forEach.call(doc.querySelectorAll('[class*="bg-[#CD1818]"]'), function (d) {
+      if (d.className.indexOf('opacity-0') !== -1 && d.parentElement) found = d.parentElement;
+    });
+    if (found && !found.classList.contains('dros-showcase')) found.classList.add('dros-showcase');
+  }
+
   /* SPA route watching: pushState/replaceState + popstate */
   function watchRoutes() {
     var wrap = function (fn, name) {
@@ -448,11 +458,13 @@
     watchRoutes();
     authCache = detectAuth();
     DrosComponents.refresh();
+    styleShowcase();
     if (window.MutationObserver) {
-      var mo = new MutationObserver(function () { authChanged(); });
+      var mo = new MutationObserver(function () { authChanged(); styleShowcase(); });
       mo.observe(doc.body, { childList: true, subtree: true });
       setTimeout(function () {
         if (authCache) mountBottomNav();
+        styleShowcase();
       }, 1500);
     }
   }
