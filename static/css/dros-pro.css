@@ -373,3 +373,58 @@ html { scrollbar-gutter: stable; }
 /* 149 font display swap (done in @font-face) */
 /* 150 icon crisp rendering */
 svg { shape-rendering: geometricPrecision; }
+
+/* ============ 16. PRO PLUS 20 (151-170) ============ */
+/* 151 navbar logo glow on hover */
+.navbar img, .navbar svg { transition: filter .3s ease; }
+.navbar a:hover img, .navbar a:hover svg { filter: drop-shadow(0 0 10px rgba(255, 22, 56, 0.5)); }
+/* 152 hero CTA pair alignment */
+.hero .flex, .md\:h-screen .flex { flex-wrap: wrap; justify-content: center; }
+/* 153 course badge styling */
+a[href*="/course/"] [class*="badge"], a[href*="/course/"] [class*="tag"] { border: 1px solid rgba(255, 22, 56, 0.35); color: var(--dros-brand); background: var(--dros-brand-soft); border-radius: 999px; padding: .15rem .6rem; font-size: .72rem; font-weight: 600; }
+/* 154 video play overlay */
+[class*="play"], [class*="video"] { position: relative; }
+[class*="play"]::before, [class*="video"]::before { content:''; position:absolute; inset:0; background: rgba(5,6,8,.25); opacity:0; transition: opacity .3s; }
+[class*="play"]:hover::before, [class*="video"]:hover::before { opacity:1; }
+/* 155 exam category cards */
+.dros-cat-exams { border-color: var(--dros-brand) !important; box-shadow: var(--dros-glow-sm); }
+/* 156 review stars brand */
+[class*="star"] { color: #FFB400 !important; }
+/* 157 brand notification pulse */
+@keyframes dros-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,22,56,.5) } 70% { box-shadow: 0 0 0 10px rgba(255,22,56,0) } 100% { box-shadow: 0 0 0 0 rgba(255,22,56,0) } }
+[class*="notification"], [class*="badge"]:not([class*="pointer"]) { animation: dros-pulse 2.5s ease-out infinite; }
+/* 158 loading shimmer */
+@keyframes dros-shimmer { from { background-position: -200% 0 } to { background-position: 200% 0 } }
+[class*="skeleton"], [class*="loading"] { background: linear-gradient(90deg, var(--dros-surface) 25%, var(--dros-surface-hover) 50%, var(--dros-surface) 75%); background-size: 200% 100%; animation: dros-shimmer 1.6s infinite linear; border-radius: var(--dros-radius-md); }
+/* 159 empty state brand icon frame */
+.dros-cc__empty { border: 1px dashed var(--dros-border-strong); border-radius: var(--dros-radius-lg); padding: 1rem; color: var(--dros-text-secondary); }
+/* 160 404 error page */
+body:has(.w-screen.h-screen) { min-height: 100vh; }
+/* 161 table hover + brand header */
+table tr:hover { background: var(--dros-surface-hover); }
+table th { color: var(--dros-brand); font-weight: 600; text-align: start; }
+/* 162 math/equation blocks */
+.math, [class*="math"], code { font-family: var(--dros-font-mono) !important; background: var(--dros-surface); border: 1px solid var(--dros-border); border-radius: var(--dros-radius-sm); padding: .15rem .4rem; font-size: .9em; }
+/* 163 toggle switch brand */
+input[type="checkbox"].toggle { appearance: none; width: 40px; height: 22px; border-radius: 999px; background: var(--dros-border); position: relative; transition: background .2s; }
+input[type="checkbox"].toggle:checked { background: var(--dros-brand); }
+input[type="checkbox"].toggle::after { content:''; position:absolute; top:2px; inset-inline-start:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition: inset-inline-start .2s; }
+input[type="checkbox"].toggle:checked::after { inset-inline-start: 20px; }
+/* 164 accordion chevron */
+details summary { cursor: pointer; list-style: none; transition: color .2s; }
+details summary::marker, details summary::-webkit-details-marker { display: none; }
+details summary:hover { color: var(--dros-brand); }
+/* 165 tooltip */
+[data-tooltip] { position: relative; }
+[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 8px); inset-inline-start: 50%; transform: translateX(50%); background: var(--dros-surface-elevated); border: 1px solid var(--dros-border); color: var(--dros-text-primary); padding: .3rem .6rem; border-radius: var(--dros-radius-sm); font-size: .75rem; white-space: nowrap; box-shadow: var(--dros-shadow-md); z-index: var(--dros-z-tooltip); }
+/* 166 image placeholder bg */
+img { background: var(--dros-surface-hover); }
+/* 167 brand list markers */
+ul:not([class*="list-none"]) li::marker { color: var(--dros-brand); }
+/* 168 feature icon frame */
+.featureCard [class*="icon"], .featureCard svg { color: var(--dros-brand); }
+/* 169 steps numbering */
+.steps, [class*="step"] { counter-reset: dros-step; }
+.steps > *, [class*="step"] > * { counter-increment: dros-step; }
+/* 170 card focus-visible ring */
+.group a:focus-visible div[class*="bg-third-container"] { box-shadow: 0 0 0 3px rgba(255, 22, 56, 0.5), var(--dros-glow-md); }
