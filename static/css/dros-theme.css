@@ -781,6 +781,25 @@ h1, h2, h3, .text-4xl, .text-3xl, .text-2xl,
   font-family: var(--dros-font-heading) !important;
 }
 
+/* ── Scroll progress bar: brand glow ────────────────── */
+.progress-bar__track {
+  background: rgba(255, 22, 56, 0.12) !important;
+  border-radius: 2px;
+}
+.progress-bar__moving {
+  background: linear-gradient(90deg, #B90024 0%, #FF1638 55%, #FF6B7A 100%) !important;
+  box-shadow:
+    0 0 6px rgba(255, 22, 56, 0.85),
+    0 0 18px rgba(255, 22, 56, 0.45),
+    0 0 32px rgba(255, 22, 56, 0.25) !important;
+  border-radius: 2px;
+}
+html:not(.darkmode) .progress-bar__moving {
+  box-shadow:
+    0 0 5px rgba(255, 22, 56, 0.7),
+    0 0 14px rgba(255, 22, 56, 0.35) !important;
+}
+
 /* ── Footer: keep brand deep tone, add math top-border ── */
 .footer {
   border-top: 1px solid rgba(255,22,56,0.25);
