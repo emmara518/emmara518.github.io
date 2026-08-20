@@ -407,6 +407,7 @@
       styleShowcase();
       mountBackToTop();
       mountReveal();
+      mountA11y();
       var loggedIn = detectAuth();
       mountBottomNav();
       if (loggedIn) {
@@ -447,6 +448,28 @@
     onScroll();
   }
 
+  /* Accessibility: skip link + live region + title attrs */
+  function mountA11y() {
+    if (!qs('.dros-skip')) {
+      var skip = el('a', 'dros-skip', 'تخطَّ إلى المحتوى');
+      skip.href = '#main';
+      skip.setAttribute('role', 'button');
+      doc.body.appendChild(skip);
+      var main = qs('main') || qs('#root');
+      if (main) main.setAttribute('tabindex', '-1');
+    }
+    if (!qs('#dros-live')) {
+      var live = el('div', 'dros-live');
+      live.id = 'dros-live';
+      live.setAttribute('role', 'status');
+      live.setAttribute('aria-live', 'polite');
+      doc.body.appendChild(live);
+    }
+    [].forEach.call(doc.querySelectorAll('a[href*="/years/"], a[href*="/course/"]'), function (a) {
+      if (!a.getAttribute('title')) a.setAttribute('title', 'فتح ' + (a.textContent || '').trim().slice(0, 40));
+    });
+  }
+
   /* Scroll-reveal: gentle fade-up for below-the-fold blocks */
   function mountReveal() {
     if (!window.IntersectionObserver) return;
@@ -458,7 +481,10 @@
         return r.top > window.innerHeight * 0.92;
       });
     if (!targets.length) return;
-    targets.forEach(function (el) { el.classList.add('dros-reveal'); });
+    targets.forEach(function (el, i) {
+      el.classList.add('dros-reveal');
+      el.style.setProperty('--dros-reveal-i', i % 6);
+    });
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (e.isIntersecting) {

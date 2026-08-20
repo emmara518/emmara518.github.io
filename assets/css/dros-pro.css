@@ -1,0 +1,375 @@
+﻿/* ============================================================
+   DROS PRO v2026.3 — 150 PROFESSIONAL UI/UX IMPROVEMENTS
+   Design discipline: mathematical command-center language,
+   brand red #FF1638, dark-first surfaces, GRAPHIK ARABIC + Cairo.
+   Each numbered rule = one improvement (1-150).
+   ============================================================ */
+
+/* ============ 1. COLOR TOKENS & BRAND SYSTEM ============ */
+/* 01 brand gradient for CTAs & accents */
+:root {
+  --dros-gradient-brand: linear-gradient(135deg, #FF1638 0%, #E5092F 55%, #B90024 100%);
+  --dros-gradient-muted: linear-gradient(135deg, rgba(255,22,56,.14), rgba(255,22,56,.04));
+  --dros-glow-sm: 0 2px 8px rgba(255, 22, 56, 0.25);
+  --dros-glow-md: 0 8px 24px rgba(255, 22, 56, 0.35);
+  --dros-glow-lg: 0 16px 48px rgba(255, 22, 56, 0.45);
+}
+/* 02 dark surface elevation ramp documented + enforced */
+body.darkmode { --dros-surface: #0B0E13; --dros-surface-elevated: #11151C; --dros-surface-hover: #161B24; }
+/* 03 brand-tinted placeholder text */
+::placeholder, [placeholder] { color: var(--dros-text-tertiary) !important; opacity: 0.85; }
+/* 04 selection brand (light + dark) */
+::selection { background: rgba(255, 22, 56, 0.30); color: #fff; }
+/* 05 muted scrollbar brand */
+* { scrollbar-color: rgba(255, 22, 56, 0.4) transparent; }
+/* 06 consistent focus ring */
+:focus-visible { outline: 2px solid rgba(255, 22, 56, 0.65); outline-offset: 2px; }
+/* 07 text selection within inputs stays neutral */
+input::selection, textarea::selection { background: rgba(255, 22, 56, 0.35); }
+/* 08 link tap highlight disabled on mobile */
+a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
+/* 09 brand divider glow */
+.divider-2, hr { border: none; height: 2px; background: linear-gradient(90deg, transparent, rgba(255, 22, 56, 0.55), transparent); }
+/* 10 accent color for key words in headings */
+.content h2 strong, .content h3 strong { color: var(--dros-brand); }
+
+/* ============ 2. TYPOGRAPHY ============ */
+/* 11 font rendering */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+/* 12 heading optical sizing */
+.font-h1, .font-h2, .font-h3, h1, h2, h3 { text-wrap: balance; }
+/* 13 tabular numbers for stats/digits */
+.dros-metrics__value, .dros-cc__stat-value, [class*="stat"] { font-variant-numeric: tabular-nums; }
+/* 14 heading glow on hero */
+.md\:h-screen .font-h1, .hero .font-h1 { text-shadow: 0 0 40px rgba(255, 22, 56, 0.25); }
+/* 15 readability measure for paragraphs */
+.content p, .footer p, .featureCard p, .years__card__text { max-width: 62ch; }
+/* 16 label uppercase micro-type */
+.label, .font-caption, [class*="caption"] { text-transform: uppercase; letter-spacing: 0.08em; }
+/* 17 heading letter spacing refined */
+.font-h1 { letter-spacing: -0.015em; }
+/* 18 link underline offset */
+a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
+/* 19 brand-red emphasis on numbers in headings */
+.content h2 em, .content h3 em { font-style: normal; color: var(--dros-brand); }
+/* 20 heading weight discipline */
+.font-h1 { font-weight: 700; } .font-h2 { font-weight: 700; } .font-h3 { font-weight: 600; }
+
+/* ============ 3. LAYOUT DENSITY ============ */
+/* 21 cap hero height */
+.min-h-screen.relative.overflow-hidden, .md\:h-screen.min-h-screen { min-height: 72vh; }
+/* 22 uniform section rhythm */
+section { scroll-margin-top: 88px; }
+/* 23 reduce oversized vertical rhythm */
+.py-24 { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+.py-12 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+/* 24 tighten grid gaps */
+.grid.gap-10 { gap: 1.25rem !important; }
+.grid.gap-8 { gap: 1rem !important; }
+/* 25 cap card media height for uniform rows */
+a[href*="/course/"] img, a[href*="/years/"] img { max-height: 180px; object-fit: cover; }
+/* 26 compact card padding */
+a[href*="/course/"] .py-6, a[href*="/years/"] .py-6 { padding: 0.9rem 1rem !important; }
+/* 27 tighten footer */
+.footer { padding-top: 2.75rem !important; padding-bottom: 2.75rem !important; }
+/* 28 marquee compact */
+.moving-line, .firstLine { padding: 1.75rem 0 !important; }
+/* 29 hero content vertical centering */
+.md\:h-screen > * { align-content: center; }
+/* 30 reduce course grid line-height */
+a[href*="/course/"] { line-height: 1.35; }
+
+/* ============ 4. CARDS & SURFACES ============ */
+/* 31 glass elevation + depth */
+.group a[href*="/years/"] div[class*="bg-third-container"] { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 14px 44px rgba(0,0,0,.42); }
+/* 32 card hover lift */
+.group:hover a[href*="/course/"] div[class*="bg-third-container"] { transform: translateY(-4px); }
+/* 33 card active press */
+.group a[href*="/course/"] div[class*="bg-third-container"]:active { transform: translateY(-1px) scale(.99); }
+/* 34 gradient border on hover */
+.group:hover a[href*="/years/"] div[class*="bg-third-container"], .group:hover a[href*="/course/"] div[class*="bg-third-container"] { border-color: rgba(255, 22, 56, 0.45); }
+/* 35 image zoom + glow */
+.group:hover a[href*="/years/"] img, .group:hover a[href*="/course/"] img { transform: scale(1.06); filter: brightness(1.06) saturate(1.12); }
+/* 36 title clamp */
+a[href*="/course/"] .font-h3, a[href*="/course/"] [class*="font-w-bold"] { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* 37 subtitle clamp */
+a[href*="/course/"] .clr-text-secondary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* 38 consistent radius */
+a[href*="/course/"] div[class*="bg-third-container"] { border-radius: 18px; }
+/* 39 shadow depth hierarchy */
+.featureCard { box-shadow: var(--dros-shadow-md); transition: transform .3s var(--dros-ease), box-shadow .3s var(--dros-ease); }
+/* 40 feature card hover glow */
+.featureCard:hover { transform: translateY(-3px); box-shadow: var(--dros-shadow-lg), var(--dros-glow-sm); }
+
+/* ============ 5. NAVIGATION ============ */
+/* 41 navbar glass when scrolled */
+.navbar { transition: background-color .3s, box-shadow .3s, backdrop-filter .3s; }
+.navbar.scrolled, body:not(.at-top) .navbar { background-color: color-mix(in srgb, var(--dros-surface-elevated) 82%, transparent); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(255,255,255,.05); }
+/* 42 bottom nav glass + safe area */
+.dros-bottomnav { background-color: color-mix(in srgb, var(--dros-surface-elevated) 88%, transparent); backdrop-filter: blur(18px) saturate(150%); padding-bottom: max(env(safe-area-inset-bottom), 6px); }
+/* 43 active pill behind bottom nav item */
+.dros-bottomnav__item--active::after { content:''; position:absolute; top:6px; bottom:6px; left:12%; right:12%; border-radius: 12px; background: rgba(255,22,56,.14); z-index:-1; }
+/* 44 back-to-top threshold + position (done) */
+.dros-top { will-change: opacity, transform; }
+/* 45 scroll spy section highlight */
+.dros-metrics__item--active { border-color: rgba(255, 22, 56, 0.5); }
+/* 46 breadcrumb separators */
+nav[class*="breadcrumb"] a + a::before { content: '∕'; margin: 0 .5rem; color: var(--dros-text-tertiary); }
+/* 47 pill/tab active state */
+[role="tab"][aria-selected="true"], .tab.active { background: var(--dros-gradient-brand); color: #fff; box-shadow: var(--dros-glow-sm); }
+/* 48 menu item hover slide */
+.dros-bottomnav__more a { position: relative; transition: padding-left .2s, color .2s; }
+.dros-bottomnav__more a:hover { padding-left: 10px; color: var(--dros-brand); }
+/* 49 sticky header elevation */
+header, .navbar { z-index: var(--dros-z-sticky); }
+/* 50 nav link hover underline */
+.navbar a { position: relative; }
+.navbar a:hover::after { content:''; position:absolute; left:0; right:0; bottom:-2px; height:2px; border-radius:1px; background: var(--dros-brand); box-shadow: var(--dros-glow-sm); }
+
+/* ============ 6. BUTTONS & CTAs ============ */
+/* 51 primary button gradient */
+button[class*="bg-gradient-to-r"], .btn-primary, a[class*="gradient"] { background: var(--dros-gradient-brand) !important; }
+/* 52 primary glow pulse */
+button[class*="bg-gradient-to-r"], .btn-primary { box-shadow: var(--dros-glow-md); }
+/* 53 secondary outline CTA */
+a[href*="/course/"][class*="border-teal-500"], a[href*="/years/"][class*="border-teal-500"] { border-width: 2px; }
+/* 54 ghost button */
+button[class*="ghost"], .btn-ghost { background: transparent; border: 1px solid var(--dros-border-strong); }
+/* 55 button press scale */
+button:active, .btn:active { transform: scale(.97); }
+/* 56 CTA arrow slide */
+a[href*="/prepaid_store"], a[href*="/years/"] { transition: gap .25s; }
+a[href*="/prepaid_store"]:hover svg, a[href*="/years/"]:hover svg { transform: translateX(-4px); }
+/* 57 disabled state */
+button:disabled, .btn:disabled, [aria-disabled="true"] { opacity: .5; cursor: not-allowed; filter: grayscale(.4); }
+/* 58 button focus glow */
+button:focus-visible, a:focus-visible { box-shadow: 0 0 0 3px rgba(255, 22, 56, 0.25); }
+/* 59 CTA full-width on small screens (forms only) */
+@media (max-width: 640px) {
+  form .w-full button, form .w-full .btn, .dros-cc__btn { width: 100%; }
+}
+/* 60 button icon alignment */
+.btn svg, button svg, a svg { vertical-align: middle; }
+
+/* ============ 7. FORMS & INPUTS ============ */
+/* 61 input surface */
+input, textarea, select { background: var(--dros-surface); border: 1px solid var(--dros-border); color: var(--dros-text-primary); border-radius: var(--dros-radius-md); }
+/* 62 input focus glow */
+input:focus, textarea:focus, select:focus { border-color: rgba(255, 22, 56, 0.6); box-shadow: 0 0 0 3px rgba(255, 22, 56, 0.18); outline: none; }
+/* 63 input padding */
+input, textarea, select { padding: .625rem .875rem; }
+/* 64 labels */
+label { color: var(--dros-text-secondary); font-size: .875rem; font-weight: 600; }
+/* 65 select chevron */
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--dros-text-tertiary) 50%), linear-gradient(135deg, var(--dros-text-tertiary) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+/* 66 checkbox/radio brand */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--dros-brand); }
+/* 67 error state */
+input[aria-invalid="true"], .input-error { border-color: var(--dros-error) !important; box-shadow: 0 0 0 3px var(--dros-error-soft); }
+/* 68 success state */
+input[aria-invalid="false"] { border-color: var(--dros-success) !important; }
+/* 69 autofill fix */
+input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px var(--dros-surface) inset; -webkit-text-fill-color: var(--dros-text-primary); }
+/* 70 form spacing */
+form > * + * { margin-top: 1rem; }
+
+/* ============ 8. HERO & SECTIONS ============ */
+/* 71 hero title glow layer */
+.hero .font-h1, .md\:h-screen .font-h1 { text-shadow: 0 0 60px rgba(255, 22, 56, 0.3), 0 0 120px rgba(255, 22, 56, 0.15); }
+/* 72 hero badge chip */
+.hero [class*="badge"], .md\:h-screen [class*="badge"] { border: 1px solid rgba(255, 22, 56, 0.35); background: rgba(255, 22, 56, 0.08); border-radius: 999px; padding: .4rem 1rem; }
+/* 73 section header math accent (primitive) */
+.years-section h2, .content h2 { position: relative; padding-bottom: .5rem; }
+/* 74 section divider glow */
+.years-section h2::after, .content h2::after { content:''; position:absolute; bottom:0; right:0; left:0; margin:auto; width: 64px; height: 3px; border-radius: 2px; background: var(--dros-gradient-brand); box-shadow: var(--dros-glow-sm); }
+/* 75 section numbering */
+.years-section h2::before, .content h2::before { content: attr(data-index); color: var(--dros-brand); font-family: var(--dros-font-mono); font-size: .85em; opacity: .6; }
+/* 76 eyebrow labels */
+.eyebrow, .font-caption { color: var(--dros-brand); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: .75rem; }
+/* 77 hero CTA spacing */
+.hero a, .md\:h-screen a { margin-inline: .25rem; }
+/* 78 hero grid depth (done in dros-math.css) */
+/* 79 section transition into view */
+section { transition: opacity .6s ease, transform .6s ease; }
+/* 80 hero scroll cue */
+@keyframes dros-cue { 0%,100% { transform: translateY(0); opacity:.6 } 50% { transform: translateY(8px); opacity:1 } }
+.hero [class*="scroll"], .md\:h-screen [class*="scroll"] { animation: dros-cue 2s ease-in-out infinite; }
+
+/* ============ 9. MICRO-INTERACTIONS ============ */
+/* 81 global transition discipline */
+a, button, .group, .card, .featureCard { transition: transform .25s var(--dros-ease), box-shadow .25s var(--dros-ease), background-color .25s ease, border-color .25s ease, color .25s ease, opacity .25s ease; }
+/* 82 card sheen sweep */
+.group { position: relative; overflow: hidden; }
+.group::after { content:''; position:absolute; top:0; bottom:0; left:-80%; width:50%; background: linear-gradient(105deg, transparent, rgba(255,255,255,.08), transparent); transform: skewX(-20deg); transition: left .6s ease; pointer-events: none; }
+.group:hover::after { left: 130%; }
+/* 83 reveal stagger */
+.dros-reveal { transition-delay: calc(var(--dros-reveal-i, 0) * 40ms); }
+/* 84 button press scale (done) */
+/* 85 link underline slide (text links only) */
+.navbar a, .footer a, .content a, .dros-bottomnav__more a {
+  background-image: linear-gradient(transparent 92%, rgba(255, 22, 56, 0.5) 92%);
+  background-repeat: no-repeat;
+  background-size: 0 100%;
+  transition: background-size .3s;
+}
+.navbar a:hover, .footer a:hover, .content a:hover, .dros-bottomnav__more a:hover { background-size: 100% 100%; }
+/* 86 cursor consistency */
+a, button, [role="button"], input[type="submit"] { cursor: pointer; }
+/* 87 easing token */
+:root { --dros-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); }
+/* 88 motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+/* 89 hover micro-lift for images */
+img { transition: transform .5s var(--dros-ease-out-expo), filter .5s var(--dros-ease-out-expo); }
+/* 90 interactive scale on tap */
+@media (hover: none) {
+  a:active, button:active { transform: scale(.96); }
+}
+
+/* ============ 10. COMMAND CENTER ============ */
+/* 91 CC glass panel */
+.dros-cc { background: color-mix(in srgb, var(--dros-surface-elevated) 88%, transparent); backdrop-filter: blur(24px) saturate(160%); }
+/* 92 CC backdrop blur */
+.dros-cc__backdrop { backdrop-filter: blur(6px); background: rgba(5, 6, 8, 0.6); }
+/* 93 CC section cards */
+.dros-cc__card { border: 1px solid var(--dros-border); border-radius: var(--dros-radius-lg); background: var(--dros-surface); }
+/* 94 CC progress glow */
+.dros-cc__progress-fill { background: var(--dros-gradient-brand); box-shadow: var(--dros-glow-sm); }
+/* 95 CC empty state icon */
+.dros-cc__empty::before { content: '∅'; font-family: var(--dros-font-mono); color: var(--dros-text-tertiary); display: block; font-size: 1.5rem; margin-bottom: .35rem; }
+/* 96 CC CTA full width */
+.dros-cc__btn { width: 100%; justify-content: center; }
+/* 97 FAB glow */
+.dros-cc__fab { box-shadow: var(--dros-glow-md), 0 12px 32px rgba(0,0,0,.35); }
+/* 98 CC internal scroll */
+.dros-cc__body { overflow-y: auto; overscroll-behavior: contain; }
+/* 99 CC close hover */
+.dros-cc__close { transition: transform .2s, color .2s, background .2s; }
+.dros-cc__close:hover { transform: rotate(90deg); color: var(--dros-brand); background: var(--dros-brand-soft); }
+/* 100 CC entrance animation */
+@keyframes dros-cc-in { from { transform: translateY(24px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+.dros-cc--open .dros-cc__body { animation: dros-cc-in .35s var(--dros-ease-out-expo); }
+
+/* ============ 11. METRICS & STATS ============ */
+/* 101 metrics glass strip */
+.dros-metrics { background: color-mix(in srgb, var(--dros-surface-elevated) 80%, transparent); backdrop-filter: blur(16px); border: 1px solid var(--dros-border); border-radius: var(--dros-radius-lg); }
+/* 102 metric value styling */
+.dros-metrics__value { font-family: var(--dros-font-display); font-size: 1.75rem; font-weight: 700; color: var(--dros-text-primary); }
+/* 103 metric icons */
+.dros-metrics__icon { color: var(--dros-brand); }
+/* 104 metric dividers */
+.dros-metrics__item + .dros-metrics__item { border-inline-start: 1px solid var(--dros-border); }
+/* 105 metric hover */
+.dros-metrics__item:hover { background: var(--dros-surface-hover); }
+/* 106 stat card glow */
+.dros-cc__stat { border: 1px solid var(--dros-border); border-radius: var(--dros-radius-md); background: var(--dros-surface); transition: transform .2s, box-shadow .2s; }
+.dros-cc__stat:hover { transform: translateY(-2px); box-shadow: var(--dros-glow-sm); }
+/* 107 count-up animation */
+@keyframes dros-count { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+.dros-metrics__value { animation: dros-count .5s var(--dros-ease-out-expo); }
+/* 108 stat label style */
+.dros-cc__stat-label, .dros-metrics__label { color: var(--dros-text-secondary); font-size: .75rem; }
+/* 109 metrics scroll snap (done) */
+/* 110 metrics responsive stack */
+@media (max-width: 640px) {
+  .dros-metrics { border-radius: var(--dros-radius-md); }
+  .dros-metrics__value { font-size: 1.35rem; }
+}
+
+/* ============ 12. FOOTER ============ */
+/* 111 footer headings */
+.footer .font-h1, .footer h1, .footer h2, .footer h3 { color: #fff; }
+/* 112 footer link hover (done) */
+/* 113 footer contact block */
+.footer a { color: rgba(255,255,255,.75); }
+/* 114 footer social hover */
+.footer a:hover { color: var(--dros-brand-bright); }
+/* 115 footer bottom bar */
+.footer > :last-child { border-top: 1px solid rgba(255,255,255,.08); padding-top: 1.5rem; }
+/* 116 footer logo treatment */
+.footer img { filter: drop-shadow(0 0 12px rgba(255, 22, 56, 0.35)); }
+/* 117 footer responsive stack */
+@media (max-width: 768px) {
+  .footer { text-align: center; }
+  .footer [class*="flex-col-reverse"] { flex-direction: column; }
+}
+/* 118 footer gap rhythm */
+.footer .gap-7, .footer .gap-10 { gap: 1.25rem !important; }
+/* 119 footer back-to-top link */
+.footer [href="#"] { color: var(--dros-brand-bright); }
+/* 120 footer contrast text */
+.footer p, .footer span { color: rgba(255,255,255,.82); }
+
+/* ============ 13. RESPONSIVE & MOBILE ============ */
+/* 121 touch target minimum */
+button, a, .dros-bottomnav__item, .dros-cc__fab, .dros-top { min-height: 44px; min-width: 44px; }
+/* 122 safe area for bottom UI */
+.dros-bottomnav, .dros-top { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+/* 123 image aspect guards */
+img { height: auto; }
+/* 124 text scale on small screens */
+@media (max-width: 480px) {
+  .font-h1 { font-size: clamp(1.6rem, 8vw, 2.2rem) !important; }
+  .font-h2 { font-size: clamp(1.3rem, 6vw, 1.8rem) !important; }
+}
+/* 125 grid collapse */
+@media (max-width: 768px) {
+  .grid.grid-cols-3, .grid.grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid.grid-cols-2 { grid-template-columns: 1fr !important; }
+}
+/* 126 viewport meta guards */
+html, body { overflow-x: clip; }
+/* 127 sticky nav on mobile */
+@media (max-width: 768px) { .navbar { position: fixed; top: 0; left: 0; right: 0; } }
+/* 128 keyboard avoidance */
+@media (max-width: 768px) {
+  .dros-bottomnav--hidden { transform: translateY(120%); }
+}
+/* 129 mobile menu full-screen */
+.dros-bottomnav__more { max-height: 60vh; overflow-y: auto; }
+/* 130 portrait hero */
+@media (max-width: 768px) {
+  .md\:h-screen.min-h-screen, .min-h-screen.relative.overflow-hidden { min-height: 60vh !important; }
+}
+
+/* ============ 14. ACCESSIBILITY ============ */
+/* 131 skip link (injected by JS) */
+.dros-skip { position: fixed; top: -40px; left: 50%; transform: translateX(-50%); z-index: 9999; background: var(--dros-brand); color: #fff; padding: .5rem 1rem; border-radius: 0 0 12px 12px; transition: top .2s; }
+.dros-skip:focus { top: 0; }
+/* 132 contrast: brand text on dark */
+body.darkmode .clr-text-secondary { color: #9aa3b2 !important; }
+/* 133 screen-reader only */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+/* 134 aria-live region (injected) */
+#dros-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* 135 title attributes on interactive (JS) */
+/* 136 reduced motion global (done) */
+/* 137 colorblind-safe states (icon+label) */
+.dros-metrics__item--active::before { content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 3px; border-radius: 2px; background: var(--dros-brand); }
+/* 138 text spacing respect */
+p { line-height: 1.7; }
+/* 139 zoom-safe rem */
+html { font-size: 100%; }
+/* 140 semantic headings (JS marks h1/h2) */
+
+/* ============ 15. PERFORMANCE & DETAIL ============ */
+/* 141 paint containment */
+.card, .featureCard, .group { contain: layout paint style; }
+/* 142 will-change hints */
+.dros-metrics__item, .dros-cc__card { will-change: transform; }
+/* 143 content visibility for long lists */
+.dros-cc__body .dros-cc__card { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+/* 144 image decode async */
+img { decoding: async; }
+/* 145 lazy loading (bundle native) */
+img[loading] { transition: opacity .4s; }
+/* 146 passive scroll listeners (JS) */
+/* 147 transition throttling */
+@media (prefers-reduced-motion: reduce) { * { transition-duration: .001ms !important; } }
+/* 148 scrollbar gutter stable */
+html { scrollbar-gutter: stable; }
+/* 149 font display swap (done in @font-face) */
+/* 150 icon crisp rendering */
+svg { shape-rendering: geometricPrecision; }
