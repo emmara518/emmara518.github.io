@@ -4,7 +4,6 @@
 
 /* ─────────────────────────────────────────────────────────────
    DROS MATH UNIVERSE — DESIGN SYSTEM v2026
-   Authoritative Design System per CTO & UI Mockup Specifications
    Neon Lime · Electric Cyan · Glassmorphism · Cyber Dark & Bright Universe
    ───────────────────────────────────────────────────────────── */
 
@@ -34,7 +33,7 @@
 }
 
 :root {
-  /* Bright Universe Theme (Default Light in Mockup) */
+  /* Bright Universe Theme */
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-2: #f1f5f9;
@@ -44,7 +43,7 @@
   --line: #e2e8f0;
   --line-soft: rgba(226, 232, 240, 0.7);
   
-  /* Brand Accents - DROS MATH UNIVERSE */
+  /* Brand Accents */
   --neon-lime: #84cc16;
   --neon-lime-bright: #a3e635;
   --neon-lime-glow: rgba(163, 230, 53, 0.35);
@@ -75,7 +74,7 @@
 }
 
 .dark {
-  /* Dark Cyber Neon Theme (Mockup 3) */
+  /* Dark Cyber Neon Theme */
   --bg: #06080f;
   --surface: #0b1120;
   --surface-2: #10182b;
@@ -226,48 +225,517 @@ body {
 
 /* ── Motion & Animation System ── */
 @keyframes float-gentle {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(1deg); }
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(2.5deg);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(14px) rotate(-2.5deg);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite !important;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 7s ease-in-out infinite 1s !important;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 4s ease-in-out infinite !important;
 }
 
 .animate-float-gentle {
-  animation: float-gentle 6s ease-in-out infinite;
+  animation: float-gentle 5s ease-in-out infinite !important;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
+  animation: pulse-glow 3s ease-in-out infinite !important;
 }
 
 .animate-spin-slow {
-  animation: spin-slow 30s linear infinite;
+  animation: spin-slow 20s linear infinite !important;
+}
+
+@keyframes shine {
+  100% {
+    left: 125%;
+  }
+}
+
+.animate-shine {
+  animation: shine 0.85s ease-in-out;
+}
+
+/* ── 3D Geometric Flying & Orbit Animations for Teacher Hero ── */
+@keyframes float-geom-1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate3d(12px, -18px, 20px) rotate(12deg) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-10px, -32px, 40px) rotate(-8deg) scale(1.15);
+  }
+  75% {
+    transform: translate3d(-18px, -14px, 10px) rotate(15deg) scale(1.02);
+  }
+}
+
+@keyframes float-geom-2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate3d(-15px, 20px, 30px) rotate(-18deg) scale(1.12);
+  }
+  66% {
+    transform: translate3d(18px, 10px, 15px) rotate(14deg) scale(0.95);
+  }
+}
+
+@keyframes float-geom-3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(16px, -24px, 35px) rotate(25deg) scale(1.2);
+  }
+}
+
+@keyframes float-geom-4 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(-14px, 22px, -20px) rotate(-20deg) scale(0.92);
+  }
+}
+
+@keyframes orbit-slow-3d {
+  0% {
+    transform: rotate3d(1, 1, 0, 0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotate3d(1, 1, 0, 360deg) rotateZ(360deg);
+  }
+}
+
+@keyframes rotate-3d-wireframe {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg);
+  }
+}
+
+.animate-float-geom-1 {
+  animation: float-geom-1 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+}
+
+.animate-float-geom-2 {
+  animation: float-geom-2 8.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+}
+
+.animate-float-geom-3 {
+  animation: float-geom-3 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+}
+
+.animate-float-geom-4 {
+  animation: float-geom-4 9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+}
+
+.animate-rotate-3d {
+  animation: rotate-3d-wireframe 18s linear infinite !important;
+}
+
+@keyframes orbit-spin-cw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-spin-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes orbit-tilt-spin {
+  0% {
+    transform: rotateX(60deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(60deg) rotateZ(360deg);
+  }
+}
+
+@keyframes math-float-drift {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
+    opacity: 0.85;
+  }
+  25% {
+    transform: translateY(-12px) translateX(6px) rotate(8deg) scale(1.1);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-20px) translateX(-6px) rotate(-6deg) scale(1.05);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateY(-8px) translateX(-10px) rotate(4deg) scale(0.95);
+    opacity: 0.95;
+  }
+}
+
+@keyframes math-float-drift-alt {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
+    opacity: 0.8;
+  }
+  33% {
+    transform: translateY(14px) translateX(-8px) rotate(-12deg) scale(1.15);
+    opacity: 1;
+  }
+  66% {
+    transform: translateY(-10px) translateX(12px) rotate(10deg) scale(0.9);
+    opacity: 0.85;
+  }
+}
+
+.animate-orbit-cw {
+  animation: orbit-spin-cw 25s linear infinite !important;
+}
+
+.animate-orbit-ccw {
+  animation: orbit-spin-ccw 30s linear infinite !important;
+}
+
+.animate-orbit-fast-cw {
+  animation: orbit-spin-cw 16s linear infinite !important;
+}
+
+.animate-orbit-tilt {
+  animation: orbit-tilt-spin 22s linear infinite !important;
+}
+
+.animate-math-drift {
+  animation: math-float-drift 5.5s ease-in-out infinite !important;
+}
+
+.animate-math-drift-alt {
+  animation: math-float-drift-alt 6.5s ease-in-out infinite !important;
+}
+
+/* ── Full Cover Mathematics Universe Animation System ── */
+.math-glyph-3d {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  text-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 0 rgba(0, 0, 0, 0.85),
+    0 3px 0 rgba(0, 0, 0, 0.95),
+    0 5px 8px rgba(0, 0, 0, 0.95),
+    0 0 15px currentColor,
+    0 0 35px currentColor,
+    0 0 60px currentColor;
+  transform: perspective(600px) translateZ(12px);
+  will-change: transform;
+}
+
+@keyframes cyber-hologram-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 45px currentColor);
+    opacity: 0.88;
+  }
+  50% {
+    filter: drop-shadow(0 0 18px currentColor) drop-shadow(0 0 40px currentColor) drop-shadow(0 0 70px currentColor);
+    opacity: 1;
+  }
+}
+
+@keyframes radial-corona-pulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.85;
+  }
+}
+
+.animate-cyber-glow {
+  animation: cyber-hologram-pulse 4s ease-in-out infinite alternate !important;
+}
+
+.animate-corona-pulse {
+  animation: radial-corona-pulse 3.5s ease-in-out infinite alternate !important;
+}
+
+/* Organic Floating animations for Cover Elements */
+@keyframes cover-float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-18px) rotate(5deg) scale(1.05);
+  }
+}
+
+@keyframes cover-float-alt {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(16px) rotate(-6deg) scale(0.98);
+  }
+}
+
+@keyframes cover-float-drift {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  33% {
+    transform: translate(12px, -14px) rotate(4deg);
+  }
+  66% {
+    transform: translate(-10px, 12px) rotate(-4deg);
+  }
+}
+
+@keyframes cover-float-drift-reverse {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  33% {
+    transform: translate(-14px, 10px) rotate(-5deg);
+  }
+  66% {
+    transform: translate(10px, -12px) rotate(3deg);
+  }
+}
+
+@keyframes math-pulse-glow {
+  0%, 100% {
+    opacity: 0.55;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    opacity: 0.95;
+    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 35px currentColor);
+  }
+}
+
+@keyframes laser-beam-pulse {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scaleX(0.95);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scaleX(1.05);
+  }
+}
+
+.animate-cover-float-1 {
+  animation: cover-float-slow 7s ease-in-out infinite !important;
+}
+
+.animate-cover-float-2 {
+  animation: cover-float-alt 8.5s ease-in-out infinite !important;
+}
+
+.animate-cover-float-3 {
+  animation: cover-float-drift 9.5s ease-in-out infinite !important;
+}
+
+.animate-cover-float-4 {
+  animation: cover-float-drift-reverse 11s ease-in-out infinite !important;
+}
+
+.animate-math-glow-pulse {
+  animation: math-pulse-glow 4s ease-in-out infinite !important;
+}
+
+.animate-laser-pulse {
+  animation: laser-beam-pulse 5s ease-in-out infinite !important;
+}
+
+/* ── Cosmic Fluid & Spacetime Ripple Keyframes ── */
+@keyframes cosmic-fluid-swirl {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1);
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  33% {
+    transform: translate(30px, -50px) rotate(120deg) scale(1.1);
+    border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
+  }
+  66% {
+    transform: translate(-25px, 35px) rotate(240deg) scale(0.95);
+    border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%;
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(360deg) scale(1);
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+}
+
+@keyframes cosmic-fluid-drift {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg) scale(1);
+    border-radius: 50% 50% 40% 60% / 50% 40% 60% 50%;
+  }
+  50% {
+    transform: translate(-45px, 40px) rotate(180deg) scale(1.15);
+    border-radius: 30% 70% 60% 40% / 60% 30% 70% 40%;
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(360deg) scale(1);
+    border-radius: 50% 50% 40% 60% / 50% 40% 60% 50%;
+  }
+}
+
+@keyframes cosmic-fluid-pulse {
+  0%, 100% {
+    transform: scale(0.92) translate(0, 0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.12) translate(20px, -20px);
+    opacity: 0.28;
+  }
+}
+
+@keyframes spacetime-ripple {
+  0% {
+    transform: scale(0.7) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.35;
+  }
+  80% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.4) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.animate-cosmic-fluid-swirl {
+  animation: cosmic-fluid-swirl 30s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-cosmic-fluid-drift {
+  animation: cosmic-fluid-drift 35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-cosmic-fluid-pulse {
+  animation: cosmic-fluid-pulse 18s ease-in-out infinite;
+}
+
+.animate-spacetime-ripple-1 {
+  animation: spacetime-ripple 16s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-spacetime-ripple-2 {
+  animation: spacetime-ripple 16s ease-out infinite;
+  animation-delay: 4s;
+}
+
+.animate-spacetime-ripple-3 {
+  animation: spacetime-ripple 16s ease-out infinite;
+  animation-delay: 8s;
+}
+
+.animate-spacetime-ripple-4 {
+  animation: spacetime-ripple 16s ease-out infinite;
+  animation-delay: 12s;
 }
 
 /* Scroll reveal */
 .reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transform: translateY(0);
 }
 .reveal.reveal-in {
   opacity: 1;
   transform: translateY(0);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-

@@ -30,6 +30,11 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
   const dashboardHref = user && isAdminRole(user.role) ? "/admin" : "/dashboard";
 
+  // When on homepage, DrosUniverseShowcase provides its own specialized cyber navigation
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/75 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">

@@ -5,6 +5,7 @@ import "./globals.css";
 import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { CosmicFluidBackground } from "@/components/cosmic-fluid-background";
 
 const plexArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],
@@ -51,9 +52,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${plexArabic.variable} ${plexMono.variable} min-h-screen font-sans antialiased`}>
+      <body className={`${plexArabic.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-[#04060b]`}>
+        <CosmicFluidBackground />
         <SiteHeader user={headerUser} />
-        <div className="pt-16">{children}</div>
+        <div className="relative z-10 min-h-screen">{children}</div>
         <SiteFooter />
       </body>
     </html>

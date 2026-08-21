@@ -1,0 +1,6 @@
+{
+  "name": "دروس ماث | Dros Math",
+  "description": "منصة دروس ماث للرياضيات — كورسات منظمة بالفيديو واختبارات إلكترونية ومتابعة تفصيلية للطلاب",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

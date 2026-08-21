@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** IntersectionObserver-driven scroll reveal — GPU transforms only, once. */
+/** Scroll reveal — CSS animations ensuring instant readability and smooth entrance. */
 export function Reveal({
   children,
   delay = 0,
@@ -13,32 +13,13 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [seen, setSeen] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setSeen(true);
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <div
-      ref={ref}
-      className={cn("reveal", seen && "reveal-in", className)}
-      style={{ ["--reveal-delay" as string]: `${delay}ms` }}
+      className={cn("reveal reveal-in", className)}
+      style={{
+        animationDelay: `${delay}ms`,
+        transitionDelay: `${delay}ms`,
+      }}
     >
       {children}
     </div>

@@ -1,7 +1,6 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { sql } from "drizzle-orm";
-import { db, pool } from "./index";
 import {
   academicStages,
   grades,
@@ -43,20 +42,21 @@ const DEMO_PASSWORD = "12345678";
 const YT_PLACEHOLDER = "M7lc1UVf-VE";
 const YT_PLAYLIST = "PL_DROSMATH_DEMO";
 
-async function main() {
-  console.log("→ wiping existing data…");
-  await db.execute(sql`TRUNCATE TABLE
-    audit_logs, parent_links, community_posts, notifications, student_progress,
-    wallet_transactions, wallet_accounts, coupons, invoices, payments, orders,
-    subscriptions, assignment_submissions, assignments, exam_attempts,
-    exam_questions, exams, question_bank, course_files, videos, lessons,
-    courses, sessions, users, subjects, grades, academic_stages
-    RESTART IDENTITY CASCADE`);
+export async function seedDatabase(targetDb: any) {
+  // Check if data is already seeded
+  try {
+    const existingStages = await targetDb.select().from(academicStages).limit(1);
+    if (existingStages.length > 0) {
+      return;
+    }
+  } catch {
+    // Table might not exist yet or empty, continue
+  }
 
-  const passwordHash = bcrypt.hashSync(DEMO_PASSWORD, 12);
+  const passwordHash = bcrypt.hashSync(DEMO_PASSWORD, 10);
 
   /* ── academic structure ── */
-  const [prep, secondary] = await db
+  const [prep, secondary] = await targetDb
     .insert(academicStages)
     .values([
       { name: "المرحلة الإعدادية", slug: "prep", sortOrder: 1 },
@@ -64,7 +64,7 @@ async function main() {
     ])
     .returning();
 
-  const gradeRows = await db
+  const gradeRows = await targetDb
     .insert(grades)
     .values([
       { stageId: prep.id, name: "الصف الأول الإعدادي", slug: "prep-1", sortOrder: 1 },
@@ -75,9 +75,9 @@ async function main() {
       { stageId: secondary.id, name: "الصف الثالث الثانوي", slug: "sec-3", sortOrder: 6 },
     ])
     .returning();
-  const gradeBySlug = new Map(gradeRows.map((g) => [g.slug, g]));
+  const gradeBySlug = new Map(gradeRows.map((g: any) => [g.slug, g]));
 
-  const subjectRows = await db
+  const subjectRows = await targetDb
     .insert(subjects)
     .values([
       { name: "الجبر", slug: "algebra" },
@@ -88,10 +88,10 @@ async function main() {
       { name: "الإحصاء والاحتمالات", slug: "statistics" },
     ])
     .returning();
-  const subjectBySlug = new Map(subjectRows.map((s) => [s.slug, s]));
+  const subjectBySlug = new Map(subjectRows.map((s: any) => [s.slug, s]));
 
   /* ── people ── */
-  const [teacher] = await db
+  const [teacher] = await targetDb
     .insert(users)
     .values({
       email: "teacher@dros-math.com",
@@ -101,7 +101,7 @@ async function main() {
     })
     .returning();
 
-  const [admin] = await db
+  const [admin] = await targetDb
     .insert(users)
     .values({
       email: "admin@dros-math.com",
@@ -111,7 +111,7 @@ async function main() {
     })
     .returning();
 
-  const [student] = await db
+  const [student] = await targetDb
     .insert(users)
     .values({
       email: "student@dros-math.com",
@@ -119,22 +119,22 @@ async function main() {
       name: "سارة أشرف",
       phone: "01012345678",
       role: "student",
-      gradeId: gradeBySlug.get("sec-2")!.id,
+      gradeId: (gradeBySlug.get("sec-2") as any)!.id,
     })
     .returning();
 
-  const [student2] = await db
+  const [student2] = await targetDb
     .insert(users)
     .values({
       email: "omar@dros-math.com",
       passwordHash,
       name: "عمر خالد",
       role: "student",
-      gradeId: gradeBySlug.get("sec-3")!.id,
+      gradeId: (gradeBySlug.get("sec-3") as any)!.id,
     })
     .returning();
 
-  const [parentUser] = await db
+  const [parentUser] = await targetDb
     .insert(users)
     .values({
       email: "parent@dros-math.com",
@@ -264,15 +264,15 @@ async function main() {
   const videoIdsByCourse = new Map<string, string[]>();
 
   for (const c of courseData) {
-    const [course] = await db
+    const [course] = await targetDb
       .insert(courses)
       .values({
         slug: c.slug,
         title: c.title,
         summary: c.summary,
         description: c.description,
-        gradeId: gradeBySlug.get(c.grade)!.id,
-        subjectId: subjectBySlug.get(c.subject)!.id,
+        gradeId: (gradeBySlug.get(c.grade) as any)!.id,
+        subjectId: (subjectBySlug.get(c.subject) as any)!.id,
         teacherId: teacher.id,
         priceCents: c.price,
         status: c.status ?? "published",
@@ -284,7 +284,7 @@ async function main() {
 
     for (let i = 0; i < c.lessons.length; i++) {
       const l = c.lessons[i];
-      const [lesson] = await db
+      const [lesson] = await targetDb
         .insert(lessons)
         .values({
           courseId: course.id,
@@ -297,7 +297,7 @@ async function main() {
       lessonIdsByCourse.get(c.slug)!.push(lesson.id);
 
       for (let j = 0; j < l.videos; j++) {
-        const [video] = await db
+        const [video] = await targetDb
           .insert(videos)
           .values({
             lessonId: lesson.id,
@@ -312,10 +312,10 @@ async function main() {
       }
     }
 
-    await db.insert(courseFiles).values([
+    await targetDb.insert(courseFiles).values([
       {
         courseId: course.id,
-        title: `مذكرة ${subjectBySlug.get(c.subject)!.name} — ${gradeBySlug.get(c.grade)!.name}`,
+        title: `مذكرة ${(subjectBySlug.get(c.subject) as any)!.name} — ${(gradeBySlug.get(c.grade) as any)!.name}`,
         kind: "book",
         storageKey: `/uploads/books/${c.slug}-notes.pdf`,
         sizeBytes: 2_400_000,
@@ -357,11 +357,11 @@ async function main() {
     { subject: "statistics", topic: "الاحتمالات", prompt: "عند إلقاء عملة منتظمة مرة واحدة، احتمال ظهور الصورة =", options: ["1/2", "1", "1/4", "3/4"], correct: 0 },
   ];
 
-  const bankRows = await db
+  const bankRows = await targetDb
     .insert(questionBank)
     .values(
       qData.map((q) => ({
-        subjectId: subjectBySlug.get(q.subject)!.id,
+        subjectId: (subjectBySlug.get(q.subject) as any)!.id,
         topic: q.topic,
         kind: "mcq" as const,
         prompt: q.prompt,
@@ -374,7 +374,7 @@ async function main() {
     .returning();
   const bankBySubject = new Map<string, string[]>();
   for (const b of bankRows) {
-    const slug = qData.find((q) => subjectBySlug.get(q.subject)!.id === b.subjectId)!.subject;
+    const slug = qData.find((q) => (subjectBySlug.get(q.subject) as any)!.id === b.subjectId)!.subject;
     if (!bankBySubject.has(slug)) bankBySubject.set(slug, []);
     bankBySubject.get(slug)!.push(b.id);
   }
@@ -389,7 +389,7 @@ async function main() {
 
   const examIds: string[] = [];
   for (const e of examData) {
-    const [exam] = await db
+    const [exam] = await targetDb
       .insert(exams)
       .values({
         courseId: courseBySlug.get(e.course)!,
@@ -402,21 +402,21 @@ async function main() {
     examIds.push(exam.id);
     const ids = bankBySubject.get(e.subject)!.slice(0, e.count);
     for (let i = 0; i < ids.length; i++) {
-      await db.insert(examQuestions).values({ examId: exam.id, questionId: ids[i], sortOrder: i + 1 });
+      await targetDb.insert(examQuestions).values({ examId: exam.id, questionId: ids[i], sortOrder: i + 1 });
     }
   }
 
   /* ── commerce seed ── */
-  const [coupon] = await db
+  const [coupon] = await targetDb
     .insert(coupons)
     .values({ code: "DROS25", percentOff: 25, maxUses: 500, usedCount: 1 })
     .returning();
 
-  const [wallet] = await db
+  const [wallet] = await targetDb
     .insert(walletAccounts)
     .values({ userId: student.id, balanceCents: 30000 })
     .returning();
-  await db.insert(walletTransactions).values({
+  await targetDb.insert(walletTransactions).values({
     walletId: wallet.id,
     amountCents: 30000,
     kind: "topup",
@@ -427,7 +427,7 @@ async function main() {
   const price1 = 19900;
   const discount1 = Math.round((price1 * 25) / 100);
   const total1 = price1 - discount1;
-  const [order1] = await db
+  const [order1] = await targetDb
     .insert(orders)
     .values({
       userId: student.id,
@@ -439,53 +439,49 @@ async function main() {
       status: "paid",
     })
     .returning();
-  await db.insert(payments).values({
+  await targetDb.insert(payments).values({
     orderId: order1.id,
     provider: "wallet",
     amountCents: total1,
     status: "succeeded",
     reference: `WLT-${order1.id.slice(0, 8).toUpperCase()}`,
   });
-  await db.insert(invoices).values({ orderId: order1.id, number: "INV-2026-1001", totalCents: total1 });
-  await db.insert(subscriptions).values({
+  await targetDb.insert(invoices).values({ orderId: order1.id, number: "INV-2026-1001", totalCents: total1 });
+  await targetDb.insert(subscriptions).values({
     userId: student.id,
     courseId: courseBySlug.get("algebra-1sec-term1")!,
     status: "active",
     orderId: order1.id,
   });
-  await db.insert(walletTransactions).values({
+  await targetDb.insert(walletTransactions).values({
     walletId: wallet.id,
     amountCents: -total1,
     kind: "purchase",
     note: "اشتراك في كورس: الجبر — الصف الأول الثانوي",
   });
-  await db
+  await targetDb
     .update(walletAccounts)
     .set({ balanceCents: sql`${walletAccounts.balanceCents} - ${total1}` })
     .where(sql`${walletAccounts.id} = ${wallet.id}`);
 
   // second student purchases course 3 (full price)
   const course3 = courseBySlug.get("calculus-2sec-term1")!;
-  const [wallet2] = await db.insert(walletAccounts).values({ userId: student2.id, balanceCents: 24900 }).returning();
-  await db.insert(walletTransactions).values({ walletId: wallet2.id, amountCents: 24900, kind: "topup", note: "شحن رصيد تجريبي" });
-  const [order2] = await db
+  const [wallet2] = await targetDb.insert(walletAccounts).values({ userId: student2.id, balanceCents: 24900 }).returning();
+  await targetDb.insert(walletTransactions).values({ walletId: wallet2.id, amountCents: 24900, kind: "topup", note: "شحن رصيد تجريبي" });
+  const [order2] = await targetDb
     .insert(orders)
     .values({ userId: student2.id, courseId: course3, subtotalCents: 24900, discountCents: 0, totalCents: 24900, status: "paid" })
     .returning();
-  await db.insert(payments).values({ orderId: order2.id, provider: "wallet", amountCents: 24900, status: "succeeded", reference: `WLT-${order2.id.slice(0, 8).toUpperCase()}` });
-  await db.insert(invoices).values({ orderId: order2.id, number: "INV-2026-1002", totalCents: 24900 });
-  await db.insert(subscriptions).values({ userId: student2.id, courseId: course3, status: "active", orderId: order2.id });
-  await db.insert(walletTransactions).values({ walletId: wallet2.id, amountCents: -24900, kind: "purchase", note: "اشتراك في كورس: التفاضل والتكامل" });
-  await db.update(walletAccounts).set({ balanceCents: 0 }).where(eq_(wallet2.id));
-
-  function eq_(id: string) {
-    return sql`${walletAccounts.id} = ${id}`;
-  }
+  await targetDb.insert(payments).values({ orderId: order2.id, provider: "wallet", amountCents: 24900, status: "succeeded", reference: `WLT-${order2.id.slice(0, 8).toUpperCase()}` });
+  await targetDb.insert(invoices).values({ orderId: order2.id, number: "INV-2026-1002", totalCents: 24900 });
+  await targetDb.insert(subscriptions).values({ userId: student2.id, courseId: course3, status: "active", orderId: order2.id });
+  await targetDb.insert(walletTransactions).values({ walletId: wallet2.id, amountCents: -24900, kind: "purchase", note: "اشتراك في كورس: التفاضل والتكامل" });
+  await targetDb.update(walletAccounts).set({ balanceCents: 0 }).where(sql`${walletAccounts.id} = ${wallet2.id}`);
 
   /* ── progress + attempt + engagement ── */
   const course1Videos = videoIdsByCourse.get("algebra-1sec-term1")!;
   for (let i = 0; i < Math.min(3, course1Videos.length); i++) {
-    await db.insert(studentProgress).values({
+    await targetDb.insert(studentProgress).values({
       userId: student.id,
       courseId: courseBySlug.get("algebra-1sec-term1")!,
       videoId: course1Videos[i],
@@ -495,10 +491,10 @@ async function main() {
   }
 
   const algebraQs = bankBySubject.get("algebra")!.slice(0, 5);
-  const algebraBank = bankRows.filter((b) => algebraQs.includes(b.id));
-  const answers = algebraBank.map((q, i) => ({ questionId: q.id, choiceIndex: i === 4 ? 2 : q.correctIndex, correct: i !== 4 }));
-  const score = answers.filter((a) => a.correct).length;
-  await db.insert(examAttempts).values({
+  const algebraBank = bankRows.filter((b: any) => algebraQs.includes(b.id));
+  const answers = algebraBank.map((q: any, i: number) => ({ questionId: q.id, choiceIndex: i === 4 ? 2 : q.correctIndex, correct: i !== 4 }));
+  const score = answers.filter((a: any) => a.correct).length;
+  await targetDb.insert(examAttempts).values({
     examId: examIds[0],
     userId: student.id,
     score,
@@ -506,19 +502,19 @@ async function main() {
     answers,
   });
 
-  await db.insert(notifications).values([
+  await targetDb.insert(notifications).values([
     { userId: student.id, title: "أهلًا بك في دروس ماث", body: "منصتك الجديدة لإتقان الرياضيات — ابدأ أول درس الآن.", kind: "system" },
     { userId: student.id, title: "تم تفعيل اشتراكك", body: "أهلًا بك في كورس «الجبر — الصف الأول الثانوي». بالتوفيق!", kind: "billing" },
     { userId: student.id, title: "نتيجة امتحان", body: `حصلت على ${score} من 5 في «اختبار الوحدة الأولى — الجبر»`, kind: "exam" },
   ]);
 
-  await db.insert(communityPosts).values([
+  await targetDb.insert(communityPosts).values([
     { courseId: courseBySlug.get("algebra-1sec-term1")!, userId: student.id, body: "شرح درس المجموعات كان واضحًا جدًا، وضعت خطة مذاكرة أسبوعية بناءً عليه.", likesCount: 12 },
     { courseId: course3, userId: student2.id, body: "طريقة ربط النهايات بالمشتقة وفرت عليّ وقتًا كبيرًا في الحل.", likesCount: 9 },
   ]);
 
   /* ── assignments + parent link ── */
-  const [wa1, wa2] = await db
+  const [wa1] = await targetDb
     .insert(assignments)
     .values([
       {
@@ -536,17 +532,16 @@ async function main() {
     ])
     .returning();
 
-  await db.insert(assignmentSubmissions).values({
+  await targetDb.insert(assignmentSubmissions).values({
     assignmentId: wa1.id,
     userId: student.id,
     textAnswer: "حلول التمارين 1–10 مرفقة تفصيلًا: إجابة كل سؤال مع خطوات التعويض والتبسيط كما في الشرح.",
     score: 9,
   });
-  void wa2;
 
-  await db.insert(parentLinks).values({ parentId: parentUser.id, studentId: student.id });
+  await targetDb.insert(parentLinks).values({ parentId: parentUser.id, studentId: student.id });
 
-  await db.insert(auditLogs).values({
+  await targetDb.insert(auditLogs).values({
     actorId: admin.id,
     action: "seed.initialized",
     entity: "system",
@@ -555,17 +550,30 @@ async function main() {
   });
 
   console.log("✔ seed complete");
-  console.log("  demo logins (password 12345678):");
-  console.log("  · student@dros-math.com (طالبة مشتركة)");
-  console.log("  · admin@dros-math.com  (إدارة)");
-  console.log("  · teacher@dros-math.com (أ/ محمد سعيد)");
 }
 
-main()
-  .catch((e) => {
-    console.error("seed failed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    if (pool) await pool.end();
-  });
+async function main() {
+  const { db, pool } = await import("./index");
+  console.log("→ wiping existing data…");
+  await db.execute(sql`TRUNCATE TABLE
+    audit_logs, parent_links, community_posts, notifications, student_progress,
+    wallet_transactions, wallet_accounts, coupons, invoices, payments, orders,
+    subscriptions, assignment_submissions, assignments, exam_attempts,
+    exam_questions, exams, question_bank, course_files, videos, lessons,
+    courses, sessions, users, subjects, grades, academic_stages
+    RESTART IDENTITY CASCADE`);
+
+  await seedDatabase(db);
+}
+
+if (process.argv[1]?.endsWith("seed.ts")) {
+  main()
+    .catch((e) => {
+      console.error("seed failed:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      const { pool } = await import("./index");
+      if (pool) await pool.end();
+    });
+}
