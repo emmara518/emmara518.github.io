@@ -222,24 +222,24 @@ export function HeroMath3DUniverse() {
                 key={item.id}
                 onMouseEnter={() => setHoveredSymbol(item)}
                 onMouseLeave={() => setHoveredSymbol(null)}
-                className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform hover:scale-125"
+                className="absolute flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-125 select-none"
                 style={{
                   transform: `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${item.scale})`,
                   zIndex: item.zIndex,
                   opacity: item.opacity,
-                  filter: "brightness(0.9) drop-shadow(0 6px 12px rgba(0,0,0,0.5))",
+                  filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(132,204,22,0.25))",
                 }}
               >
-                <div className="relative size-14 sm:size-16 rounded-2xl bg-slate-900/60 border border-slate-700/50 p-1.5 backdrop-blur-sm shadow-md">
+                <div className="relative size-14 sm:size-16 flex items-center justify-center pointer-events-none">
                   <Image
                     src={item.imageSrc}
                     alt={item.label}
                     fill
                     sizes="64px"
-                    className="object-contain p-1 pointer-events-none"
+                    className="object-contain filter drop-shadow-[0_0_12px_rgba(184,255,0,0.3)] transition-all pointer-events-none"
                   />
                 </div>
-                <span className="mt-1 font-mono text-[9px] font-bold text-slate-400 bg-slate-950/80 px-1.5 py-0.5 rounded-md">
+                <span className="mt-0.5 font-mono text-[9px] font-bold text-lime-300/80 drop-shadow">
                   {item.glyph}
                 </span>
               </div>
@@ -260,7 +260,7 @@ export function HeroMath3DUniverse() {
             <div className="relative size-56 sm:size-64 rounded-3xl border-2 border-lime-400/40 bg-gradient-to-b from-slate-800/80 via-slate-900 to-slate-950 p-1.5 shadow-[0_20px_50px_rgba(132,204,22,0.3)] overflow-hidden group">
               <div className="relative size-full rounded-2xl overflow-hidden">
                 <Image
-                  src="/images/teacher.webp"
+                  src="/images/assets/teacher.webp"
                   alt="أستاذ محمد سعيد — خبير تدريس الرياضيات"
                   fill
                   priority
@@ -300,26 +300,27 @@ export function HeroMath3DUniverse() {
                 key={item.id}
                 onMouseEnter={() => setHoveredSymbol(item)}
                 onMouseLeave={() => setHoveredSymbol(null)}
-                className="absolute flex flex-col items-center justify-center cursor-pointer transition-transform hover:scale-130 group"
+                className="absolute flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-135 group select-none"
                 style={{
                   transform: `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${item.scale})`,
                   zIndex: item.zIndex,
                   opacity: item.opacity,
-                  filter: "drop-shadow(0 15px 25px rgba(132,204,22,0.45))",
+                  filter: "drop-shadow(0 15px 30px rgba(0,0,0,0.7)) drop-shadow(0 0 25px rgba(184,255,0,0.55))",
                 }}
               >
-                {/* Symbol Glowing Container */}
-                <div className="relative size-16 sm:size-20 rounded-2xl bg-slate-900/90 border-2 border-lime-400/80 p-2 backdrop-blur-md shadow-2xl group-hover:border-lime-300 group-hover:bg-slate-900 transition-all">
-                  <div className="absolute inset-1 rounded-full bg-lime-400/30 blur-md opacity-70 group-hover:opacity-100 transition-opacity" />
+                {/* Pure 3D Floating Symbol (No Box/Card Background) */}
+                <div className="relative size-16 sm:size-20 flex items-center justify-center pointer-events-none">
+                  {/* Atmospheric Glow behind the 3D symbol */}
+                  <div className="absolute inset-0 rounded-full bg-lime-400/20 blur-xl opacity-60 group-hover:opacity-100 group-hover:bg-lime-400/35 transition-all duration-300 pointer-events-none" />
                   <Image
                     src={item.imageSrc}
                     alt={item.label}
                     fill
-                    sizes="80px"
-                    className="object-contain p-1 pointer-events-none rounded-xl"
+                    sizes="96px"
+                    className="object-contain filter drop-shadow-[0_0_16px_rgba(184,255,0,0.45)] group-hover:drop-shadow-[0_0_28px_rgba(184,255,0,0.85)] transition-all pointer-events-none transform-gpu group-hover:scale-110"
                   />
                 </div>
-                <span className="mt-1 font-mono text-[10px] font-black text-neon-lime bg-slate-950/90 border border-lime-500/40 px-2 py-0.5 rounded-md shadow-lg">
+                <span className="mt-0.5 font-mono text-[10px] font-black text-[#B8FF00] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-lime-400/30">
                   {item.glyph}
                 </span>
               </div>

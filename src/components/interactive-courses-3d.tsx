@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, Clock, PlayCircle, ArrowLeft, Sparkles, Zap, ChevronLeft, CheckCircle2 } from "lucide-react";
+import { BookOpen, Clock, PlayCircle, ArrowLeft, Zap, ChevronLeft, CheckCircle2 } from "lucide-react";
 import { formatDuration, formatEGP } from "@/lib/format";
 
 export type CourseCardData = {
@@ -64,20 +64,20 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
 
   return (
     <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 overflow-hidden">
-      {/* 3D Cosmic Coordinate Ambient Lights */}
+      {/* 3D Coordinate Ambient Glow */}
       <div className="pointer-events-none absolute -top-20 start-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(ellipse_at_top,rgba(184,255,0,0.08),transparent_70%)] blur-2xl -z-10" />
       
       {/* Section Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#22262E]">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-line">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#0C0E10] border border-[#22262E] text-[11px] font-mono tracking-tag text-[#B8FF00]">
-            <Zap size={13} className="text-[#B8FF00] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-surface border border-line text-[11px] font-mono tracking-tag text-neon-lime shadow-sm">
+            <Zap size={13} className="text-neon-lime animate-pulse" />
             <span>3D INTERACTIVE CURRICULUM</span>
-            <span className="text-[#343940]">/</span>
-            <span className="text-[#8E98A5]">المقررات الحصرية</span>
+            <span className="text-line-strong">/</span>
+            <span className="text-muted">المقررات الحصرية</span>
           </div>
-          <h2 className="type-h2 text-white">المناهج والمقررات الدراسية التفاعلية</h2>
-          <p className="type-small font-ui text-[#8E98A5] max-w-xl font-normal">
+          <h2 className="type-h2 text-ink">المناهج والمقررات الدراسية التفاعلية</h2>
+          <p className="type-small font-ui text-muted max-w-xl font-normal">
             قف على أي مقرر دراسي لتفعيل مسرح التركيز ثلاثي الأبعاد والاطلاع على تفاصيل المنهج مع مستر محمد سعيد.
           </p>
         </div>
@@ -92,8 +92,8 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? "bg-[#B8FF00] text-[#050505] shadow-[0_0_18px_rgba(184,255,0,0.3)] font-bold scale-105"
-                    : "bg-[#0C0E10] text-[#8E98A5] border border-[#22262E] hover:border-[#B8FF00]/50 hover:text-white"
+                    ? "bg-neon-lime text-black shadow-[0_0_18px_rgba(184,255,0,0.3)] font-bold scale-105"
+                    : "bg-surface text-muted border border-line hover:border-neon-lime/50 hover:text-ink shadow-sm"
                 }`}
               >
                 {cat.label}
@@ -138,26 +138,26 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                     : "translateZ(0px) translateY(0px) scale(1)",
                   zIndex: isHero ? 40 : 10,
                   opacity: isSibling ? 0.65 : 1,
-                  filter: isSibling ? "brightness(0.85) contrast(0.95)" : "none",
+                  filter: isSibling ? "brightness(0.92) contrast(0.95)" : "none",
                 }}
               >
                 <Link href={`/courses/${course.slug}`} className="block h-full group">
                   <div
-                    className={`relative overflow-hidden rounded-2xl border transition-all duration-500 flex flex-col justify-between h-full bg-[#0C0E10] ${
+                    className={`relative overflow-hidden rounded-2xl border transition-all duration-500 flex flex-col justify-between h-full bg-surface shadow-card ${
                       isHero
-                        ? "border-[#B8FF00] shadow-[0_20px_60px_-10px_rgba(184,255,0,0.3),0_0_30px_rgba(184,255,0,0.15)] bg-gradient-to-b from-[#12161D] to-[#0A0D11]"
-                        : "border-[#22262E] hover:border-[#B8FF00]/50 shadow-xl"
+                        ? "border-neon-lime shadow-[0_20px_60px_-10px_rgba(184,255,0,0.3),0_0_30px_rgba(184,255,0,0.15)] bg-surface2"
+                        : "border-line hover:border-neon-lime/50"
                     }`}
                   >
                     {/* Top 3D Hero Flare Accent Line */}
                     <div
-                      className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[#B8FF00] to-transparent transition-opacity duration-500 z-30 ${
+                      className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-neon-lime to-transparent transition-opacity duration-500 z-30 ${
                         isHero ? "opacity-100" : "opacity-0"
                       }`}
                     />
 
-                    {/* Visual Course AI Cover: Mr. Mohamed Saeed */}
-                    <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-[#050505] border-b border-[#22262E]">
+                    {/* Visual Course AI Cover */}
+                    <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-surface2 border-b border-line">
                       <Image
                         src={coverImage}
                         alt={`${course.title} - مستر محمد سعيد`}
@@ -169,25 +169,25 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                         referrerPolicy="no-referrer"
                       />
                       {/* Vignette Overlay for Crisp Contrast */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E10] via-black/30 to-black/60 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/40 pointer-events-none" />
 
                       {/* Top Floating Badges */}
                       <div className="absolute start-3.5 top-3.5 flex items-center gap-1.5 z-10 font-ui">
-                        <span className="rounded-full bg-[#050505]/90 backdrop-blur-md border border-[#B8FF00]/40 px-3 py-1 text-[11px] font-bold text-[#B8FF00] shadow-md">
+                        <span className="rounded-full bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-[11px] font-bold text-neon-lime shadow-md">
                           {course.subjectName}
                         </span>
-                        <span className="rounded-full bg-[#14181E]/90 backdrop-blur-md border border-[#22262E] px-2.5 py-1 text-[11px] font-semibold text-[#E8EAED]">
+                        <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-line px-2.5 py-1 text-[11px] font-semibold text-ink dark:text-white">
                           {course.gradeName}
                         </span>
                       </div>
 
                       {/* Hero Spotlight Indicator Badge */}
                       {isHero ? (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-[#B8FF00] px-3 py-1 text-[11px] font-extrabold text-[#050505] shadow-[0_0_15px_rgba(184,255,0,0.6)] animate-bounce font-mono tracking-tag">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-extrabold text-black shadow-[0_0_15px_rgba(184,255,0,0.6)] animate-bounce font-mono tracking-tag">
                           HERO FOCUS ★
                         </span>
                       ) : (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-[#050505]/85 backdrop-blur-md border border-[#2B313A] px-2.5 py-0.5 text-[10px] font-mono text-[#D0D5DD]">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-black/85 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[10px] font-mono text-white/90">
                           أ/ محمد سعيد
                         </span>
                       )}
@@ -199,36 +199,36 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                         <div className="flex items-center justify-between">
                           <h3
                             className={`type-h3 transition-colors ${
-                              isHero ? "text-[#B8FF00]" : "text-white group-hover:text-[#B8FF00]"
+                              isHero ? "text-neon-lime" : "text-ink group-hover:text-neon-lime"
                             }`}
                           >
                             {course.title}
                           </h3>
                         </div>
-                        <p className="type-small font-ui leading-relaxed text-[#8E98A5] line-clamp-2 font-normal">
+                        <p className="type-small font-ui leading-relaxed text-muted line-clamp-2 font-normal">
                           {course.summary}
                         </p>
                       </div>
 
                       <div className="space-y-3.5 mt-auto">
                         {/* Course Metadata Strip */}
-                        <div className="flex items-center gap-3.5 font-mono text-[11px] text-[#8E98A5] pt-1 border-t border-[#1C2128]">
-                          <span className="inline-flex items-center gap-1 font-semibold text-[#D0D5DD]">
-                            <BookOpen size={13} className="text-[#B8FF00]" /> {course.lessonsCount} درس
+                        <div className="flex items-center gap-3.5 font-mono text-[11px] text-muted pt-1 border-t border-line">
+                          <span className="inline-flex items-center gap-1 font-semibold text-ink">
+                            <BookOpen size={13} className="text-neon-lime" /> {course.lessonsCount} درس
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <Clock size={13} /> {formatDuration(course.totalSeconds)}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[#8E98A5]">
+                          <span className="inline-flex items-center gap-1 text-muted">
                             <PlayCircle size={13} /> FHD
                           </span>
                         </div>
 
                         {/* Pricing and Action CTA */}
-                        <div className="flex items-center justify-between border-t border-[#22262E] pt-3.5 font-ui">
+                        <div className="flex items-center justify-between border-t border-line pt-3.5 font-ui">
                           <div>
-                            <span className="text-[10px] font-mono text-[#6E7681] block">تكلفة الاشتراك</span>
-                            <span className="text-base sm:text-lg font-extrabold text-white font-brand">
+                            <span className="text-[10px] font-mono text-muted block">تكلفة الاشتراك</span>
+                            <span className="text-base sm:text-lg font-extrabold text-ink font-brand">
                               {formatEGP(course.priceCents)}
                             </span>
                           </div>
@@ -236,8 +236,8 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                           <div
                             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm ${
                               isHero
-                                ? "bg-[#B8FF00] text-[#050505] shadow-[0_0_20px_rgba(184,255,0,0.35)] translate-x-[-4px]"
-                                : "bg-[#14181E] text-[#B8FF00] border border-[#B8FF00]/30 group-hover:bg-[#B8FF00] group-hover:text-[#050505]"
+                                ? "bg-neon-lime text-black shadow-[0_0_20px_rgba(184,255,0,0.35)] translate-x-[-4px]"
+                                : "bg-surface2 text-ink border border-line group-hover:bg-neon-lime group-hover:text-black group-hover:border-neon-lime"
                             }`}
                           >
                             <span>استعراض المحاضرات</span>
@@ -255,14 +255,14 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
       </div>
 
       {/* Explore Full Catalog Link Bar */}
-      <div className="mt-12 pt-6 border-t border-[#1F242C] flex flex-col sm:flex-row items-center justify-between gap-4 font-ui">
-        <div className="flex items-center gap-2 text-xs text-[#8E98A5]">
-          <CheckCircle2 size={15} className="text-[#B8FF00]" />
+      <div className="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4 font-ui">
+        <div className="flex items-center gap-2 text-xs text-muted">
+          <CheckCircle2 size={15} className="text-neon-lime" />
           <span>جميع المحاضرات تشمل شيتات واجب، امتحانات تدريبية، ودعم فني مستمر.</span>
         </div>
         <Link
           href="/courses"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#B8FF00] hover:text-white bg-[#0E1115] hover:bg-[#151920] px-5 py-2.5 rounded-xl border border-[#262C36] hover:border-[#B8FF00] transition-all duration-300"
+          className="inline-flex items-center gap-2 text-xs font-bold text-neon-lime hover:text-ink bg-surface hover:bg-surface2 px-5 py-2.5 rounded-xl border border-line hover:border-neon-lime transition-all duration-300 shadow-sm"
         >
           <span>تصفح الفهرس الكامل لجميع المراحل</span>
           <ArrowLeft size={15} />

@@ -110,7 +110,7 @@ export function Topbar({ user, onToggleMobileMenu }: TopbarProps) {
             >
               <div className="relative size-8 overflow-hidden rounded-xl bg-slate-900 border border-neon-lime/40">
                 <Image
-                  src="/images/teacher.webp"
+                  src="/images/assets/teacher.webp"
                   alt={user.name}
                   fill
                   className="object-cover object-top"

@@ -16,7 +16,7 @@ export default async function HomePage() {
   const [courses, stages] = await Promise.all([featuredCourses(6), listStagesWithGrades()]);
 
   return (
-    <main className="overflow-x-clip bg-[#050505] text-[#F4F5F6] min-h-screen">
+    <main className="overflow-x-clip bg-bg text-ink min-h-screen">
       {/* ─── Hero Section & Universe Dashboard: Strict Mathematical Architecture ─── */}
       <DrosUniverseShowcase />
 
@@ -30,7 +30,7 @@ export default async function HomePage() {
       <CompactFeaturesSection />
 
       {/* ─── Testimonials ─── */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 border-t border-[#22262E]">
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 border-t border-line">
         <Reveal>
           <SectionHead
             kicker="STUDENT REVIEWS"
@@ -42,17 +42,17 @@ export default async function HomePage() {
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {TESTIMONIALS.map((t, i) => (
             <Reveal key={t.name} delay={i * 100}>
-              <Card className="h-full p-6 space-y-4 rounded-2xl border-[#22262E] bg-[#0C0E10]">
+              <Card className="h-full p-6 space-y-4 rounded-2xl border-line bg-surface shadow-card">
                 <div className="flex items-center gap-3">
-                  <div className="grid size-10 place-items-center rounded-lg bg-[#B8FF00] font-black text-[#050505]">
+                  <div className="grid size-10 place-items-center rounded-lg bg-neon-lime font-black text-black">
                     {t.name.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-white">{t.name}</h4>
-                    <span className="text-[11px] font-bold text-[#8E98A5]">{t.grade}</span>
+                    <h4 className="text-sm font-black text-ink">{t.name}</h4>
+                    <span className="text-[11px] font-bold text-muted">{t.grade}</span>
                   </div>
                 </div>
-                <p className="text-xs font-semibold leading-relaxed text-[#E8EAED]">&ldquo;{t.text}&rdquo;</p>
+                <p className="text-xs font-semibold leading-relaxed text-ink/90">&ldquo;{t.text}&rdquo;</p>
               </Card>
             </Reveal>
           ))}

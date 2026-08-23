@@ -67,10 +67,23 @@ export const viewport: Viewport = {
 
 /** Runs before paint: prevents theme flash. Default = blackboard dark. */
 const themeScript = `
-(function(){try{
-var t=localStorage.getItem('dros-theme');
-if(t!=='light'){document.documentElement.classList.add('dark')}
-}catch(e){document.documentElement.classList.add('dark')}})();
+(function(){
+  try {
+    var t = localStorage.getItem('dros-theme');
+    if (t === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.documentElement.style.colorScheme = 'light';
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.style.colorScheme = 'dark';
+    }
+  } catch(e) {
+    document.documentElement.classList.add('dark');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
 `;
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -82,7 +95,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-[#04060b]`}>
+      <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-bg text-ink`}>
         <CosmicFluidBackground />
         <SiteHeader user={headerUser} />
         <div className="relative z-10 min-h-screen">{children}</div>

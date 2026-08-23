@@ -26,40 +26,40 @@ import { cn } from "@/lib/utils";
  */
 export function DashboardHeroBanner({ user }: { user?: { name: string } | null }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-[#0C0E10] text-white p-6 sm:p-10 border border-[#22262E] shadow-2xl">
+    <div className="relative overflow-hidden rounded-3xl bg-surface text-ink p-6 sm:p-10 border border-line shadow-card">
       {/* Background Math Grid & Engineered Orbit lines */}
       <div className="absolute inset-0 math-grid-pattern opacity-20 pointer-events-none" />
 
       {/* Floating Math Formulas */}
-      <div className="absolute top-6 left-1/3 hidden md:block font-mono text-sm font-bold text-[#8E98A5]/40 select-none">
+      <div className="absolute top-6 left-1/3 hidden md:block font-mono text-sm font-bold text-muted/40 select-none">
         f(x) = x² - 4x + 3
       </div>
-      <div className="absolute bottom-10 left-1/4 hidden md:block font-mono text-xs font-bold text-[#B8FF00]/40 select-none">
+      <div className="absolute bottom-10 left-1/4 hidden md:block font-mono text-xs font-bold text-neon-lime/40 select-none">
         x = (-b ± √(b² - 4ac)) / 2a
       </div>
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         {/* Text & Action Column */}
         <div className="space-y-6 text-start">
-          <div className="inline-flex items-center gap-2 rounded-md border border-[#22262E] bg-[#15181C] px-3.5 py-1 text-xs font-bold text-[#8E98A5]">
-            <span className="size-1.5 rounded-full bg-[#B8FF00]" />
+          <div className="inline-flex items-center gap-2 rounded-md border border-line bg-surface2 px-3.5 py-1 text-xs font-bold text-muted">
+            <span className="size-1.5 rounded-full bg-neon-lime" />
             <span>منصة دروس ماث — مستر محمد سعيد</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-white">
+          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-ink">
             تعلم الرياضيات <br />
-            <span className="text-[#B8FF00]">بمنطق واستنتاج هندسي</span>
+            <span className="text-neon-lime">بمنطق واستنتاج هندسي</span>
           </h1>
 
-          <p className="max-w-xl text-sm sm:text-base font-medium leading-relaxed text-[#8E98A5]">
-            تعلم بذكاء، تدرب باحتراف، وتفوق بثقة مع <span className="font-extrabold text-white">مستر محمد سعيد</span>.
+          <p className="max-w-xl text-sm sm:text-base font-medium leading-relaxed text-muted">
+            تعلم بذكاء، تدرب باحتراف، وتفوق بثقة مع <span className="font-extrabold text-ink">مستر محمد سعيد</span>.
             منهج كامل، اختبارات بتصحيح فوري، ومتابعة لحظية لتقدمك.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#B8FF00] px-6 py-3.5 text-sm font-black text-[#050505] hover:bg-[#D7FF3F] transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-neon-lime px-6 py-3.5 text-sm font-black text-black hover:bg-lime-400 transition-all shadow-sm"
             >
               <Play size={16} fill="currentColor" />
               <span>ابدأ التعلم الآن</span>
@@ -67,14 +67,14 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
 
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#22262E] bg-[#15181C] px-5 py-3.5 text-sm font-bold text-white hover:border-[#B8FF00] transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface2 px-5 py-3.5 text-sm font-bold text-ink hover:border-neon-lime transition-colors"
             >
               <span>استعراض المقررات</span>
             </Link>
           </div>
 
           {/* Quick Nav Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-4 border-t border-[#22262E]">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-4 border-t border-line">
             {[
               { label: "المقررات", icon: BookOpen },
               { label: "المجتمع", icon: Users },
@@ -84,21 +84,65 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
             ].map((tab) => (
               <button
                 key={tab.label}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-[#15181C] px-3 py-2 text-xs font-bold text-[#8E98A5] border border-[#22262E] hover:border-[#B8FF00]/60 hover:text-white transition-all"
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-surface2 px-3 py-2 text-xs font-bold text-muted border border-line hover:border-neon-lime/60 hover:text-ink transition-all cursor-pointer"
               >
-                <tab.icon size={13} className="text-[#B8FF00]" />
+                <tab.icon size={13} className="text-neon-lime" />
                 <span>{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Teacher Portrait Container (Mr. Mohamed Saeed) */}
-        <div className="relative flex justify-center lg:justify-end">
-          <div className="relative size-72 sm:size-80 lg:size-96 rounded-2xl p-1.5 bg-[#15181C] border border-[#22262E]">
-            <div className="relative size-full overflow-hidden rounded-xl bg-[#050505]">
+        {/* Teacher Portrait & 3D Math Universe Container (Mr. Mohamed Saeed) */}
+        <div className="relative flex justify-center lg:justify-end items-center">
+          {/* Ambient Glows */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-lime-500/10 via-emerald-500/10 to-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Floating 3D Math Symbols around Teacher */}
+          <div className="absolute -top-4 -right-4 z-20 size-16 pointer-events-none drop-shadow-[0_0_15px_rgba(184,255,0,0.5)] animate-bounce" style={{ animationDuration: '4s' }}>
+            <Image
+              src="/images/assets/pi.png"
+              alt="π 3D"
+              width={64}
+              height={64}
+              className="object-contain"
+            />
+          </div>
+
+          <div className="absolute top-1/2 -left-6 z-20 size-14 pointer-events-none drop-shadow-[0_0_12px_rgba(184,255,0,0.4)] animate-pulse" style={{ animationDuration: '3s' }}>
+            <Image
+              src="/images/assets/sigma.png"
+              alt="Σ 3D"
+              width={56}
+              height={56}
+              className="object-contain"
+            />
+          </div>
+
+          <div className="absolute -bottom-4 left-4 z-20 size-14 pointer-events-none drop-shadow-[0_0_14px_rgba(184,255,0,0.45)] animate-bounce" style={{ animationDuration: '5s' }}>
+            <Image
+              src="/images/assets/integral.png"
+              alt="∫ 3D"
+              width={56}
+              height={56}
+              className="object-contain"
+            />
+          </div>
+
+          <div className="absolute top-8 -left-2 z-20 size-12 pointer-events-none drop-shadow-[0_0_10px_rgba(184,255,0,0.35)]">
+            <Image
+              src="/images/assets/sqrt.png"
+              alt="√ 3D"
+              width={48}
+              height={48}
+              className="object-contain"
+            />
+          </div>
+
+          <div className="relative size-72 sm:size-80 lg:size-96 rounded-2xl p-1.5 bg-surface2 border border-line shadow-2xl">
+            <div className="relative size-full overflow-hidden rounded-xl bg-surface">
               <Image
-                src="/images/teacher.webp"
+                src="/images/assets/teacher.webp"
                 alt="مستر محمد سعيد — Dros Math"
                 fill
                 priority
@@ -107,9 +151,9 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
             </div>
 
             {/* Glowing Signature Badge */}
-            <div className="absolute bottom-4 right-4 rounded-2xl bg-slate-900/90 border border-lime-400/40 px-4 py-2 text-center backdrop-blur-md shadow-xl">
-              <span className="block text-[10px] font-mono font-bold text-lime-400">LECTURER</span>
-              <span className="block text-xs font-black text-white">أ/ محمد سعيد</span>
+            <div className="absolute bottom-4 right-4 rounded-2xl bg-surface/90 dark:bg-slate-900/90 border border-lime-400/40 px-4 py-2 text-center backdrop-blur-md shadow-xl">
+              <span className="block text-[10px] font-mono font-bold text-neon-lime">LECTURER</span>
+              <span className="block text-xs font-black text-ink">أ/ محمد سعيد</span>
             </div>
           </div>
         </div>

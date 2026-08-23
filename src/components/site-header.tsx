@@ -20,6 +20,8 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
   const links = [
     { href: "/", label: "الرئيسية" },
     { href: "/courses", label: "الكورسات" },
+    { href: "/dashboard/arena", label: "بنك الاختبارات" },
+    { href: "/about", label: "عن المنصة" },
   ];
 
   async function logout() {
@@ -30,13 +32,13 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
   const dashboardHref = user && isAdminRole(user.role) ? "/admin" : "/dashboard";
 
-  // When on homepage, DrosUniverseShowcase provides its own specialized cyber navigation
+  // When on homepage, DrosUniverseShowcase provides the master interactive cyber navigation
   if (pathname === "/") {
     return null;
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/75 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/85 dark:bg-[#050505]/90 backdrop-blur-xl transition-colors duration-300">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="shrink-0" aria-label="دروس ماث — الرئيسية">
           <LogoWordmark />
@@ -48,8 +50,8 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
-                pathname === l.href ? "text-brand" : "text-muted hover:text-ink",
+                "rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
+                pathname === l.href ? "text-neon-lime font-bold" : "text-muted hover:text-ink",
               )}
             >
               {l.label}
@@ -59,8 +61,8 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
             <Link
               href={dashboardHref}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
-                pathname.startsWith(dashboardHref) ? "text-brand" : "text-muted hover:text-ink",
+                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
+                pathname.startsWith(dashboardHref) ? "text-neon-lime font-bold" : "text-muted hover:text-ink",
               )}
             >
               {isAdminRole(user.role) ? <ShieldCheck size={15} /> : <LayoutDashboard size={15} />}
@@ -69,15 +71,21 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           ) : null}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
+        {/* Action Controls & High-Fidelity Theme Switcher */}
+        <div className="flex items-center gap-2.5">
+          {/* High-Fidelity Document Root Theme Toggle */}
+          <ThemeToggle
+            className="shadow-sm"
+            showLabel
+          />
+
           {user ? (
             <>
               <Link
                 href={dashboardHref}
-                className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex"
+                className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex text-ink shadow-sm hover:border-brand/50 transition-colors"
               >
-                <span className="grid size-6 place-items-center rounded-lg bg-brand text-[11px] text-white">
+                <span className="grid size-6 place-items-center rounded-lg bg-neon-lime text-[11px] font-black text-black">
                   {user.name.trim().charAt(0)}
                 </span>
                 <span className="max-w-28 truncate">{user.name}</span>
@@ -85,40 +93,56 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               <button
                 onClick={logout}
                 aria-label="تسجيل الخروج"
-                className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50"
+                title="تسجيل الخروج"
+                className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50 cursor-pointer shadow-sm"
               >
                 <LogOut size={16} />
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className={cn(buttonStyles("ghost", "sm"), "hidden sm:inline-flex")}>
+              <Link
+                href="/login"
+                className={cn(
+                  buttonStyles("ghost", "sm"),
+                  "hidden sm:inline-flex rounded-xl font-semibold text-ink hover:text-brand"
+                )}
+              >
                 دخول
               </Link>
-              <Link href="/register" className={buttonStyles("primary", "sm")}>
+              <Link
+                href="/register"
+                className={cn(
+                  buttonStyles("primary", "sm"),
+                  "rounded-xl bg-neon-lime text-black hover:bg-lime-400 font-bold shadow-sm"
+                )}
+              >
                 إنشاء حساب
               </Link>
             </>
           )}
+
+          {/* Mobile Menu Trigger */}
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label="القائمة"
-            className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden"
+            className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden cursor-pointer shadow-sm"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
 
+      {/* Mobile Drawer Menu */}
       {open ? (
-        <div className="border-t border-line bg-bg/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden">
-          <nav className="grid gap-1" aria-label="قائمة الجوال">
+        <div className="border-t border-line bg-bg/95 dark:bg-[#050505]/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2 duration-200">
+          <nav className="grid gap-1.5" aria-label="قائمة الجوال">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2"
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2 transition-colors font-ui"
               >
                 {l.label}
               </Link>
@@ -127,28 +151,34 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               <Link
                 href={dashboardHref}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-semibold text-brand hover:bg-surface2"
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-neon-lime hover:bg-surface2 transition-colors font-ui"
               >
                 {isAdminRole(user.role) ? "لوحة الإدارة" : "لوحة الطالب"}
               </Link>
             ) : (
-              <>
+              <div className="pt-2 border-t border-line flex flex-col gap-2">
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2"
+                  className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2 transition-colors text-center border border-line"
                 >
                   تسجيل الدخول
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl bg-brand px-4 py-3 text-center text-sm font-bold text-white"
+                  className="rounded-xl bg-neon-lime px-4 py-3 text-center text-sm font-bold text-black shadow-sm"
                 >
                   إنشاء حساب جديد
                 </Link>
-              </>
+              </div>
             )}
+
+            {/* Mobile Theme Quick Toggle Strip */}
+            <div className="pt-3 mt-2 border-t border-line flex items-center justify-between px-2">
+              <span className="text-xs font-ui text-muted font-medium">مظهر المنصة</span>
+              <ThemeToggle variant="pill" />
+            </div>
           </nav>
         </div>
       ) : null}

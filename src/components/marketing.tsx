@@ -18,13 +18,13 @@ export function MathCanvas({ className }: { className?: string }) {
 
       {/* axes */}
       <svg className="absolute inset-0 h-full w-full opacity-60" preserveAspectRatio="none" viewBox="0 0 1200 800">
-        <line x1="0" y1="640" x2="1200" y2="640" stroke="#22262E" strokeWidth="1.5" />
-        <line x1="200" y1="0" x2="200" y2="800" stroke="#22262E" strokeWidth="1.5" />
+        <line x1="0" y1="640" x2="1200" y2="640" stroke="currentColor" className="text-line" strokeWidth="1.5" />
+        <line x1="200" y1="0" x2="200" y2="800" stroke="currentColor" className="text-line" strokeWidth="1.5" />
         {/* parabola */}
         <path
           d="M 40 180 Q 200 700 420 170"
           fill="none"
-          stroke="#B8FF00"
+          stroke="var(--neon-lime)"
           strokeWidth="2"
           strokeLinecap="round"
           className="animate-draw"
@@ -34,30 +34,31 @@ export function MathCanvas({ className }: { className?: string }) {
         <path
           d="M 480 520 q 60 -130 120 0 t 120 0 t 120 0 t 120 0 t 120 0 t 120 0"
           fill="none"
-          stroke="#8E98A5"
+          stroke="currentColor"
+          className="text-muted"
           strokeWidth="1.8"
           strokeLinecap="round"
         />
         {/* tangent line */}
-        <line x1="60" y1="340" x2="430" y2="120" stroke="#343940" strokeWidth="1.5" />
-        <circle cx="255" cy="222" r="4" fill="#B8FF00" />
+        <line x1="60" y1="340" x2="430" y2="120" stroke="currentColor" className="text-line-strong" strokeWidth="1.5" />
+        <circle cx="255" cy="222" r="4" fill="var(--neon-lime)" />
         {/* asymptote circle */}
-        <circle cx="960" cy="250" r="120" fill="none" stroke="#22262E" strokeWidth="1.2" strokeDasharray="3 3" />
-        <circle cx="960" cy="250" r="70" fill="none" stroke="#343940" strokeWidth="1" />
+        <circle cx="960" cy="250" r="120" fill="none" stroke="currentColor" className="text-line" strokeWidth="1.2" strokeDasharray="3 3" />
+        <circle cx="960" cy="250" r="70" fill="none" stroke="currentColor" className="text-line-strong" strokeWidth="1" />
       </svg>
 
       {/* orbiting conic + cube */}
       <div className="absolute end-[6%] top-[16%] hidden lg:block opacity-40">
         <div className="cube-scene relative">
           <div className="cube" style={{ ["--cube-size" as string]: "170px" }}>
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
-            <div className="cube-face border border-[#343940] bg-[#0C0E10]" />
+            <div className="cube-face border border-line-strong bg-surface" />
+            <div className="cube-face border border-line-strong bg-surface" />
+            <div className="cube-face border border-line-strong bg-surface" />
+            <div className="cube-face border border-line-strong bg-surface" />
+            <div className="cube-face border border-line-strong bg-surface" />
+            <div className="cube-face border border-line-strong bg-surface" />
           </div>
-          <span className="absolute -inset-10 -z-10 rounded-full border border-[#22262E]" style={{ animation: "spin-slow 26s linear infinite" }} />
+          <span className="absolute -inset-10 -z-10 rounded-full border border-line" style={{ animation: "spin-slow 26s linear infinite" }} />
         </div>
       </div>
 
@@ -73,7 +74,7 @@ export function MathCanvas({ className }: { className?: string }) {
         <span
           key={op.s}
           className={cn(
-            "animate-float absolute font-mono text-3xl font-semibold text-[#8E98A5]/30 select-none",
+            "animate-float absolute font-mono text-3xl font-semibold text-muted/30 select-none",
             op.cls,
           )}
           style={{ animationDelay: op.d }}
@@ -99,17 +100,17 @@ export function EquationMarquee() {
   ];
   const row = [...eqs, ...eqs];
   return (
-    <div className="relative overflow-hidden border-y border-[#22262E] bg-[#0C0E10] py-3.5" dir="ltr" aria-hidden>
+    <div className="relative overflow-hidden border-y border-line bg-surface py-3.5" dir="ltr" aria-hidden>
       <div className="marquee-track items-center gap-10">
         {row.map((e, i) => (
-          <span key={i} className="flex items-center gap-10 font-mono text-xs font-semibold text-[#8E98A5]">
+          <span key={i} className="flex items-center gap-10 font-mono text-xs font-semibold text-muted">
             <span className="whitespace-nowrap">{e}</span>
-            <span className="size-1.5 rounded-full bg-[#B8FF00]" />
+            <span className="size-1.5 rounded-full bg-neon-lime" />
           </span>
         ))}
       </div>
-      <div className="pointer-events-none absolute inset-y-0 start-0 w-24 bg-gradient-to-r from-[#0C0E10] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 end-0 w-24 bg-gradient-to-l from-[#0C0E10] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 start-0 w-24 bg-gradient-to-r from-surface to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 end-0 w-24 bg-gradient-to-l from-surface to-transparent" />
     </div>
   );
 }
@@ -128,11 +129,11 @@ export function SectionHead({
 }) {
   return (
     <div className={cn("space-y-3", align === "center" ? "text-center mx-auto" : "text-start")}>
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#15181C] border border-[#22262E] font-mono text-[11px] font-bold text-[#B8FF00]">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface2 border border-line font-mono text-[11px] font-bold text-neon-lime">
         <span>{kicker}</span>
       </div>
-      <h2 className="text-2xl font-black tracking-tight text-white sm:text-4xl">{title}</h2>
-      {sub ? <p className="max-w-2xl text-sm leading-relaxed text-[#8E98A5] mx-auto">{sub}</p> : null}
+      <h2 className="text-2xl font-black tracking-tight text-ink sm:text-4xl">{title}</h2>
+      {sub ? <p className="max-w-2xl text-sm leading-relaxed text-muted mx-auto">{sub}</p> : null}
     </div>
   );
 }
@@ -176,9 +177,9 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
 
   return (
     <Link href={`/courses/${course.slug}`} className="group block">
-      <div className="overflow-hidden rounded-2xl border border-[#22262E] bg-[#0C0E10] hover:border-[#B8FF00]/80 transition-all duration-300 shadow-lg hover:shadow-[0_0_30px_rgba(184,255,0,0.12)] flex flex-col justify-between h-full">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface hover:border-neon-lime transition-all duration-300 shadow-card hover:shadow-[0_0_30px_rgba(184,255,0,0.12)] flex flex-col justify-between h-full">
         {/* Visual Course AI Cover: Mr. Mohamed Saeed & Mathematical Topic */}
-        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[#050505] border-b border-[#22262E]">
+        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-surface2 border-b border-line">
           <Image
             src={coverImage}
             alt={`${course.title} - مستر محمد سعيد`}
@@ -188,24 +189,24 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
             referrerPolicy="no-referrer"
           />
           {/* Vignette Overlay for Crisp Contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E10] via-black/30 to-black/60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface via-black/20 to-black/50 pointer-events-none" />
 
           {/* Top Badges */}
           <div className="absolute start-3.5 top-3.5 flex gap-1.5 z-10">
-            <span className="rounded-full bg-[#050505]/90 backdrop-blur-md border border-[#B8FF00]/40 px-3 py-1 text-[11px] font-extrabold text-[#B8FF00] shadow-md">
+            <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-[11px] font-extrabold text-neon-lime shadow-md">
               {course.subjectName}
             </span>
-            <span className="rounded-full bg-[#14181E]/90 backdrop-blur-md border border-[#22262E] px-2.5 py-1 text-[11px] font-semibold text-[#E8EAED]">
+            <span className="rounded-full bg-surface2/90 backdrop-blur-md border border-line px-2.5 py-1 text-[11px] font-semibold text-ink">
               {course.gradeName}
             </span>
           </div>
 
           {owned ? (
-            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-[#B8FF00] px-3 py-1 text-[11px] font-black text-[#050505] shadow-[0_0_12px_rgba(184,255,0,0.4)]">
+            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-black text-black shadow-[0_0_12px_rgba(184,255,0,0.4)]">
               مشترك ✓
             </span>
           ) : (
-            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-[#050505]/80 backdrop-blur-md border border-[#2B313A] px-2.5 py-0.5 text-[10px] font-mono text-[#D0D5DD]">
+            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-surface/80 dark:bg-black/80 backdrop-blur-md border border-line px-2.5 py-0.5 text-[10px] font-mono text-muted">
               أ/ محمد سعيد
             </span>
           )}
@@ -213,16 +214,16 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
 
         <div className="space-y-3 p-5 flex-1 flex flex-col justify-between">
           <div className="space-y-2">
-            <h3 className="line-clamp-1 text-base font-bold text-white transition-colors group-hover:text-[#B8FF00]">
+            <h3 className="line-clamp-1 text-base font-bold text-ink transition-colors group-hover:text-neon-lime">
               {course.title}
             </h3>
-            <p className="line-clamp-2 min-h-10 text-xs leading-relaxed text-[#8E98A5]">{course.summary}</p>
+            <p className="line-clamp-2 min-h-10 text-xs leading-relaxed text-muted">{course.summary}</p>
           </div>
 
           <div className="space-y-3 mt-auto">
-            <div className="flex items-center gap-4 font-mono text-[11px] text-[#8E98A5] pt-1">
+            <div className="flex items-center gap-4 font-mono text-[11px] text-muted pt-1">
               <span className="inline-flex items-center gap-1">
-                <BookOpen size={13} className="text-[#B8FF00]" /> {course.lessonsCount} درس
+                <BookOpen size={13} className="text-neon-lime" /> {course.lessonsCount} درس
               </span>
               <span className="inline-flex items-center gap-1">
                 <Clock size={13} /> {formatDuration(course.totalSeconds)}
@@ -231,9 +232,9 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
                 <PlayCircle size={13} /> فيديو HD
               </span>
             </div>
-            <div className="flex items-center justify-between border-t border-[#22262E] pt-3.5">
-              <span className="text-base font-black text-white">{formatEGP(course.priceCents)}</span>
-              <span className="text-xs font-bold text-[#B8FF00] transition-transform duration-300 group-hover:-translate-x-1 flex items-center gap-1 bg-[#14181E] px-2.5 py-1 rounded-lg border border-[#B8FF00]/30 group-hover:border-[#B8FF00]">
+            <div className="flex items-center justify-between border-t border-line pt-3.5">
+              <span className="text-base font-black text-ink">{formatEGP(course.priceCents)}</span>
+              <span className="text-xs font-bold text-ink group-hover:text-black transition-transform duration-300 group-hover:-translate-x-1 flex items-center gap-1 bg-surface2 group-hover:bg-neon-lime px-2.5 py-1 rounded-lg border border-line group-hover:border-neon-lime">
                 {owned ? "متابعة التعلم ←" : "عرض تفاصيل الكورس ←"}
               </span>
             </div>

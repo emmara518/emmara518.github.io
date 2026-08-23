@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────────────────────
    DROS MATH UNIVERSE — TYPOGRAPHY SYSTEM & DESIGN SYSTEM v2026
@@ -37,56 +37,61 @@
   font-display: swap;
 }
 
-:root {
-  /* Design Tokens — DROS MATH Signature Palette */
-  --color-lime: #B8FF00;
-  --color-lime-bright: #D7FF3F;
-  --color-lime-dark: #86B800;
+:root,
+[data-theme="light"],
+html:not(.dark) {
+  /* ─── LIGHT MODE DESIGN TOKENS (Default / Technical Paper) ─── */
+  --bg: #F8F9FA;
+  --background: #F8F9FA;
+  --surface: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-secondary: #F1F3F5;
+  --surface-2: #F1F3F5;
+  --surface-3: #E9ECEF;
 
-  --color-black: #050505;
-  --color-carbon: #0C0E10;
-  --color-graphite: #15181C;
-  --color-surface: #1C2025;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --ink: #0F172A;
+  --ink-secondary: #334155;
+  --muted: #64748B;
 
-  --color-silver: #E8EAED;
-  --color-chrome: #F4F5F6;
-  --color-gunmetal: #343940;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --line: #E2E8F0;
+  --line-strong: #CBD5E1;
+  --line-soft: rgba(15, 23, 42, 0.06);
 
-  --color-paper: #F7F8F5;
-  --color-white: #FFFFFF;
-  --color-ink: #101319;
-  --color-muted: #667066;
+  --accent: #4D7C0F;
+  --accent-strong: #3F6212;
+  --accent-soft: #ECFCCB;
 
-  /* Theme Defaults (Dark Carbon & Neon Lime Precision) */
-  --bg: #050505;
-  --surface: #0C0E10;
-  --surface-2: #15181C;
-  --surface-3: #1C2025;
-  --ink: #FFFFFF;
-  --muted: #8E98A5;
-  --line: #22262E;
-  --line-soft: rgba(255, 255, 255, 0.08);
-  
-  /* Brand Accents (Strict Mathematical Palette: Neon Lime, Chrome, Gunmetal, White) */
-  --neon-lime: #B8FF00;
-  --neon-lime-bright: #D7FF3F;
-  --neon-lime-glow: rgba(184, 255, 0, 0.4);
-  --neon-lime-soft: rgba(184, 255, 0, 0.12);
-  
-  --brand: #B8FF00;
-  --brand-strong: #86B800;
-  --brand-soft: rgba(184, 255, 0, 0.12);
-  --gold: #B8FF00;
-  --gold-soft: rgba(184, 255, 0, 0.12);
-  
-  --success: #B8FF00;
-  --danger: #ef4444;
-  --warning: #B8FF00;
-  
-  --grid-line: rgba(255, 255, 255, 0.04);
-  --glass-bg: #0C0E10;
-  --glass-border: #22262E;
-  --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
+  --neon-lime: #4D7C0F;
+  --neon-lime-bright: #65A30D;
+  --neon-lime-glow: rgba(77, 124, 15, 0.2);
+  --neon-lime-soft: #ECFCCB;
+
+  --brand: #4D7C0F;
+  --brand-strong: #3F6212;
+  --brand-soft: #ECFCCB;
+  --gold: #B45309;
+  --gold-soft: #FEF3C7;
+
+  --chrome: #0F172A;
+  --gunmetal: #334155;
+  --graphite: #64748B;
+
+  --success: #15803D;
+  --danger: #DC2626;
+  --warning: #B45309;
+
+  --grid-line: rgba(15, 23, 42, 0.05);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: #E2E8F0;
+  --glass-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+  --shadow-lift: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 20px 40px -10px rgba(15, 23, 42, 0.05);
 
   /* Typography Font Stacks */
   --font-brand-stack: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), "Segoe UI", sans-serif;
@@ -94,17 +99,34 @@
   --font-math-stack: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
 }
 
-.dark {
-  /* Dark Carbon Precision Mathematics Theme */
+.dark,
+[data-theme="dark"],
+html.dark {
+  /* ─── DARK CARBON MASTER REFERENCE (Exact Approved Theme) ─── */
   --bg: #050505;
+  --background: #050505;
   --surface: #0C0E10;
+  --surface-elevated: #15181C;
+  --surface-secondary: #15181C;
   --surface-2: #15181C;
   --surface-3: #1C2025;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #C8D1DC;
+  --text-muted: #8E98A5;
   --ink: #FFFFFF;
+  --ink-secondary: #C8D1DC;
   --muted: #8E98A5;
+
+  --border: #22262E;
+  --border-strong: #343940;
   --line: #22262E;
+  --line-strong: #343940;
   --line-soft: rgba(255, 255, 255, 0.08);
 
+  --accent: #B8FF00;
+  --accent-strong: #86B800;
+  --accent-soft: rgba(184, 255, 0, 0.15);
   --neon-lime: #B8FF00;
   --neon-lime-bright: #D7FF3F;
   --neon-lime-glow: rgba(184, 255, 0, 0.45);
@@ -116,25 +138,38 @@
   --gold: #B8FF00;
   --gold-soft: rgba(184, 255, 0, 0.15);
 
+  --chrome: #F4F5F6;
+  --gunmetal: #343940;
+  --graphite: #15181C;
+
   --success: #B8FF00;
   --danger: #f87171;
   --warning: #B8FF00;
 
   --grid-line: rgba(184, 255, 0, 0.05);
-  --glass-bg: #0C0E10;
+  --glass-bg: rgba(12, 14, 16, 0.9);
   --glass-border: #22262E;
   --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85);
+
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 10px 30px -5px rgba(184, 255, 0, 0.15), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface2: var(--surface-2);
+  --color-surface3: var(--surface-3);
   --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
+  --color-neon-lime: var(--neon-lime);
+  --color-neon-lime-bright: var(--neon-lime-bright);
+  --color-neon-lime-soft: var(--neon-lime-soft);
   --color-gold: var(--gold);
   --color-success: var(--success);
   --color-danger: var(--danger);
@@ -145,8 +180,8 @@
   --font-ui: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
   --font-math: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
-  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
-  --shadow-lift: 0 10px 30px -5px rgba(184, 255, 0, 0.15), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -293,21 +328,21 @@
 }
 
 .math-symbol-chrome {
-  color: #F4F5F6;
-  border-color: #343940;
-  background: #0C0E10;
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--surface);
 }
 
 .math-symbol-lime {
-  color: #B8FF00;
-  border-color: rgba(184, 255, 0, 0.4);
-  background: #0C0E10;
+  color: var(--neon-lime);
+  border-color: var(--neon-lime-glow);
+  background: var(--surface);
 }
 
 .math-symbol-gunmetal {
-  color: #8E98A5;
-  border-color: #22262E;
-  background: #050505;
+  color: var(--muted);
+  border-color: var(--line);
+  background: var(--surface-2);
 }
 
 /* ── Base Styles ── */

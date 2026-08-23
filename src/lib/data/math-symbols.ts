@@ -15,7 +15,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "الهندسة وحساب المثلثات",
     formula: "A = πr²  ·  C = 2πr",
     desc: "ثابت الدائرة والتحويل الدائري والزوايا الموجهة",
-    imageSrc: "/images/symbols/pi.png",
+    imageSrc: "/images/assets/pi.png",
     glyph: "π",
   },
   {
@@ -24,7 +24,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "الجبر والمتتابعات",
     formula: "Sₙ = ∑ a · rⁿ⁻¹",
     desc: "المتسلسلات الحسابية والهندسية ومجموع المتتابعات",
-    imageSrc: "/images/symbols/sigma.png",
+    imageSrc: "/images/assets/sigma.png",
     glyph: "Σ",
   },
   {
@@ -33,7 +33,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "الجبر والأعداد المركبة",
     formula: "z = x + iy = r(cos θ + i sin θ)",
     desc: "نظرية ديموافر والجذور التكعيبية للواحد الصحيح",
-    imageSrc: "/images/symbols/sqrt.png",
+    imageSrc: "/images/assets/sqrt.png",
     glyph: "√",
   },
   {
@@ -42,7 +42,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "التفاضل والدوال",
     formula: "lim [f(x) - f(a)] / (x - a)",
     desc: "دراسة سلوك المنحنيات والاطراد ونهايات الدوال",
-    imageSrc: "/images/symbols/fx.png",
+    imageSrc: "/images/assets/fx.png",
     glyph: "f(x)",
   },
   {
@@ -51,7 +51,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "التكامل والتطبيقات",
     formula: "∫ₐᵇ f(x) dx = F(b) - F(a)",
     desc: "المساحات تحت المنحنيات وحجوم الأجسام الدورانية",
-    imageSrc: "/images/symbols/integral.png",
+    imageSrc: "/images/assets/integral.png",
     glyph: "∫",
   },
   {
@@ -60,7 +60,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "الجبر الخطي والتربيعي",
     formula: "(a + b)² = a² + 2ab + b²",
     desc: "المعادلات التربيعية والمحددات والمصفوفات",
-    imageSrc: "/images/symbols/x2.png",
+    imageSrc: "/images/assets/x2.png",
     glyph: "x²",
   },
   {
@@ -69,7 +69,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "الهندسة الفراغية والجبر",
     formula: "Δ = b² - 4ac",
     desc: "نوع جذري المعادلة والمجسمات الفراغية ثلاثية الأبعاد",
-    imageSrc: "/images/symbols/delta.png",
+    imageSrc: "/images/assets/delta.png",
     glyph: "Δ",
   },
 ];
