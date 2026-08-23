@@ -3,114 +3,127 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────────────────────
-   DROS MATH UNIVERSE — DESIGN SYSTEM v2026
-   Neon Lime · Electric Cyan · Glassmorphism · Cyber Dark & Bright Universe
+   DROS MATH UNIVERSE — TYPOGRAPHY SYSTEM & DESIGN SYSTEM v2026
+   Brand Display: Graphik Arabic · UI/Body: Cairo · Technical: IBM Plex Mono
+   Palette: Carbon #050505 · Chrome #F4F5F6 · Gunmetal #343940 · Neon Lime #B8FF00
    ───────────────────────────────────────────────────────────── */
 
 @font-face {
   font-family: "Graphik Arabic";
   src: url("/fonts/GRAPHIK-ARABIC.b67d297a3108a3a63d1e.OTF") format("opentype");
   font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Graphik Arabic";
   src: url("/fonts/GRAPHIK-ARABIC-MEDIUM.0af90140746203879b7c.OTF") format("opentype");
   font-weight: 500;
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Graphik Arabic";
   src: url("/fonts/GRAPHIK-ARABIC-SEMIBOLD.7d8631a6522f45d27d07.OTF") format("opentype");
   font-weight: 600;
+  font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Graphik Arabic";
   src: url("/fonts/GRAPHIK-ARABIC-SEMIBOLD.7d8631a6522f45d27d07.OTF") format("opentype");
   font-weight: 700;
+  font-style: normal;
   font-display: swap;
 }
 
 :root {
-  /* Bright Universe Theme */
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --line-soft: rgba(226, 232, 240, 0.7);
-  
-  /* Brand Accents */
-  --neon-lime: #84cc16;
-  --neon-lime-bright: #a3e635;
-  --neon-lime-glow: rgba(163, 230, 53, 0.35);
-  --neon-lime-soft: rgba(132, 204, 22, 0.12);
-  
-  --electric-cyan: #06b6d4;
-  --electric-cyan-glow: rgba(6, 182, 212, 0.35);
-  --electric-cyan-soft: rgba(6, 182, 212, 0.12);
+  /* Design Tokens — DROS MATH Signature Palette */
+  --color-lime: #B8FF00;
+  --color-lime-bright: #D7FF3F;
+  --color-lime-dark: #86B800;
 
-  --quantum-gold: #f59e0b;
-  --quantum-gold-glow: rgba(245, 158, 11, 0.35);
-  --quantum-gold-soft: rgba(245, 158, 11, 0.12);
+  --color-black: #050505;
+  --color-carbon: #0C0E10;
+  --color-graphite: #15181C;
+  --color-surface: #1C2025;
 
-  --brand: #84cc16;
-  --brand-strong: #65a30d;
-  --brand-soft: rgba(132, 204, 22, 0.12);
-  --gold: #f59e0b;
-  --gold-soft: rgba(245, 158, 11, 0.12);
+  --color-silver: #E8EAED;
+  --color-chrome: #F4F5F6;
+  --color-gunmetal: #343940;
+
+  --color-paper: #F7F8F5;
+  --color-white: #FFFFFF;
+  --color-ink: #101319;
+  --color-muted: #667066;
+
+  /* Theme Defaults (Dark Carbon & Neon Lime Precision) */
+  --bg: #050505;
+  --surface: #0C0E10;
+  --surface-2: #15181C;
+  --surface-3: #1C2025;
+  --ink: #FFFFFF;
+  --muted: #8E98A5;
+  --line: #22262E;
+  --line-soft: rgba(255, 255, 255, 0.08);
   
-  --success: #10b981;
+  /* Brand Accents (Strict Mathematical Palette: Neon Lime, Chrome, Gunmetal, White) */
+  --neon-lime: #B8FF00;
+  --neon-lime-bright: #D7FF3F;
+  --neon-lime-glow: rgba(184, 255, 0, 0.4);
+  --neon-lime-soft: rgba(184, 255, 0, 0.12);
+  
+  --brand: #B8FF00;
+  --brand-strong: #86B800;
+  --brand-soft: rgba(184, 255, 0, 0.12);
+  --gold: #B8FF00;
+  --gold-soft: rgba(184, 255, 0, 0.12);
+  
+  --success: #B8FF00;
   --danger: #ef4444;
-  --warning: #f59e0b;
+  --warning: #B8FF00;
   
-  --grid-line: rgba(15, 23, 42, 0.04);
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(226, 232, 240, 0.8);
-  --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --glass-bg: #0C0E10;
+  --glass-border: #22262E;
+  --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8);
+
+  /* Typography Font Stacks */
+  --font-brand-stack: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), "Segoe UI", sans-serif;
+  --font-ui-stack: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --font-math-stack: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
 }
 
 .dark {
-  /* Dark Cyber Neon Theme */
-  --bg: #06080f;
-  --surface: #0b1120;
-  --surface-2: #10182b;
-  --surface-3: #18223c;
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --line: #1e293b;
-  --line-soft: rgba(30, 41, 59, 0.7);
+  /* Dark Carbon Precision Mathematics Theme */
+  --bg: #050505;
+  --surface: #0C0E10;
+  --surface-2: #15181C;
+  --surface-3: #1C2025;
+  --ink: #FFFFFF;
+  --muted: #8E98A5;
+  --line: #22262E;
+  --line-soft: rgba(255, 255, 255, 0.08);
 
-  --neon-lime: #a3e635;
-  --neon-lime-bright: #bef264;
-  --neon-lime-glow: rgba(163, 230, 53, 0.45);
-  --neon-lime-soft: rgba(163, 230, 53, 0.15);
+  --neon-lime: #B8FF00;
+  --neon-lime-bright: #D7FF3F;
+  --neon-lime-glow: rgba(184, 255, 0, 0.45);
+  --neon-lime-soft: rgba(184, 255, 0, 0.15);
 
-  --electric-cyan: #22d3ee;
-  --electric-cyan-glow: rgba(34, 211, 238, 0.45);
-  --electric-cyan-soft: rgba(34, 211, 238, 0.15);
+  --brand: #B8FF00;
+  --brand-strong: #86B800;
+  --brand-soft: rgba(184, 255, 0, 0.15);
+  --gold: #B8FF00;
+  --gold-soft: rgba(184, 255, 0, 0.15);
 
-  --quantum-gold: #fbbf24;
-  --quantum-gold-glow: rgba(251, 191, 36, 0.45);
-  --quantum-gold-soft: rgba(251, 191, 36, 0.15);
-
-  --brand: #a3e635;
-  --brand-strong: #bef264;
-  --brand-soft: rgba(163, 230, 53, 0.15);
-  --gold: #fbbf24;
-  --gold-soft: rgba(251, 191, 36, 0.15);
-
-  --success: #34d399;
+  --success: #B8FF00;
   --danger: #f87171;
-  --warning: #fbbf24;
+  --warning: #B8FF00;
 
-  --grid-line: rgba(163, 230, 53, 0.06);
-  --glass-bg: rgba(11, 17, 32, 0.85);
-  --glass-border: rgba(30, 41, 59, 0.8);
-  --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --grid-line: rgba(184, 255, 0, 0.05);
+  --glass-bg: #0C0E10;
+  --glass-border: #22262E;
+  --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85);
 }
 
 @theme inline {
@@ -126,28 +139,196 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
-  --font-sans: "Graphik Arabic", var(--font-plex-arabic), "Segoe UI", Tahoma, sans-serif;
-  --font-mono: var(--font-plex-mono), "Courier New", monospace;
-  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.04), 0 15px 30px -10px rgba(0, 0, 0, 0.08);
-  --shadow-lift: 0 10px 30px -5px rgba(132, 204, 22, 0.15), 0 20px 45px -10px rgba(0, 0, 0, 0.12);
+  --font-sans: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --font-display: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), sans-serif;
+  --font-brand: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), sans-serif;
+  --font-ui: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
+  --font-math: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 10px 30px -5px rgba(184, 255, 0, 0.15), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY ARCHITECTURE & TOKEN CLASSES
+   Role A: Brand / Display (Graphik Arabic: 700–800)
+   Role B: UI / Body (Cairo: 400–600)
+   Role C: Mathematical Notation (IBM Plex Mono / Precision Math System)
+   ───────────────────────────────────────────────────────────── */
+
+/* Brand & Display Typography */
+.font-display {
+  font-family: var(--font-brand-stack) !important;
+  letter-spacing: normal !important;
+}
+
+.font-brand {
+  font-family: var(--font-brand-stack) !important;
+  letter-spacing: normal !important;
+}
+
+/* UI & Body Typography */
+.font-ui,
+.font-sans {
+  font-family: var(--font-ui-stack) !important;
+}
+
+/* Mathematical Monospace Notation */
+.font-math,
+.font-mono {
+  font-family: var(--font-math-stack) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Responsive Typographic Scale */
+.type-hero {
+  font-family: var(--font-brand-stack);
+  font-size: clamp(3.25rem, 6.5vw, 6.5rem);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: normal;
+}
+
+.type-h1 {
+  font-family: var(--font-brand-stack);
+  font-size: clamp(2.25rem, 4.5vw, 4.25rem);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+.type-h2 {
+  font-family: var(--font-brand-stack);
+  font-size: clamp(1.65rem, 3vw, 2.75rem);
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+.type-h3 {
+  font-family: var(--font-brand-stack);
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+
+.type-body {
+  font-family: var(--font-ui-stack);
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.type-small {
+  font-family: var(--font-ui-stack);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+/* Tabular Number Anchors */
+.num-anchor {
+  font-family: var(--font-brand-stack);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* English Uppercase Badges and Labels with Controlled Tracking */
+.tracking-tag {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Arabic Text Natural Spacing (Prevents broken cursive joinery) */
+.arabic-natural {
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+}
+
+/* Mixed RTL / LTR Bidi Isolation */
+.bidi-math {
+  direction: ltr;
+  display: inline-block;
+  unicode-bidi: isolate;
+}
+
+.bidi-term {
+  direction: ltr;
+  display: inline-block;
+  unicode-bidi: isolate;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MATHEMATICAL NOTATION SYSTEM (π, Σ, √, f(x), ∫, x², Δ)
+   Precision · Technical · Geometric · Scientific · Solid & Thin Outline
+   Supporting Colors: Chrome #F4F5F6 · Gunmetal #343940 · Neon Lime #B8FF00 · White
+   ───────────────────────────────────────────────────────────── */
+
+.math-display {
+  font-family: var(--font-math-stack);
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.math-medium {
+  font-family: var(--font-math-stack);
+  font-size: clamp(1.1rem, 1.5vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.math-micro {
+  font-family: var(--font-math-stack);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.math-symbol-chrome {
+  color: #F4F5F6;
+  border-color: #343940;
+  background: #0C0E10;
+}
+
+.math-symbol-lime {
+  color: #B8FF00;
+  border-color: rgba(184, 255, 0, 0.4);
+  background: #0C0E10;
+}
+
+.math-symbol-gunmetal {
+  color: #8E98A5;
+  border-color: #22262E;
+  background: #050505;
 }
 
 /* ── Base Styles ── */
 html {
   scroll-behavior: smooth;
-  font-family: "Graphik Arabic", var(--font-plex-arabic), sans-serif;
+  font-family: var(--font-ui-stack);
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
+  font-family: var(--font-ui-stack);
   transition: background 0.4s ease, color 0.4s ease;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
   background: var(--brand);
-  color: #000;
+  color: #050505;
 }
 
 :focus-visible {
@@ -171,22 +352,24 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
-/* ── Glassmorphism & Math Universe Visual Elements ── */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
+/* ── Technical Mathematical Grid & Precision Surfaces ── */
 .math-grid-pattern {
   background-image:
-    radial-gradient(circle, var(--grid-line) 1.5px, transparent 1.5px),
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 32px 32px, 32px 32px, 32px 32px;
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .text-neon-lime {
@@ -198,49 +381,16 @@ body {
 }
 
 .glow-lime {
-  box-shadow: 0 0 25px var(--neon-lime-glow);
+  box-shadow: 0 0 20px var(--neon-lime-glow);
 }
 
-.glow-cyan {
-  box-shadow: 0 0 25px var(--electric-cyan-glow);
-}
-
-.glow-gold {
-  box-shadow: 0 0 25px var(--quantum-gold-glow);
-}
-
-.text-gradient-lime {
-  background: linear-gradient(135deg, var(--neon-lime-bright) 0%, #10b981 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #38bdf8 0%, var(--electric-cyan) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* ── Motion & Animation System ── */
+/* ── Motion & Animation System (Controlled Mathematical Physics) ── */
 @keyframes float-gentle {
   0%, 100% {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(-12px) rotate(1.5deg);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
+    transform: translateY(-8px) rotate(1deg);
   }
 }
 
@@ -258,7 +408,7 @@ body {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(-16px) rotate(2.5deg);
+    transform: translateY(-10px) rotate(1.5deg);
   }
 }
 
@@ -267,35 +417,47 @@ body {
     transform: translateY(0px) rotate(0deg);
   }
   50% {
-    transform: translateY(14px) rotate(-2.5deg);
-  }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
+    transform: translateY(10px) rotate(-1.5deg);
   }
 }
 
 @keyframes marquee {
   0% {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes pipeline-scroll-ltr {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
+  will-change: transform;
   animation: marquee 28s linear infinite;
 }
 .marquee-track:hover {
   animation-play-state: paused;
+}
+
+.pipeline-marquee-track {
+  display: flex !important;
+  width: max-content !important;
+  will-change: transform;
+  animation: pipeline-scroll-ltr 32s linear infinite !important;
+}
+
+.pipeline-marquee-track:hover {
+  animation-play-state: paused !important;
 }
 
 .animate-float {
@@ -306,116 +468,15 @@ body {
   animation: float-delayed 7s ease-in-out infinite 1s !important;
 }
 
-.animate-bounce-subtle {
-  animation: bounce-subtle 4s ease-in-out infinite !important;
-}
-
 .animate-float-gentle {
   animation: float-gentle 5s ease-in-out infinite !important;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite !important;
-}
-
 .animate-spin-slow {
-  animation: spin-slow 20s linear infinite !important;
+  animation: spin-slow 24s linear infinite !important;
 }
 
-@keyframes shine {
-  100% {
-    left: 125%;
-  }
-}
-
-.animate-shine {
-  animation: shine 0.85s ease-in-out;
-}
-
-/* ── 3D Geometric Flying & Orbit Animations for Teacher Hero ── */
-@keyframes float-geom-1 {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  25% {
-    transform: translate3d(12px, -18px, 20px) rotate(12deg) scale(1.08);
-  }
-  50% {
-    transform: translate3d(-10px, -32px, 40px) rotate(-8deg) scale(1.15);
-  }
-  75% {
-    transform: translate3d(-18px, -14px, 10px) rotate(15deg) scale(1.02);
-  }
-}
-
-@keyframes float-geom-2 {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  33% {
-    transform: translate3d(-15px, 20px, 30px) rotate(-18deg) scale(1.12);
-  }
-  66% {
-    transform: translate3d(18px, 10px, 15px) rotate(14deg) scale(0.95);
-  }
-}
-
-@keyframes float-geom-3 {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translate3d(16px, -24px, 35px) rotate(25deg) scale(1.2);
-  }
-}
-
-@keyframes float-geom-4 {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translate3d(-14px, 22px, -20px) rotate(-20deg) scale(0.92);
-  }
-}
-
-@keyframes orbit-slow-3d {
-  0% {
-    transform: rotate3d(1, 1, 0, 0deg) rotateZ(0deg);
-  }
-  100% {
-    transform: rotate3d(1, 1, 0, 360deg) rotateZ(360deg);
-  }
-}
-
-@keyframes rotate-3d-wireframe {
-  0% {
-    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
-  }
-  100% {
-    transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg);
-  }
-}
-
-.animate-float-geom-1 {
-  animation: float-geom-1 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-}
-
-.animate-float-geom-2 {
-  animation: float-geom-2 8.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-}
-
-.animate-float-geom-3 {
-  animation: float-geom-3 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-}
-
-.animate-float-geom-4 {
-  animation: float-geom-4 9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-}
-
-.animate-rotate-3d {
-  animation: rotate-3d-wireframe 18s linear infinite !important;
-}
-
+/* ── Precise Orbit & Coordinate Rotation Keyframes ── */
 @keyframes orbit-spin-cw {
   from {
     transform: rotate(0deg);
@@ -434,47 +495,285 @@ body {
   }
 }
 
-@keyframes orbit-tilt-spin {
-  0% {
-    transform: rotateX(60deg) rotateZ(0deg);
-  }
-  100% {
-    transform: rotateX(60deg) rotateZ(360deg);
-  }
-}
-
-@keyframes math-float-drift {
+/* ── Hero Mathematical Motion Profiles (Dynamic 3D Orbits with translateZ, Depth-of-Field & Backlight Dimming) ── */
+/* π: Upper-Left Orbit (Sweeps across the top-back behind the instructor with 3D Depth) */
+@keyframes motion-pi-orbit {
   0%, 100% {
-    transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
-    opacity: 0.85;
+    transform: translate3d(0px, 0px, 20px) rotate(-8deg) scale(1.08);
+    opacity: 0.95;
+    filter: blur(0px) brightness(1.04);
   }
   25% {
-    transform: translateY(-12px) translateX(6px) rotate(8deg) scale(1.1);
-    opacity: 1;
+    /* Entering midground glide */
+    transform: translate3d(26px, -16px, -25px) rotate(-3deg) scale(0.94);
+    opacity: 0.78;
+    filter: blur(1.2px) brightness(0.85);
   }
   50% {
-    transform: translateY(-20px) translateX(-6px) rotate(-6deg) scale(1.05);
-    opacity: 0.9;
+    /* Deepest orbital point behind instructor's head/shoulder (Dimmed, amplified blur, scaled to 0.85x) */
+    transform: translate3d(50px, 15px, -90px) rotate(6deg) scale(0.85);
+    opacity: 0.45;
+    filter: blur(4px) brightness(0.58);
   }
   75% {
-    transform: translateY(-8px) translateX(-10px) rotate(4deg) scale(0.95);
-    opacity: 0.95;
+    /* Emerging into foreground corridor (1.1x scale, crystal clear) */
+    transform: translate3d(-18px, 18px, 28px) rotate(-12deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
   }
 }
 
-@keyframes math-float-drift-alt {
+/* Σ: Upper-Right Orbit (Majestic precession sweeping inward behind the head) */
+@keyframes motion-sigma-precession {
   0%, 100% {
-    transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
-    opacity: 0.8;
+    transform: translate3d(0px, 0px, 30px) rotate(5deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
   }
   33% {
-    transform: translateY(14px) translateX(-8px) rotate(-12deg) scale(1.15);
-    opacity: 1;
+    /* Sweeps deep behind instructor head/apex (Dimmed, 4.5px blur, 0.85x scale) */
+    transform: translate3d(-42px, -20px, -95px) rotate(11deg) scale(0.85);
+    opacity: 0.44;
+    filter: blur(4.5px) brightness(0.55);
   }
   66% {
-    transform: translateY(-10px) translateX(12px) rotate(10deg) scale(0.9);
-    opacity: 0.85;
+    /* Orbiting outward into right lateral space */
+    transform: translate3d(24px, 16px, -15px) rotate(-3deg) scale(0.96);
+    opacity: 0.82;
+    filter: blur(1.2px) brightness(0.88);
   }
+}
+
+/* √: Mid-Right Orbit (Sweeps behind the teacher's right arm and torso) */
+@keyframes motion-sqrt-harmonic {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 24px) rotate(8deg) scale(1.08);
+    opacity: 0.95;
+    filter: blur(0px) brightness(1.04);
+  }
+  25% {
+    /* Approaching inner arm boundary */
+    transform: translate3d(-34px, -16px, -45px) rotate(4deg) scale(0.91);
+    opacity: 0.68;
+    filter: blur(2px) brightness(0.75);
+  }
+  50% {
+    /* Deepest orbital occluded point behind torso (0.85x scale, 4.2px blur) */
+    transform: translate3d(-54px, 24px, -90px) rotate(-6deg) scale(0.85);
+    opacity: 0.42;
+    filter: blur(4.2px) brightness(0.56);
+  }
+  75% {
+    /* Swings forward around right outer flank (1.1x scale) */
+    transform: translate3d(18px, 12px, 30px) rotate(12deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
+  }
+}
+
+/* f(x): Mid-Left Orbit (Sinusoidal orbital glide sweeping behind the teacher's left arm) */
+@keyframes motion-fx-wave {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 20px) rotate(3deg) scale(1.07);
+    opacity: 0.94;
+    filter: blur(0px) brightness(1.03);
+  }
+  35% {
+    /* Deep orbital transit behind left shoulder & arm (0.85x scale, 3.8px blur) */
+    transform: translate3d(46px, -15px, -85px) rotate(9deg) scale(0.85);
+    opacity: 0.45;
+    filter: blur(3.8px) brightness(0.58);
+  }
+  70% {
+    /* Glides wide into foreground outer field (1.1x scale) */
+    transform: translate3d(-24px, 20px, 32px) rotate(-7deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
+  }
+}
+
+/* ∫: Lower-Left Orbit (Curved orbital sweep crossing behind the lower-left torso) */
+@keyframes motion-integral-sweep {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 32px) rotate(-10deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
+  }
+  30% {
+    /* Passes deep behind lower left torso (0.85x scale, 4px blur) */
+    transform: translate3d(42px, -28px, -85px) rotate(-1deg) scale(0.85);
+    opacity: 0.45;
+    filter: blur(4px) brightness(0.58);
+  }
+  65% {
+    /* Returns into open left foreground space */
+    transform: translate3d(-22px, 20px, 15px) rotate(-16deg) scale(1.05);
+    opacity: 0.92;
+    filter: blur(0px) brightness(1.02);
+  }
+}
+
+/* x²: Lower-Mid-Right Orbit (Sweeps from mid-right toward lower-center behind the body) */
+@keyframes motion-x2-depth-orbit {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 22px) rotate(-4deg) scale(1.07);
+    opacity: 0.95;
+    filter: blur(0px) brightness(1.04);
+  }
+  35% {
+    /* Deep pass behind right hip/center back (0.85x scale, 4.2px blur) */
+    transform: translate3d(-46px, -24px, -92px) rotate(6deg) scale(0.85);
+    opacity: 0.43;
+    filter: blur(4.2px) brightness(0.56);
+  }
+  70% {
+    /* Swings to closest foreground point (1.1x scale) */
+    transform: translate3d(26px, 14px, 35px) rotate(-9deg) scale(1.10);
+    opacity: 1;
+    filter: blur(0px) brightness(1.10);
+  }
+}
+
+/* Δ: Bottom-Right Orbit (Angular geometric orbit sweeping across behind the bottom-center) */
+@keyframes motion-delta-gyration {
+  0%, 100% {
+    transform: translate3d(0px, 0px, 24px) rotate(12deg) scale(1.08);
+    opacity: 0.96;
+    filter: blur(0px) brightness(1.05);
+  }
+  30% {
+    /* Passes behind bottom center (0.85x scale, 4px blur) */
+    transform: translate3d(-38px, -26px, -88px) rotate(3deg) scale(0.85);
+    opacity: 0.44;
+    filter: blur(4px) brightness(0.57);
+  }
+  70% {
+    /* Emerges into sharp foreground focus (1.1x scale) */
+    transform: translate3d(22px, 12px, 30px) rotate(19deg) scale(1.10);
+    opacity: 0.98;
+    filter: blur(0px) brightness(1.08);
+  }
+}
+
+/* Teacher Backlight Aura Glow Animations */
+@keyframes teacher-backlight-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+    filter: blur(40px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+    filter: blur(48px);
+  }
+}
+
+@keyframes teacher-halo-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-teacher-glow {
+  animation: teacher-backlight-pulse 4.5s ease-in-out infinite;
+}
+
+.animate-teacher-halo {
+  animation: teacher-halo-spin 25s linear infinite;
+}
+
+/* Dynamic Interactive Repulsion & Focus on Hover / Focus */
+.math-entity-node {
+  will-change: transform, opacity, filter;
+  isolation: isolate;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, filter 0.35s ease;
+  transform-style: preserve-3d;
+}
+
+.math-entity-node:hover,
+.math-entity-node:focus-visible {
+  z-index: 50 !important;
+  opacity: 1 !important;
+  filter: blur(0px) brightness(1.2) contrast(1.1) !important;
+  transform: translate3d(0px, 0px, 40px) scale(1.18) !important;
+  animation-play-state: paused !important;
+}
+
+/* 3D Mathematical Spatial Shape Container */
+.math-3d-shape-box {
+  transform-style: preserve-3d;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+/* Volumetric 3D Orbital Gyro Ring */
+.math-3d-orbit-ring {
+  position: absolute;
+  inset: -12%;
+  border-radius: 9999px;
+  border: 1px dashed rgba(184, 255, 0, 0.25);
+  transform: rotateX(68deg) rotateY(18deg) translateZ(-8px);
+  pointer-events: none;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 15px rgba(184, 255, 0, 0.08), inset 0 0 12px rgba(184, 255, 0, 0.05);
+}
+
+.group:hover .math-3d-orbit-ring {
+  border-color: rgba(184, 255, 0, 0.65);
+  border-style: solid;
+  transform: rotateX(68deg) rotateY(24deg) translateZ(-4px) scale(1.08);
+  box-shadow: 0 0 24px rgba(184, 255, 0, 0.3), inset 0 0 18px rgba(184, 255, 0, 0.15);
+}
+
+/* Volumetric 3D Floor Shadow Anchor */
+.math-3d-floor-depth {
+  position: absolute;
+  bottom: -15%;
+  left: 15%;
+  right: 15%;
+  height: 20%;
+  border-radius: 9999px;
+  background: radial-gradient(ellipse at center, rgba(184, 255, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 60%, transparent 80%);
+  filter: blur(8px);
+  transform: rotateX(75deg) translateZ(-25px);
+  pointer-events: none;
+}
+
+.group:hover .math-3d-floor-depth {
+  background: radial-gradient(ellipse at center, rgba(184, 255, 0, 0.35) 0%, rgba(0, 0, 0, 0.9) 60%, transparent 80%);
+  filter: blur(10px);
+}
+
+.animate-math-pi {
+  animation: motion-pi-orbit 11.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+}
+
+.animate-math-sigma {
+  animation: motion-sigma-precession 13.5s ease-in-out infinite !important;
+}
+
+.animate-math-sqrt {
+  animation: motion-sqrt-harmonic 8.6s ease-in-out infinite !important;
+}
+
+.animate-math-fx {
+  animation: motion-fx-wave 9.8s cubic-bezier(0.42, 0, 0.58, 1) infinite !important;
+}
+
+.animate-math-integral {
+  animation: motion-integral-sweep 12.0s cubic-bezier(0.42, 0, 0.58, 1) infinite !important;
+}
+
+.animate-math-x2 {
+  animation: motion-x2-depth-orbit 8.4s ease-in-out infinite !important;
+}
+
+.animate-math-delta {
+  animation: motion-delta-gyration 14.2s ease-in-out infinite !important;
 }
 
 .animate-orbit-cw {
@@ -485,249 +784,30 @@ body {
   animation: orbit-spin-ccw 30s linear infinite !important;
 }
 
-.animate-orbit-fast-cw {
-  animation: orbit-spin-cw 16s linear infinite !important;
-}
-
-.animate-orbit-tilt {
-  animation: orbit-tilt-spin 22s linear infinite !important;
-}
-
-.animate-math-drift {
-  animation: math-float-drift 5.5s ease-in-out infinite !important;
-}
-
-.animate-math-drift-alt {
-  animation: math-float-drift-alt 6.5s ease-in-out infinite !important;
-}
-
-/* ── Full Cover Mathematics Universe Animation System ── */
-.math-glyph-3d {
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  text-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.7),
-    0 2px 0 rgba(0, 0, 0, 0.85),
-    0 3px 0 rgba(0, 0, 0, 0.95),
-    0 5px 8px rgba(0, 0, 0, 0.95),
-    0 0 15px currentColor,
-    0 0 35px currentColor,
-    0 0 60px currentColor;
-  transform: perspective(600px) translateZ(12px);
-  will-change: transform;
-}
-
-@keyframes cyber-hologram-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 25px currentColor) drop-shadow(0 0 45px currentColor);
-    opacity: 0.88;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  50% {
-    filter: drop-shadow(0 0 18px currentColor) drop-shadow(0 0 40px currentColor) drop-shadow(0 0 70px currentColor);
-    opacity: 1;
+  .animate-math-pi,
+  .animate-math-sigma,
+  .animate-math-sqrt,
+  .animate-math-fx,
+  .animate-math-integral,
+  .animate-math-x2,
+  .animate-math-delta,
+  .animate-spin-slow,
+  .animate-orbit-cw,
+  .animate-orbit-ccw,
+  .animate-float,
+  .animate-pulse-glow {
+    animation: none !important;
+    transform: none !important;
   }
-}
-
-@keyframes radial-corona-pulse {
-  0%, 100% {
-    transform: scale(0.9);
-    opacity: 0.4;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.85;
-  }
-}
-
-.animate-cyber-glow {
-  animation: cyber-hologram-pulse 4s ease-in-out infinite alternate !important;
-}
-
-.animate-corona-pulse {
-  animation: radial-corona-pulse 3.5s ease-in-out infinite alternate !important;
-}
-
-/* Organic Floating animations for Cover Elements */
-@keyframes cover-float-slow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translateY(-18px) rotate(5deg) scale(1.05);
-  }
-}
-
-@keyframes cover-float-alt {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translateY(16px) rotate(-6deg) scale(0.98);
-  }
-}
-
-@keyframes cover-float-drift {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  33% {
-    transform: translate(12px, -14px) rotate(4deg);
-  }
-  66% {
-    transform: translate(-10px, 12px) rotate(-4deg);
-  }
-}
-
-@keyframes cover-float-drift-reverse {
-  0%, 100% {
-    transform: translate(0px, 0px) rotate(0deg);
-  }
-  33% {
-    transform: translate(-14px, 10px) rotate(-5deg);
-  }
-  66% {
-    transform: translate(10px, -12px) rotate(3deg);
-  }
-}
-
-@keyframes math-pulse-glow {
-  0%, 100% {
-    opacity: 0.55;
-    filter: drop-shadow(0 0 8px currentColor);
-  }
-  50% {
-    opacity: 0.95;
-    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 35px currentColor);
-  }
-}
-
-@keyframes laser-beam-pulse {
-  0%, 100% {
-    opacity: 0.15;
-    transform: scaleX(0.95);
-  }
-  50% {
-    opacity: 0.45;
-    transform: scaleX(1.05);
-  }
-}
-
-.animate-cover-float-1 {
-  animation: cover-float-slow 7s ease-in-out infinite !important;
-}
-
-.animate-cover-float-2 {
-  animation: cover-float-alt 8.5s ease-in-out infinite !important;
-}
-
-.animate-cover-float-3 {
-  animation: cover-float-drift 9.5s ease-in-out infinite !important;
-}
-
-.animate-cover-float-4 {
-  animation: cover-float-drift-reverse 11s ease-in-out infinite !important;
-}
-
-.animate-math-glow-pulse {
-  animation: math-pulse-glow 4s ease-in-out infinite !important;
-}
-
-.animate-laser-pulse {
-  animation: laser-beam-pulse 5s ease-in-out infinite !important;
-}
-
-/* ── Cosmic Fluid & Spacetime Ripple Keyframes ── */
-@keyframes cosmic-fluid-swirl {
-  0% {
-    transform: translate(0px, 0px) rotate(0deg) scale(1);
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  }
-  33% {
-    transform: translate(30px, -50px) rotate(120deg) scale(1.1);
-    border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
-  }
-  66% {
-    transform: translate(-25px, 35px) rotate(240deg) scale(0.95);
-    border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%;
-  }
-  100% {
-    transform: translate(0px, 0px) rotate(360deg) scale(1);
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  }
-}
-
-@keyframes cosmic-fluid-drift {
-  0% {
-    transform: translate(0px, 0px) rotate(0deg) scale(1);
-    border-radius: 50% 50% 40% 60% / 50% 40% 60% 50%;
-  }
-  50% {
-    transform: translate(-45px, 40px) rotate(180deg) scale(1.15);
-    border-radius: 30% 70% 60% 40% / 60% 30% 70% 40%;
-  }
-  100% {
-    transform: translate(0px, 0px) rotate(360deg) scale(1);
-    border-radius: 50% 50% 40% 60% / 50% 40% 60% 50%;
-  }
-}
-
-@keyframes cosmic-fluid-pulse {
-  0%, 100% {
-    transform: scale(0.92) translate(0, 0);
-    opacity: 0.15;
-  }
-  50% {
-    transform: scale(1.12) translate(20px, -20px);
-    opacity: 0.28;
-  }
-}
-
-@keyframes spacetime-ripple {
-  0% {
-    transform: scale(0.7) rotate(0deg);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.35;
-  }
-  80% {
-    opacity: 0.15;
-  }
-  100% {
-    transform: scale(1.4) rotate(45deg);
-    opacity: 0;
-  }
-}
-
-.animate-cosmic-fluid-swirl {
-  animation: cosmic-fluid-swirl 30s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-.animate-cosmic-fluid-drift {
-  animation: cosmic-fluid-drift 35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-.animate-cosmic-fluid-pulse {
-  animation: cosmic-fluid-pulse 18s ease-in-out infinite;
-}
-
-.animate-spacetime-ripple-1 {
-  animation: spacetime-ripple 16s ease-out infinite;
-  animation-delay: 0s;
-}
-
-.animate-spacetime-ripple-2 {
-  animation: spacetime-ripple 16s ease-out infinite;
-  animation-delay: 4s;
-}
-
-.animate-spacetime-ripple-3 {
-  animation: spacetime-ripple 16s ease-out infinite;
-  animation-delay: 8s;
-}
-
-.animate-spacetime-ripple-4 {
-  animation: spacetime-ripple 16s ease-out infinite;
-  animation-delay: 12s;
 }
 
 /* Scroll reveal */

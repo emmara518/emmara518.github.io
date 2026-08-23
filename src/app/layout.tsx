@@ -1,22 +1,52 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { Cairo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CosmicFluidBackground } from "@/components/cosmic-fluid-background";
 
-const plexArabic = IBM_Plex_Sans_Arabic({
+const graphikArabic = localFont({
+  src: [
+    {
+      path: "../../public/fonts/graphik-arabic-regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/graphik-arabic-medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/graphik-arabic-semibold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/graphik-arabic-semibold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-graphik-arabic",
+  display: "swap",
+});
+
+const cairo = Cairo({
   subsets: ["arabic", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-plex-arabic",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-cairo",
+  display: "swap",
 });
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-plex-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -52,7 +82,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${plexArabic.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-[#04060b]`}>
+      <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-[#04060b]`}>
         <CosmicFluidBackground />
         <SiteHeader user={headerUser} />
         <div className="relative z-10 min-h-screen">{children}</div>

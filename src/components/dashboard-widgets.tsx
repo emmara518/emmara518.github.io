@@ -26,34 +26,32 @@ import { cn } from "@/lib/utils";
  */
 export function DashboardHeroBanner({ user }: { user?: { name: string } | null }) {
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 text-white p-6 sm:p-10 border border-slate-800 shadow-2xl glow-lime">
-      {/* Background Math Grid & Glowing Neon Concentric Orbs */}
+    <div className="relative overflow-hidden rounded-3xl bg-[#0C0E10] text-white p-6 sm:p-10 border border-[#22262E] shadow-2xl">
+      {/* Background Math Grid & Engineered Orbit lines */}
       <div className="absolute inset-0 math-grid-pattern opacity-20 pointer-events-none" />
-      <div className="absolute -top-32 -right-32 size-96 rounded-full bg-lime-500/20 blur-3xl pointer-events-none animate-pulse-glow" />
-      <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
 
-      {/* Floating Math Formulas (Exact match to Mockup 1 & 2) */}
-      <div className="absolute top-6 left-1/3 hidden md:block font-mono text-sm font-bold text-lime-400/50 animate-float-gentle select-none">
+      {/* Floating Math Formulas */}
+      <div className="absolute top-6 left-1/3 hidden md:block font-mono text-sm font-bold text-[#8E98A5]/40 select-none">
         f(x) = x² - 4x + 3
       </div>
-      <div className="absolute bottom-10 left-1/4 hidden md:block font-mono text-xs font-bold text-cyan-400/40 animate-float-gentle select-none">
+      <div className="absolute bottom-10 left-1/4 hidden md:block font-mono text-xs font-bold text-[#B8FF00]/40 select-none">
         x = (-b ± √(b² - 4ac)) / 2a
       </div>
 
       <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         {/* Text & Action Column */}
         <div className="space-y-6 text-start">
-          <div className="inline-flex items-center gap-2 rounded-full border border-lime-400/30 bg-lime-400/10 px-4 py-1.5 text-xs font-bold text-lime-300">
-            <Sparkles size={14} className="animate-spin-slow" />
-            <span>منصة دروس ماث — عالم الرياضيات بين يديك</span>
+          <div className="inline-flex items-center gap-2 rounded-md border border-[#22262E] bg-[#15181C] px-3.5 py-1 text-xs font-bold text-[#8E98A5]">
+            <span className="size-1.5 rounded-full bg-[#B8FF00]" />
+            <span>منصة دروس ماث — مستر محمد سعيد</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-white">
             تعلم الرياضيات <br />
-            <span className="text-gradient-lime">كما لم تتعلم من قبل</span>
+            <span className="text-[#B8FF00]">بمنطق واستنتاج هندسي</span>
           </h1>
 
-          <p className="max-w-xl text-sm sm:text-base font-medium leading-relaxed text-slate-300">
+          <p className="max-w-xl text-sm sm:text-base font-medium leading-relaxed text-[#8E98A5]">
             تعلم بذكاء، تدرب باحتراف، وتفوق بثقة مع <span className="font-extrabold text-white">مستر محمد سعيد</span>.
             منهج كامل، اختبارات بتصحيح فوري، ومتابعة لحظية لتقدمك.
           </p>
@@ -61,22 +59,22 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 rounded-2xl bg-neon-lime px-6 py-3.5 text-sm font-black text-slate-950 shadow-lg shadow-lime-500/25 hover:bg-lime-400 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#B8FF00] px-6 py-3.5 text-sm font-black text-[#050505] hover:bg-[#D7FF3F] transition-all"
             >
               <Play size={16} fill="currentColor" />
               <span>ابدأ التعلم الآن</span>
             </Link>
 
             <Link
-              href="/demo"
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-5 py-3.5 text-sm font-bold text-white hover:bg-slate-800 transition-colors"
+              href="/courses"
+              className="inline-flex items-center gap-2 rounded-xl border border-[#22262E] bg-[#15181C] px-5 py-3.5 text-sm font-bold text-white hover:border-[#B8FF00] transition-colors"
             >
-              <span>شاهد كيف نتعلم</span>
+              <span>استعراض المقررات</span>
             </Link>
           </div>
 
-          {/* Quick Nav Tabs matching Mockup 1 */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-4 border-t border-slate-800/80">
+          {/* Quick Nav Tabs */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-4 border-t border-[#22262E]">
             {[
               { label: "المقررات", icon: BookOpen },
               { label: "المجتمع", icon: Users },
@@ -86,9 +84,9 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
             ].map((tab) => (
               <button
                 key={tab.label}
-                className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-900/60 px-3 py-2 text-xs font-bold text-slate-300 border border-slate-800 hover:border-lime-400/50 hover:text-lime-300 transition-all"
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-[#15181C] px-3 py-2 text-xs font-bold text-[#8E98A5] border border-[#22262E] hover:border-[#B8FF00]/60 hover:text-white transition-all"
               >
-                <tab.icon size={13} className="text-lime-400" />
+                <tab.icon size={13} className="text-[#B8FF00]" />
                 <span>{tab.label}</span>
               </button>
             ))}
@@ -97,11 +95,11 @@ export function DashboardHeroBanner({ user }: { user?: { name: string } | null }
 
         {/* Teacher Portrait Container (Mr. Mohamed Saeed) */}
         <div className="relative flex justify-center lg:justify-end">
-          <div className="relative size-72 sm:size-80 lg:size-96 rounded-full p-2 bg-gradient-to-tr from-lime-500 via-cyan-500 to-transparent glow-lime">
-            <div className="relative size-full overflow-hidden rounded-full bg-slate-900 border-4 border-slate-950">
+          <div className="relative size-72 sm:size-80 lg:size-96 rounded-2xl p-1.5 bg-[#15181C] border border-[#22262E]">
+            <div className="relative size-full overflow-hidden rounded-xl bg-[#050505]">
               <Image
                 src="/images/teacher.webp"
-                alt="مستر محمد سعيد — Dros Math Universe"
+                alt="مستر محمد سعيد — Dros Math"
                 fill
                 priority
                 className="object-cover object-top hover:scale-105 transition-transform duration-500"

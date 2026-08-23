@@ -1,48 +1,75 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useState } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * DROS MATH UNIVERSE — 3D Rendered PNG Brand Identity
+ * DROS MATH — Architectural Isometric Geometry Icon
+ * Precision mathematical polygon crafted with Neon Lime #B8FF00, Chrome #F4F5F6 & Gunmetal #343940.
  */
 export function LogoMark({
-  size = 46,
+  size = 38,
   className,
-  showGlow = true,
 }: {
   size?: number;
   className?: string;
-  showGlow?: boolean;
 }) {
   return (
     <span
       className={cn(
-        "group relative inline-flex items-center justify-center shrink-0 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 p-1 shadow-2xl transition-all duration-300 hover:scale-105 border border-slate-700/60 hover:border-lime-400/80 cursor-pointer overflow-hidden",
-        showGlow && "shadow-[0_0_25px_rgba(163,230,53,0.25)] hover:shadow-[0_0_35px_rgba(163,230,53,0.45)]",
+        "group relative inline-flex items-center justify-center shrink-0 rounded-lg transition-transform duration-300 hover:scale-105 select-none",
         className
       )}
       style={{ width: size, height: size }}
-      aria-hidden
     >
-      {/* Background Micro Grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(#84cc16_1px,transparent_1px)] [background-size:8px_8px] opacity-20 pointer-events-none" />
+      <svg
+        viewBox="0 0 44 44"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="size-full"
+      >
+        <defs>
+          <linearGradient id="drosCubeLime" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#D7FF3F" />
+            <stop offset="100%" stopColor="#B8FF00" />
+          </linearGradient>
+          <linearGradient id="drosCubeChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#F4F5F6" />
+            <stop offset="100%" stopColor="#8E98A5" />
+          </linearGradient>
+          <linearGradient id="drosCubeGunmetal" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#343940" />
+            <stop offset="100%" stopColor="#15181C" />
+          </linearGradient>
+        </defs>
 
-      {/* Cyber Specular Light Streak on Hover */}
-      <div className="absolute -inset-full top-0 block h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shine pointer-events-none transition-opacity" />
-
-      {/* 3D Rendered Brand Icon PNG */}
-      <div className="relative size-full overflow-hidden rounded-xl">
-        <Image
-          src="/images/math_logo_3d.png"
-          alt="Dros Math 3D Logo"
-          fill
-          sizes="96px"
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
-          priority
+        {/* Outer Isometric Hexagonal Prism */}
+        <polygon
+          points="22,3 40,13 40,33 22,43 4,33 4,13"
+          stroke="#B8FF00"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+          fill="#0C0E10"
         />
-      </div>
+
+        {/* Isometric Coordinate Planes */}
+        <polygon points="22,3 40,13 22,23 4,13" fill="url(#drosCubeLime)" fillOpacity="0.12" stroke="#B8FF00" strokeWidth="0.8" />
+        <polygon points="4,13 22,23 22,43 4,33" fill="url(#drosCubeChrome)" fillOpacity="0.08" stroke="#8E98A5" strokeWidth="0.8" />
+        <polygon points="22,23 40,13 40,33 22,43" fill="url(#drosCubeGunmetal)" fillOpacity="0.4" stroke="#343940" strokeWidth="0.8" />
+
+        {/* Precision Internal Axes */}
+        <line x1="22" y1="23" x2="22" y2="43" stroke="#B8FF00" strokeWidth="1.4" />
+        <line x1="22" y1="23" x2="4" y2="13" stroke="#B8FF00" strokeWidth="1.4" />
+        <line x1="22" y1="23" x2="40" y2="13" stroke="#B8FF00" strokeWidth="1.4" />
+
+        {/* Mathematical Vertex Points */}
+        <circle cx="22" cy="3" r="1.5" fill="#B8FF00" />
+        <circle cx="40" cy="13" r="1.5" fill="#B8FF00" />
+        <circle cx="4" cy="13" r="1.5" fill="#B8FF00" />
+        <circle cx="22" cy="23" r="2" fill="#FFFFFF" />
+        <circle cx="22" cy="43" r="1.5" fill="#B8FF00" />
+      </svg>
     </span>
   );
 }
@@ -56,23 +83,19 @@ export function LogoWordmark({
 }) {
   return (
     <div className={cn("group inline-flex items-center gap-3 select-none", className)}>
-      <LogoMark size={46} />
+      <LogoMark size={compact ? 30 : 36} />
       {!compact && (
         <div className="flex flex-col text-start">
           <div className="flex items-center gap-1.5 leading-none">
-            <span className="text-xl font-black tracking-tight text-ink group-hover:text-white transition-colors">
+            <span className="text-lg font-black tracking-tight text-white font-mono">
               DROS
             </span>
-            <span className="relative text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-lime-300 to-cyan-400 drop-shadow-[0_0_12px_rgba(163,230,53,0.4)]">
+            <span className="text-lg font-black tracking-tight text-[#B8FF00] font-mono">
               MATH
             </span>
-            <span className="inline-flex items-center rounded-md bg-lime-500/15 border border-lime-400/40 px-1.5 py-0.5 font-mono text-[10px] font-black text-neon-lime">
-              3D
-            </span>
           </div>
-          <div className="mt-1 flex items-center gap-1.5 font-mono text-[9px] font-bold tracking-[0.28em] text-muted group-hover:text-slate-300 transition-colors uppercase">
-            <span className="size-1 rounded-full bg-neon-lime animate-pulse" />
-            <span>UNIVERSE · منصة الرياضيات</span>
+          <div className="mt-1 flex items-center gap-1 text-[9px] font-semibold text-[#8E98A5] tracking-wide">
+            <span>ENGLISH MATH · MR. MOHAMED SAEED</span>
           </div>
         </div>
       )}

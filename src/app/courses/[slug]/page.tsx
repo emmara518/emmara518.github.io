@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -44,6 +45,29 @@ export default async function CourseDetailPage({
     (s, l) => s + l.videos.reduce((x, v) => x + v.durationSec, 0),
     0,
   );
+
+  const getCoverImage = () => {
+    const s = (course.slug || "").toLowerCase();
+    const sub = (course.subjectName || "").toLowerCase();
+    const t = (course.title || "").toLowerCase();
+
+    if (s.includes("calculus") || sub.includes("تفاضل") || t.includes("تفاضل") || s.includes("diff")) {
+      return "/images/courses/calculus.jpg";
+    }
+    if (s.includes("trig") || sub.includes("مثلثات") || t.includes("مثلثات")) {
+      return "/images/courses/trigonometry.jpg";
+    }
+    if (s.includes("geom") || sub.includes("هندسة") || t.includes("هندسة") || s.includes("solid")) {
+      return "/images/courses/geometry.jpg";
+    }
+    if (s.includes("revision") || s.includes("final") || t.includes("مراجعة")) {
+      return "/images/courses/final_revision.jpg";
+    }
+    return "/images/courses/algebra.jpg";
+  };
+
+  const coverImage = getCoverImage();
+
   const features = [
     `${curriculum.lessons.length} درسًا مرئيًا مرتبًا`,
     `${formatDuration(totalSeconds)} من الشرح عبر YouTube`,
@@ -54,10 +78,23 @@ export default async function CourseDetailPage({
 
   return (
     <main>
-      {/* header */}
-      <section className="relative overflow-hidden border-b border-line">
-        <div className="grid-paper-lg fade-mask-b absolute inset-0" aria-hidden />
-        <div className="orb size-96 -top-32 -start-32 bg-[var(--hero-glow-1)]" aria-hidden />
+      {/* header with AI Teacher Visual Canvas */}
+      <section className="relative overflow-hidden border-b border-[#22262E] bg-[#0C0E10]">
+        {/* Ambient AI Teacher Background Artwork */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <Image
+            src={coverImage}
+            alt={`${course.title} - مستر محمد سعيد`}
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover object-center opacity-25 filter blur-[1px]"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E10] via-[#0C0E10]/85 to-[#0C0E10]/60" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(184,255,0,0.15),transparent_70%)]" />
+        </div>
+
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-muted" aria-label="مسار">
             <Link href="/courses" className="hover:text-brand">الكورسات</Link>
@@ -71,12 +108,12 @@ export default async function CourseDetailPage({
             <Badge tone="gold">{course.gradeName}</Badge>
             <Badge tone="outline">{course.stageName}</Badge>
           </div>
-          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-snug tracking-tight sm:text-4xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-snug tracking-tight sm:text-4xl text-white">
             {course.title}
           </h1>
-          <p className="mt-3 max-w-2xl leading-8 text-muted">{course.summary}</p>
-          <div className="mt-5 flex flex-wrap items-center gap-5 text-sm text-muted">
-            <span className="inline-flex items-center gap-1.5">
+          <p className="mt-3 max-w-2xl leading-8 text-[#9DA8B6]">{course.summary}</p>
+          <div className="mt-5 flex flex-wrap items-center gap-5 text-sm text-[#D0D5DD]">
+            <span className="inline-flex items-center gap-1.5 font-bold text-[#B8FF00] bg-[#14181E] px-3 py-1 rounded-full border border-[#B8FF00]/30">
               <User size={15} /> {course.teacherName}
             </span>
             <span className="inline-flex items-center gap-1.5 font-mono">
