@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, ilike, inArray, sql } from "drizzle-orm";
-import { db } from "@/db";
+import { db, ensureDbReady } from "@/db";
 import {
   academicStages,
   grades,
@@ -30,16 +30,19 @@ export type CourseCardModel = {
 };
 
 export async function listStagesWithGrades() {
+  await ensureDbReady();
   const stages = await db.select().from(academicStages).orderBy(asc(academicStages.sortOrder));
   const gradeRows = await db.select().from(grades).orderBy(asc(grades.sortOrder));
   return stages.map((s) => ({ ...s, grades: gradeRows.filter((g) => g.stageId === s.id) }));
 }
 
 export async function listGrades() {
+  await ensureDbReady();
   return db.select().from(grades).orderBy(asc(grades.sortOrder));
 }
 
 export async function listSubjects() {
+  await ensureDbReady();
   return db.select().from(subjects).orderBy(asc(subjects.name));
 }
 
@@ -48,6 +51,7 @@ export async function listCourses(filters?: {
   subjectSlug?: string;
   q?: string;
 }): Promise<CourseCardModel[]> {
+  await ensureDbReady();
   const where = [eq(courses.status, "published")];
   if (filters?.gradeSlug) where.push(eq(grades.slug, filters.gradeSlug));
   if (filters?.subjectSlug) where.push(eq(subjects.slug, filters.subjectSlug));

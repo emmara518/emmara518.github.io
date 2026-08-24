@@ -19,6 +19,9 @@ import { getCourseBySlug, getCourseCurriculum } from "@/lib/services/catalog.ser
 import { hasActiveSubscription } from "@/lib/services/billing.service";
 import { formatDuration, formatEGP } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata({
   params,
 }: {

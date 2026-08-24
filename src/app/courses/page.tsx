@@ -3,6 +3,9 @@ import { CatalogBrowser } from "@/components/catalog-browser";
 import { MathCanvas } from "@/components/marketing";
 import { listCourses, listGrades, listSubjects } from "@/lib/services/catalog.service";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = { title: "الكورسات" };
 
 export default async function CoursesPage({

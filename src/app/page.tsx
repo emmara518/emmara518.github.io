@@ -12,6 +12,9 @@ const TESTIMONIALS = [
   { name: "أم عمر", grade: "ولية أمر", text: "أتابع تقدم ابني بوضوح: كام فيديو اتفرج عليه، ونتيجة كل اختبار. متابعة حقيقية مش وعود." },
 ];
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const [courses, stages] = await Promise.all([featuredCourses(6), listStagesWithGrades()]);
 

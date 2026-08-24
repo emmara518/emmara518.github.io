@@ -32,70 +32,85 @@ async function audit(actor: SessionUser, action: string, entity: string, entityI
 }
 
 export async function getAdminOverview() {
-  const [studentsCount] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(users)
-    .where(eq(users.role, "student"));
-  const [coursesCount] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(courses)
-    .where(eq(courses.status, "published"));
-  const [revenue] = await db
-    .select({ value: sql<number>`COALESCE(sum(${invoices.totalCents}),0)::int` })
-    .from(invoices);
-  const [subsCount] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(subscriptions)
-    .where(eq(subscriptions.status, "active"));
+  try {
+    const [studentsCount] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(users)
+      .where(eq(users.role, "student"));
+    const [coursesCount] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(courses)
+      .where(eq(courses.status, "published"));
+    const [revenue] = await db
+      .select({ value: sql<number>`COALESCE(sum(${invoices.totalCents}),0)::int` })
+      .from(invoices);
+    const [subsCount] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, "active"));
 
-  const revenueByMonth = await db
-    .select({
-      month: sql<string>`to_char(date_trunc('month', ${invoices.issuedAt}), 'YYYY-MM')`,
-      total: sql<number>`COALESCE(sum(${invoices.totalCents}),0)::int`,
-    })
-    .from(invoices)
-    .groupBy(sql`date_trunc('month', ${invoices.issuedAt})`)
-    .orderBy(sql`date_trunc('month', ${invoices.issuedAt})`);
+    const revenueByMonth = await db
+      .select({
+        month: sql<string>`to_char(date_trunc('month', ${invoices.issuedAt}), 'YYYY-MM')`,
+        total: sql<number>`COALESCE(sum(${invoices.totalCents}),0)::int`,
+      })
+      .from(invoices)
+      .groupBy(sql`date_trunc('month', ${invoices.issuedAt})`)
+      .orderBy(sql`date_trunc('month', ${invoices.issuedAt})`);
 
-  const recentOrders = await db
-    .select({
-      id: orders.id,
-      totalCents: orders.totalCents,
-      status: orders.status,
-      createdAt: orders.createdAt,
-      studentName: users.name,
-      courseTitle: courses.title,
-    })
-    .from(orders)
-    .innerJoin(users, eq(orders.userId, users.id))
-    .innerJoin(courses, eq(orders.courseId, courses.id))
-    .orderBy(desc(orders.createdAt))
-    .limit(8);
+    const recentOrders = await db
+      .select({
+        id: orders.id,
+        totalCents: orders.totalCents,
+        status: orders.status,
+        createdAt: orders.createdAt,
+        studentName: users.name,
+        courseTitle: courses.title,
+      })
+      .from(orders)
+      .innerJoin(users, eq(orders.userId, users.id))
+      .innerJoin(courses, eq(orders.courseId, courses.id))
+      .orderBy(desc(orders.createdAt))
+      .limit(8);
 
-  const recentAudit = await db
-    .select({
-      id: auditLogs.id,
-      action: auditLogs.action,
-      entity: auditLogs.entity,
-      createdAt: auditLogs.createdAt,
-      actorName: users.name,
-    })
-    .from(auditLogs)
-    .leftJoin(users, eq(auditLogs.actorId, users.id))
-    .orderBy(desc(auditLogs.createdAt))
-    .limit(8);
+    const recentAudit = await db
+      .select({
+        id: auditLogs.id,
+        action: auditLogs.action,
+        entity: auditLogs.entity,
+        createdAt: auditLogs.createdAt,
+        actorName: users.name,
+      })
+      .from(auditLogs)
+      .leftJoin(users, eq(auditLogs.actorId, users.id))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(8);
 
-  return {
-    stats: {
-      students: studentsCount.value,
-      publishedCourses: coursesCount.value,
-      revenueCents: revenue.value,
-      activeSubscriptions: subsCount.value,
-    },
-    revenueByMonth,
-    recentOrders,
-    recentAudit,
-  };
+    return {
+      stats: {
+        students: Number(studentsCount?.value ?? 0),
+        publishedCourses: Number(coursesCount?.value ?? 0),
+        revenueCents: Number(revenue?.value ?? 0),
+        activeSubscriptions: Number(subsCount?.value ?? 0),
+      },
+      revenueByMonth: revenueByMonth || [],
+      recentOrders: recentOrders || [],
+      recentAudit: recentAudit || [],
+    };
+  } catch (err) {
+    console.error("[admin.service] getAdminOverview error:", err);
+    return {
+      stats: {
+        students: 0,
+        publishedCourses: 0,
+        revenueCents: 0,
+        activeSubscriptions: 0,
+      },
+      revenueByMonth: [],
+      recentOrders: [],
+      recentAudit: [],
+    };
+  }
 }
 
 export async function listUsersAdmin() {

@@ -1,14 +1,54 @@
 export const SCHEMA_SQL = `
-CREATE TYPE "public"."course_status" AS ENUM('draft', 'published', 'archived');
-CREATE TYPE "public"."exam_mode" AS ENUM('practice', 'graded');
-CREATE TYPE "public"."file_kind" AS ENUM('book', 'worksheet', 'exam_paper', 'attachment');
-CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'failed', 'refunded');
-CREATE TYPE "public"."payment_provider" AS ENUM('wallet', 'manual', 'card');
-CREATE TYPE "public"."payment_status" AS ENUM('pending', 'succeeded', 'failed');
-CREATE TYPE "public"."question_kind" AS ENUM('mcq', 'true_false');
-CREATE TYPE "public"."subscription_status" AS ENUM('active', 'expired', 'cancelled');
-CREATE TYPE "public"."user_role" AS ENUM('student', 'parent', 'center', 'teacher', 'admin');
-CREATE TYPE "public"."wallet_txn_kind" AS ENUM('topup', 'purchase', 'refund', 'grant');
+DO $$ BEGIN
+    CREATE TYPE "public"."course_status" AS ENUM('draft', 'published', 'archived');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."exam_mode" AS ENUM('practice', 'graded');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."file_kind" AS ENUM('book', 'worksheet', 'exam_paper', 'attachment');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'failed', 'refunded');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."payment_provider" AS ENUM('wallet', 'manual', 'card');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."payment_status" AS ENUM('pending', 'succeeded', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."question_kind" AS ENUM('mcq', 'true_false');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."subscription_status" AS ENUM('active', 'expired', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."user_role" AS ENUM('student', 'parent', 'center', 'teacher', 'admin');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
+    CREATE TYPE "public"."wallet_txn_kind" AS ENUM('topup', 'purchase', 'refund', 'grant');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "academic_stages" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

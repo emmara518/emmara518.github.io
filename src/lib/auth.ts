@@ -38,39 +38,48 @@ export async function createSession(userId: string): Promise<void> {
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     expires: expiresAt,
   });
 }
 
 export async function destroySession(): Promise<void> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (token) {
-    await db.delete(sessions).where(eq(sessions.token, token));
+  try {
+    const store = await cookies();
+    const token = store.get(SESSION_COOKIE)?.value;
+    if (token) {
+      await db.delete(sessions).where(eq(sessions.token, token));
+    }
+    store.delete(SESSION_COOKIE);
+  } catch (err) {
+    console.warn("[auth] destroySession error:", err);
   }
-  store.delete(SESSION_COOKIE);
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
-  const rows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-      avatarUrl: users.avatarUrl,
-    })
-    .from(sessions)
-    .innerJoin(users, eq(sessions.userId, users.id))
-    .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
-    .limit(1);
-  return rows[0] ?? null;
+  try {
+    const store = await cookies();
+    const token = store.get(SESSION_COOKIE)?.value;
+    if (!token) return null;
+    const rows = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
+      .limit(1);
+    return rows[0] ?? null;
+  } catch (err) {
+    console.warn("[auth] getSessionUser error:", err);
+    return null;
+  }
 }
 
 /** For API handlers: user or null. Handlers emit 401/403 via http.ts helpers. */

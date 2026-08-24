@@ -38,10 +38,29 @@ if (globalForDb.__drosMathDbInstance) {
   pool = globalForDb.__drosMathPool ?? null;
 } else if (databaseUrl && !isPlaceholderUrl(databaseUrl)) {
   try {
-    pool = new Pool({ connectionString: databaseUrl, connectionTimeoutMillis: 3000 });
+    const isLocal = databaseUrl.includes("localhost") || databaseUrl.includes("127.0.0.1");
+    pool = new Pool({
+      connectionString: databaseUrl,
+      connectionTimeoutMillis: 5000,
+      ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    });
     dbInstance = drizzleNodePg(pool, { schema });
     globalForDb.__drosMathPool = pool;
     globalForDb.__drosMathDbInstance = dbInstance;
+
+    if (!globalForDb.__drosMathInitPromise) {
+      globalForDb.__drosMathInitPromise = (async () => {
+        try {
+          if (pool) {
+            await pool.query(SCHEMA_SQL);
+            await seedDatabase(dbInstance);
+            console.log("[db] External PostgreSQL initialized & seeded successfully");
+          }
+        } catch (err: any) {
+          console.warn("[db] External database migration/seed check:", err?.message || err);
+        }
+      })();
+    }
   } catch (err) {
     console.warn("[db] Failed to initialize Pool with DATABASE_URL, falling back to embedded PGlite:", err);
   }
