@@ -1,4 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
+import { requireApiUser, hashPassword } from "@/lib/auth";
 import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
@@ -6,7 +6,6 @@ import { db } from "@/db";
 import { users, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
-import { hashPassword } from "@/lib/auth/password";
 
 const editStudentSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),

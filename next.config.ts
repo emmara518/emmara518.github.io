@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg", "bcryptjs"],
   images: {
     formats: ["image/avif", "image/webp"],
+    unoptimized: process.env.NODE_ENV === "development",
     remotePatterns: [
       {
         protocol: "https",
@@ -27,7 +28,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [
+    const securityHeaders = [
       {
         source: "/:path*",
         headers: [
@@ -48,6 +49,7 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+    return securityHeaders;
   },
   poweredByHeader: false,
 };
