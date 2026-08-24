@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import { db } from "@/db";
+import { eq } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
 import { can, isAdminRole } from "@/lib/rbac";
@@ -26,34 +27,13 @@ import { AdminConsole } from "@/components/admin-console";
 export const metadata: Metadata = { title: "لوحة الإدارة" };
 
 export default async function AdminPage() {
-  let user = await getSessionUser();
-  
-  // If not logged in or not admin, fallback directly to system admin
-  if (!user || !isAdminRole(user.role)) {
-    const adminRows = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        role: users.role,
-        avatarUrl: users.avatarUrl,
-      })
-      .from(users)
-      .where(eq(users.email, "admin@dros-math.com"))
-      .limit(1);
-
-    if (adminRows[0]) {
-      user = adminRows[0];
-    } else {
-      user = {
-        id: "00000000-0000-0000-0000-000000000001",
-        name: "إدارة المنصة (Admin)",
-        email: "admin@dros-math.com",
-        role: "admin",
-        avatarUrl: null,
-      };
-    }
+  // Security gate: only teacher/admin roles may enter the console.
+  // NOTE: access is session-based; every mutation endpoint re-checks RBAC.
+  const sessionUser = await getSessionUser();
+  if (!sessionUser || !isAdminRole(sessionUser.role)) {
+    redirect("/login");
   }
+  const user = sessionUser;
 
   const [
     overview,

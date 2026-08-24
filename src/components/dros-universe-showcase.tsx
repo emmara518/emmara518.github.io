@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -118,7 +118,7 @@ export function DrosUniverseShowcase() {
       engTitle: "Thanaweya Amma — Sec 3 English Math Specialist",
       desc: "التفاضل والتكامل، الجبر والهندسة الفراغية، الاستاتيكا والديناميكا وأسرار حصد الدرجة النهائية والتميز في الثانوية العامة.", 
       count: "Calculus · Algebra · Dynamics · Statics",
-      image: "/images/stages/sec3.jpg",
+      image: "/images/stages/sec3.png",
       grades: ["Pure Math (Calculus & Integration)", "Pure Math (Algebra & Solid Geometry)", "Applied Math (Statics)", "Applied Math (Dynamics)"],
       branches: ["Calculus & Integration Techniques", "Algebra (Matrices, Binomial, Complex Numbers)", "Solid & Vector Geometry", "Statics (Moments & Friction)", "Dynamics (Newton's Laws & Impulse)"],
       features: [
@@ -160,8 +160,8 @@ export function DrosUniverseShowcase() {
           </Link>
 
           {/* Core Navigation Modules */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-muted font-ui">
-            <Link href="/" className="text-neon-lime font-bold transition-colors">
+          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-muted font-ui">
+            <Link href="/" className="text-neon-lime font-semibold transition-colors">
               الرئيسية
             </Link>
             <Link href="/courses" className="hover:text-ink transition-colors">
@@ -242,24 +242,24 @@ export function DrosUniverseShowcase() {
           <div className="lg:col-span-6 text-start space-y-6 sm:space-y-7 order-2 lg:order-1">
             
             {/* Platform Identifier Badge */}
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-surface border border-line text-[11px] font-mono tracking-tag text-muted shadow-sm">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-surface border border-line shadow-sm">
               <span className="size-1.5 rounded-full bg-neon-lime" />
-              <span className="font-bold text-ink">DROS MATH</span>
+              <span className="type-eyebrow font-bold text-ink">DROS MATH</span>
               <span className="text-line-strong">/</span>
-              <span>ENGLISH MATH PLATFORM</span>
+              <span className="type-eyebrow text-muted">ENGLISH MATH PLATFORM</span>
             </div>
 
             {/* Editorial Headline */}
-            <div className="space-y-4">
-              <h1 className="type-hero text-ink tracking-normal font-extrabold text-start">
-                <span className="block">افهم الـ<bdi className="bidi-term font-mono text-ink">Math</bdi></span>
+            <div className="space-y-5">
+              <h1 className="type-hero text-ink text-start">
+                <span className="block">افهم الـ<bdi className="bidi-term font-brand text-ink">Math</bdi></span>
                 <span className="block text-ink">بعمق.</span>
-                <span className="block text-neon-lime mt-1">وتعلمه بذكاء.</span>
+                <span className="block text-neon-lime mt-1.5">وتعلمه بذكاء.</span>
               </h1>
               
-              <div className="relative p-4 sm:p-5 rounded-2xl bg-surface border-r-2 border-r-neon-lime border-y border-l border-line shadow-card max-w-xl">
-                <p className="type-body font-ui text-muted font-normal leading-[1.7]">
-                  منصة <span className="text-ink font-semibold bg-surface2 px-2 py-0.5 rounded-md border border-line"><bdi className="bidi-term">Dros Math</bdi></span> مع <span className="text-neon-lime font-bold">مستر محمد سعيد</span> — رحلة احترافية لطلاب اللغات لتبسيط المفاهيم المعقدة، وبناء التفكير الرياضي والتحليلي وصولاً لأعلى درجات التميز والدرجات النهائية.
+              <div className="relative p-5 sm:p-6 rounded-2xl bg-surface border-r-2 border-r-neon-lime border-y border-l border-line shadow-card max-w-xl">
+                <p className="type-body font-ui text-ink-secondary font-normal">
+                  منصة <span className="text-ink font-semibold bg-surface2 px-2 py-0.5 rounded-md border border-line"><bdi className="bidi-term">Dros Math</bdi></span> مع <span className="text-neon-lime font-semibold">مستر محمد سعيد</span> — رحلة احترافية لطلاب اللغات لتبسيط المفاهيم المعقدة، وبناء التفكير الرياضي والتحليلي وصولاً لأعلى درجات التميز والدرجات النهائية.
                 </p>
               </div>
             </div>
@@ -268,7 +268,7 @@ export function DrosUniverseShowcase() {
             <div className="flex flex-wrap items-center gap-3.5 pt-1 font-ui">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2.5 rounded-xl bg-neon-lime px-7 py-3.5 text-sm font-black text-black hover:bg-lime-400 transition-all cursor-pointer shadow-[0_4px_20px_rgba(184,255,0,0.3)] active:scale-[0.98]"
+                className="inline-flex items-center gap-2.5 rounded-xl bg-neon-lime px-7 py-3.5 text-sm font-bold text-black hover:bg-lime-400 transition-all cursor-pointer shadow-[0_4px_20px_rgba(184,255,0,0.3)] active:scale-[0.98]"
               >
                 <span>ابدأ رحلتك</span>
                 <ArrowLeft size={16} />
@@ -276,25 +276,25 @@ export function DrosUniverseShowcase() {
 
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-6 py-3.5 text-sm font-semibold text-ink hover:border-neon-lime hover:text-neon-lime transition-all cursor-pointer active:scale-[0.98] shadow-sm"
+                className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-6 py-3.5 text-sm font-medium text-ink hover:border-neon-lime hover:text-neon-lime transition-all cursor-pointer active:scale-[0.98] shadow-sm"
               >
                 <span>تعرف على مستر محمد سعيد</span>
               </Link>
             </div>
 
             {/* Precision Mathematical Domains Pipeline */}
-            <div className="pt-6 border-t border-line grid grid-cols-3 gap-4 font-mono text-xs">
-              <div className="space-y-1">
-                <span className="num-anchor text-neon-lime tracking-tag text-xs">01 / ANALYSIS</span>
-                <p className="text-muted text-[11px] font-ui font-normal">Calculus & Functions</p>
+            <div className="pt-7 border-t border-line grid grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <span className="num-anchor type-eyebrow text-neon-lime">01 / ANALYSIS</span>
+                <p className="text-[11px] leading-relaxed text-muted font-ui font-normal">Calculus & Functions</p>
               </div>
-              <div className="space-y-1">
-                <span className="num-anchor text-neon-lime tracking-tag text-xs">02 / STRUCTURE</span>
-                <p className="text-muted text-[11px] font-ui font-normal">Algebra & Matrices</p>
+              <div className="space-y-1.5">
+                <span className="num-anchor type-eyebrow text-neon-lime">02 / STRUCTURE</span>
+                <p className="text-[11px] leading-relaxed text-muted font-ui font-normal">Algebra & Matrices</p>
               </div>
-              <div className="space-y-1">
-                <span className="num-anchor text-neon-lime tracking-tag text-xs">03 / SPATIAL</span>
-                <p className="text-muted text-[11px] font-ui font-normal">Solid & Dynamics</p>
+              <div className="space-y-1.5">
+                <span className="num-anchor type-eyebrow text-neon-lime">03 / SPATIAL</span>
+                <p className="text-[11px] leading-relaxed text-muted font-ui font-normal">Solid & Dynamics</p>
               </div>
             </div>
           </div>
@@ -616,12 +616,12 @@ export function DrosUniverseShowcase() {
       <section className="px-4 sm:px-8 py-16 max-w-7xl mx-auto space-y-12">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-line">
-          <div className="space-y-2">
-            <span className="font-mono text-xs font-bold text-neon-lime tracking-tag">ACADEMIC STAGES & CURRICULUM</span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-7 border-b border-line">
+          <div className="space-y-2.5">
+            <span className="type-eyebrow text-neon-lime">ACADEMIC STAGES &amp; CURRICULUM</span>
             <h2 className="type-h2 text-ink">المراحل الدراسية ومسارات التعلم</h2>
           </div>
-          <p className="type-small font-ui text-muted max-w-md font-normal">
+          <p className="type-small font-ui text-muted max-w-md">
             هيكلة تعليمية متكاملة لمدارس اللغات (<bdi className="bidi-term">English Math</bdi>) تغطي كامل متطلبات الفهم التأسيسي والتطبيقي.
           </p>
         </div>
@@ -652,7 +652,7 @@ export function DrosUniverseShowcase() {
 
                 {/* Grade Count Pill */}
                 <div className="absolute bottom-3 right-3 z-10">
-                  <span className="text-[11px] font-semibold font-ui text-ink bg-surface/90 dark:bg-black/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-line group-hover:border-neon-lime/60 shadow-md transition-colors">
+                  <span className="text-[11px] font-medium font-ui tracking-normal text-ink bg-surface/90 dark:bg-black/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-line group-hover:border-neon-lime/60 shadow-md transition-colors">
                     {stage.count}
                   </span>
                 </div>
@@ -660,23 +660,23 @@ export function DrosUniverseShowcase() {
 
               {/* Card Body Content */}
               <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between bg-surface group-hover:bg-surface2/60 transition-colors duration-500">
-                <div className="space-y-2">
-                  <h3 className="type-h3 text-ink group-hover:text-neon-lime transition-colors leading-snug">
+                <div className="space-y-2.5">
+                  <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.45] text-ink group-hover:text-neon-lime transition-colors [text-wrap:balance]">
                     {stage.title}
                   </h3>
-                  <p className="text-xs font-ui text-muted group-hover:text-ink leading-relaxed line-clamp-2 transition-colors font-normal">
+                  <p className="text-[13px] font-ui text-muted group-hover:text-ink leading-[1.75] line-clamp-2 transition-colors font-normal">
                     {stage.desc}
                   </p>
 
                   {/* Branches Chips */}
                   <div className="flex flex-wrap gap-1.5 pt-2">
                     {stage.branches.slice(0, 3).map((branch, bIdx) => (
-                      <span key={bIdx} className="text-[10px] font-mono text-ink bg-surface2 group-hover:bg-surface px-2 py-0.5 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
+                      <span key={bIdx} className="text-[11px] font-mono font-medium text-ink bg-surface2 group-hover:bg-surface px-2 py-1 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
                         {branch}
                       </span>
                     ))}
                     {stage.branches.length > 3 && (
-                      <span className="text-[10px] font-mono text-neon-lime bg-surface2 px-1.5 py-0.5 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
+                      <span className="text-[11px] font-mono font-medium text-neon-lime bg-surface2 px-1.5 py-1 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
                         +{stage.branches.length - 3}
                       </span>
                     )}
@@ -687,7 +687,7 @@ export function DrosUniverseShowcase() {
                 <div className="pt-4 border-t border-line group-hover:border-line-strong flex items-center justify-between gap-2 mt-auto transition-colors font-ui">
                   <button
                     onClick={() => setSelectedStage(stage)}
-                    className="flex-1 py-2.5 px-3.5 rounded-xl bg-surface2 hover:bg-neon-lime group-hover:bg-surface2 group-hover:hover:bg-neon-lime text-ink hover:text-black group-hover:hover:text-black text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-2 border border-line group-hover:border-neon-lime/50 hover:border-neon-lime shadow-sm group/btn"
+                    className="flex-1 py-2.5 px-3.5 rounded-xl bg-surface2 hover:bg-neon-lime group-hover:bg-surface2 group-hover:hover:bg-neon-lime text-ink hover:text-black group-hover:hover:text-black text-[13px] font-medium transition-all duration-300 flex items-center justify-center gap-2 border border-line group-hover:border-neon-lime/50 hover:border-neon-lime shadow-sm group/btn"
                   >
                     <BookOpen size={14} className="text-muted group-hover/btn:text-black transition-colors" />
                     <span>عرض تفاصيل المرحلة</span>
@@ -713,14 +713,15 @@ export function DrosUniverseShowcase() {
 
           {/* Banner Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="space-y-1">
-              <span className="font-mono text-xs font-bold text-neon-lime flex items-center gap-2 tracking-tag">
+            <div className="space-y-1.5">
+              <span className="type-eyebrow text-neon-lime flex items-center gap-2">
                 <span className="size-2 rounded-full bg-neon-lime animate-pulse" />
-                THE LEARNING PIPELINE · مسار التميز
+                THE LEARNING PIPELINE
+                <span className="font-ui tracking-normal text-[11px] font-semibold normal-case">· مسار التميز</span>
               </span>
-              <h3 className="type-h3 text-ink">منهجية الفهم والاستنتاج في Dros Math</h3>
+              <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.4] text-ink">منهجية الفهم والاستنتاج في Dros Math</h3>
             </div>
-            <span className="text-[11px] font-mono text-muted bg-surface2 px-3 py-1 rounded-full border border-line self-start sm:self-auto">
+            <span className="text-[11px] font-ui font-medium text-muted bg-surface2 px-3 py-1.5 rounded-full border border-line self-start sm:self-auto">
               تتحرك تلقائياً · مرر الماوس للتوقف
             </span>
           </div>
@@ -749,15 +750,15 @@ export function DrosUniverseShowcase() {
                   className="w-[260px] sm:w-[290px] shrink-0 p-4 sm:p-5 rounded-2xl bg-surface2 hover:bg-surface border border-line hover:border-neon-lime/60 space-y-3 transition-all duration-300 shadow-sm hover:shadow-[0_0_20px_rgba(184,255,0,0.12)] flex flex-col justify-between"
                   dir="rtl"
                 >
-                  <div className="flex items-center justify-between font-mono text-xs font-bold">
+                  <div className="flex items-center justify-between font-mono text-xs font-semibold">
                     <span className="num-anchor text-neon-lime bg-surface px-2.5 py-1 rounded-lg border border-neon-lime/30 shadow-sm text-sm">
                       {pillar.num}
                     </span>
-                    <span className="text-[11px] text-muted font-semibold tracking-tag">{pillar.eng}</span>
+                    <span className="type-eyebrow text-muted">{pillar.eng}</span>
                   </div>
                   <div className="space-y-1.5 flex-1">
-                    <h4 className="type-h3 text-sm sm:text-base text-ink">{pillar.title}</h4>
-                    <p className="text-xs font-ui text-muted leading-relaxed font-normal">{pillar.desc}</p>
+                    <h4 className="font-brand font-semibold text-[15px] sm:text-base leading-[1.45] text-ink">{pillar.title}</h4>
+                    <p className="text-xs font-ui text-muted leading-[1.75] font-normal">{pillar.desc}</p>
                   </div>
                   <div className="pt-2 border-t border-line flex items-center justify-between text-[10px] font-mono text-ink">
                     <span>Dros Math Method</span>
@@ -790,8 +791,8 @@ export function DrosUniverseShowcase() {
                   />
                 </div>
                 <div>
-                  <h4 className="type-h3 text-sm text-ink">{selectedSymbol.label}</h4>
-                  <span className="text-[11px] font-ui text-muted">{selectedSymbol.branch}</span>
+                  <h4 className="font-brand font-semibold text-base leading-[1.4] text-ink">{selectedSymbol.label}</h4>
+                  <span className="text-xs font-ui text-muted">{selectedSymbol.branch}</span>
                 </div>
               </div>
               <button
@@ -802,24 +803,24 @@ export function DrosUniverseShowcase() {
               </button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-surface2 border border-line math-medium text-center text-sm font-bold text-neon-lime tracking-wider">
+            <div className="p-3.5 rounded-xl bg-surface2 border border-line math-medium text-center font-semibold text-neon-lime tracking-wider">
               {selectedSymbol.formula}
             </div>
 
-            <p className="text-xs font-ui leading-relaxed text-muted font-normal">
+            <p className="text-[13px] font-ui leading-[1.8] text-muted font-normal">
               {selectedSymbol.desc}
             </p>
 
             <div className="pt-2 flex items-center justify-end gap-2.5 font-ui">
               <button
                 onClick={() => setSelectedSymbol(null)}
-                className="px-4 py-2 rounded-xl bg-surface2 text-xs font-semibold text-muted hover:text-ink border border-line cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-surface2 text-[13px] font-medium text-muted hover:text-ink border border-line cursor-pointer"
               >
                 إغلاق
               </button>
               <Link
                 href="/courses"
-                className="px-4 py-2 rounded-xl bg-neon-lime text-xs font-black text-black hover:bg-lime-400 shadow-sm"
+                className="px-4 py-2 rounded-xl bg-neon-lime text-[13px] font-bold text-black hover:bg-lime-400 shadow-sm"
               >
                 استعراض الدروس المرتبطة
               </Link>
@@ -864,20 +865,20 @@ export function DrosUniverseShowcase() {
 
               {/* Top Meta Badges */}
               <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-                <span className="font-mono text-xs font-extrabold text-neon-lime bg-surface/90 dark:bg-black/90 backdrop-blur-md px-3 py-1 rounded-full border border-neon-lime/40 shadow-md">
+                <span className="type-eyebrow text-neon-lime bg-surface/90 dark:bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-neon-lime/40 shadow-md">
                   {selectedStage.id === "prep" ? "STAGE 01" : selectedStage.id === "sec1_2" ? "STAGE 02" : "STAGE 03"}
                 </span>
-                <span className="text-xs font-bold text-ink bg-surface/90 dark:bg-surface2/90 backdrop-blur-md px-3 py-1 rounded-full border border-line">
+                <span className="text-[11px] font-semibold font-ui text-ink bg-surface/90 dark:bg-surface2/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-line">
                   English Math Specialist
                 </span>
               </div>
 
               {/* Header Title inside Visual */}
-              <div className="absolute bottom-4 right-5 left-5 z-10 space-y-1">
-                <h3 className="text-xl sm:text-2xl font-black text-ink">
+              <div className="absolute bottom-4 right-5 left-5 z-10 space-y-1.5">
+                <h3 className="font-brand font-bold text-xl sm:text-2xl leading-[1.35] text-ink [text-wrap:balance]">
                   {selectedStage.title}
                 </h3>
-                <p className="font-mono text-xs text-neon-lime tracking-wide">
+                <p className="font-mono text-xs font-medium text-neon-lime tracking-wide">
                   {selectedStage.engTitle}
                 </p>
               </div>
@@ -887,32 +888,32 @@ export function DrosUniverseShowcase() {
             <div className="p-6 sm:p-7 space-y-6 max-h-[60vh] overflow-y-auto">
               
               {/* Quick Stats Grid */}
-              <div className="grid grid-cols-3 gap-3 p-3 rounded-2xl bg-surface2 border border-line">
-                <div className="text-center space-y-0.5">
-                  <span className="block text-[11px] text-muted">المحاضرات</span>
-                  <span className="font-mono text-xs sm:text-sm font-black text-neon-lime">{selectedStage.stats.lectures}</span>
+              <div className="grid grid-cols-3 gap-3 p-3.5 rounded-2xl bg-surface2 border border-line">
+                <div className="text-center space-y-1">
+                  <span className="block text-[11px] font-medium text-muted">المحاضرات</span>
+                  <span className="num-anchor text-xs sm:text-sm text-neon-lime">{selectedStage.stats.lectures}</span>
                 </div>
-                <div className="text-center space-y-0.5 border-x border-line">
-                  <span className="block text-[11px] text-muted">الشيتات والمراجعات</span>
-                  <span className="font-mono text-xs sm:text-sm font-black text-ink">{selectedStage.stats.sheets}</span>
+                <div className="text-center space-y-1 border-x border-line">
+                  <span className="block text-[11px] font-medium text-muted">الشيتات والمراجعات</span>
+                  <span className="num-anchor text-xs sm:text-sm text-ink">{selectedStage.stats.sheets}</span>
                 </div>
-                <div className="text-center space-y-0.5">
-                  <span className="block text-[11px] text-muted">الاختبارات</span>
-                  <span className="font-mono text-xs sm:text-sm font-black text-neon-lime">{selectedStage.stats.exams}</span>
+                <div className="text-center space-y-1">
+                  <span className="block text-[11px] font-medium text-muted">الاختبارات</span>
+                  <span className="num-anchor text-xs sm:text-sm text-neon-lime">{selectedStage.stats.exams}</span>
                 </div>
               </div>
 
               {/* Description */}
-              <div className="space-y-1.5">
-                <h4 className="text-xs font-bold text-muted">نظرة عامة على المرحلة</h4>
-                <p className="text-sm text-ink leading-relaxed">
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-ui font-semibold text-muted">نظرة عامة على المرحلة</h4>
+                <p className="text-sm font-ui text-ink leading-[1.85]">
                   {selectedStage.desc}
                 </p>
               </div>
 
               {/* Grades Included */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-muted">الصفوف الدراسية المتاحة</h4>
+              <div className="space-y-2.5">
+                <h4 className="text-[11px] font-ui font-semibold text-muted">الصفوف الدراسية المتاحة</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedStage.grades.map((grade, gIdx) => (
                     <span 
@@ -927,13 +928,13 @@ export function DrosUniverseShowcase() {
               </div>
 
               {/* Branches of Math */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-muted">فروع الرياضيات المغطاة (Math Branches)</h4>
+              <div className="space-y-2.5">
+                <h4 className="text-[11px] font-ui font-semibold text-muted">فروع الرياضيات المغطاة (Math Branches)</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedStage.branches.map((branch, bIdx) => (
                     <span 
                       key={bIdx}
-                      className="px-2.5 py-1 rounded-lg bg-surface border border-line font-mono text-xs text-neon-lime font-bold"
+                      className="px-2.5 py-1 rounded-lg bg-surface border border-line font-mono text-xs font-medium text-neon-lime"
                     >
                       {branch}
                     </span>
@@ -943,14 +944,14 @@ export function DrosUniverseShowcase() {
 
               {/* Methodology & Features */}
               <div className="space-y-2.5">
-                <h4 className="text-xs font-bold text-muted">مميزات المنهج والشرح مع مستر محمد سعيد</h4>
+                <h4 className="text-[11px] font-ui font-semibold text-muted">مميزات المنهج والشرح مع مستر محمد سعيد</h4>
                 <div className="space-y-2">
                   {selectedStage.features.map((feature, fIdx) => (
                     <div key={fIdx} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface2/70 border border-line">
-                      <span className="size-5 rounded-md bg-neon-lime/10 border border-neon-lime/30 text-neon-lime text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="size-5 rounded-md bg-neon-lime/10 border border-neon-lime/30 text-neon-lime text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
                         ✓
                       </span>
-                      <p className="text-xs text-ink leading-relaxed">
+                      <p className="text-[13px] font-ui text-ink leading-[1.75]">
                         {feature}
                       </p>
                     </div>
@@ -962,21 +963,21 @@ export function DrosUniverseShowcase() {
 
             {/* Modal Footer Actions */}
             <div className="p-5 sm:p-6 bg-surface2/50 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="text-xs text-muted text-center sm:text-right">
+              <div className="text-[13px] font-ui text-muted text-center sm:text-right">
                 متاح بنك أسئلة واختبارات قياسية لكل درس
               </div>
 
               <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   onClick={() => setSelectedStage(null)}
-                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-surface hover:bg-surface2 text-xs font-bold text-muted hover:text-ink border border-line transition-colors cursor-pointer"
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-surface hover:bg-surface2 text-[13px] font-medium text-muted hover:text-ink border border-line transition-colors cursor-pointer"
                 >
                   إغلاق
                 </button>
                 <Link
                   href="/courses"
                   onClick={() => setSelectedStage(null)}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-neon-lime hover:bg-lime-400 text-xs font-black text-black shadow-[0_0_20px_rgba(184,255,0,0.25)] transition-all flex items-center justify-center gap-1.5"
+                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-neon-lime hover:bg-lime-400 text-[13px] font-bold text-black shadow-[0_0_20px_rgba(184,255,0,0.25)] transition-all flex items-center justify-center gap-1.5"
                 >
                   <span>استعراض المقررات والاشتراك</span>
                   <ChevronLeft size={16} />

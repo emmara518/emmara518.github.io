@@ -6,36 +6,8 @@
    DROS MATH UNIVERSE — TYPOGRAPHY SYSTEM & DESIGN SYSTEM v2026
    Brand Display: Graphik Arabic · UI/Body: Cairo · Technical: IBM Plex Mono
    Palette: Carbon #050505 · Chrome #F4F5F6 · Gunmetal #343940 · Neon Lime #B8FF00
+   Fonts are loaded via next/font/local in layout.tsx (variable --font-graphik-arabic).
    ───────────────────────────────────────────────────────────── */
-
-@font-face {
-  font-family: "Graphik Arabic";
-  src: url("/fonts/GRAPHIK-ARABIC.b67d297a3108a3a63d1e.OTF") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Graphik Arabic";
-  src: url("/fonts/GRAPHIK-ARABIC-MEDIUM.0af90140746203879b7c.OTF") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Graphik Arabic";
-  src: url("/fonts/GRAPHIK-ARABIC-SEMIBOLD.7d8631a6522f45d27d07.OTF") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Graphik Arabic";
-  src: url("/fonts/GRAPHIK-ARABIC-SEMIBOLD.7d8631a6522f45d27d07.OTF") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
 
 :root,
 [data-theme="light"],
@@ -93,8 +65,8 @@ html:not(.dark) {
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
   --shadow-lift: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 20px 40px -10px rgba(15, 23, 42, 0.05);
 
-  /* Typography Font Stacks */
-  --font-brand-stack: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), "Segoe UI", sans-serif;
+  /* Typography Font Stacks (Graphik Arabic is registered by next/font — real weights: 400/500/600) */
+  --font-brand-stack: var(--font-graphik-arabic), "Graphik Arabic", "Segoe UI", sans-serif;
   --font-ui-stack: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
   --font-math-stack: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
 }
@@ -186,20 +158,26 @@ html.dark {
 
 /* ─────────────────────────────────────────────────────────────
    TYPOGRAPHY ARCHITECTURE & TOKEN CLASSES
-   Role A: Brand / Display (Graphik Arabic: 700–800)
-   Role B: UI / Body (Cairo: 400–600)
+   Role A: Brand / Display (Graphik Arabic: 400–600 real weights)
+   Role B: UI / Body (Cairo: 400–800)
    Role C: Mathematical Notation (IBM Plex Mono / Precision Math System)
+   Rules: font-synthesis disabled → no faux bold; headings balanced;
+   Arabic never receives letter-spacing (preserves cursive joinery).
    ───────────────────────────────────────────────────────────── */
 
 /* Brand & Display Typography */
 .font-display {
   font-family: var(--font-brand-stack) !important;
+  font-synthesis: none;
   letter-spacing: normal !important;
+  text-transform: none;
 }
 
 .font-brand {
   font-family: var(--font-brand-stack) !important;
+  font-synthesis: none;
   letter-spacing: normal !important;
+  text-transform: none;
 }
 
 /* UI & Body Typography */
@@ -215,64 +193,96 @@ html.dark {
   font-variant-numeric: tabular-nums;
 }
 
-/* Responsive Typographic Scale */
+/* Responsive Typographic Scale — premium Arabic editorial rhythm */
 .type-hero {
   font-family: var(--font-brand-stack);
-  font-size: clamp(3.25rem, 6.5vw, 6.5rem);
-  line-height: 1.04;
-  font-weight: 800;
+  font-synthesis: none;
+  font-size: clamp(2.6rem, 5.4vw, 5.1rem);
+  line-height: 1.16;
+  font-weight: 700;
   letter-spacing: normal;
+  text-wrap: balance;
+}
+
+/* Optical correction: Latin inside Arabic display lines sits ~4% smaller
+   so cap-height aligns with Arabic stroke weight across the baseline */
+.type-hero .bidi-term {
+  font-size: 0.955em;
+  letter-spacing: -0.012em;
+  font-weight: 600;
 }
 
 .type-h1 {
   font-family: var(--font-brand-stack);
-  font-size: clamp(2.25rem, 4.5vw, 4.25rem);
-  line-height: 1.12;
+  font-synthesis: none;
+  font-size: clamp(2.1rem, 4.2vw, 3.9rem);
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: normal;
+  text-wrap: balance;
 }
 
 .type-h2 {
   font-family: var(--font-brand-stack);
-  font-size: clamp(1.65rem, 3vw, 2.75rem);
-  line-height: 1.18;
+  font-synthesis: none;
+  font-size: clamp(1.55rem, 2.8vw, 2.5rem);
+  line-height: 1.28;
   font-weight: 700;
   letter-spacing: normal;
+  text-wrap: balance;
 }
 
 .type-h3 {
   font-family: var(--font-brand-stack);
-  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
-  line-height: 1.28;
+  font-synthesis: none;
+  font-size: clamp(1.125rem, 1.6vw, 1.45rem);
+  line-height: 1.42;
   font-weight: 600;
   letter-spacing: normal;
+  text-wrap: pretty;
 }
 
 .type-body {
   font-family: var(--font-ui-stack);
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.85;
   font-weight: 400;
+  letter-spacing: normal;
+  word-spacing: 0.035em;
+  text-wrap: pretty;
 }
 
 .type-small {
   font-family: var(--font-ui-stack);
   font-size: 0.8125rem;
-  line-height: 1.55;
-  font-weight: 500;
+  line-height: 1.7;
+  font-weight: 400;
+  word-spacing: 0.03em;
+  text-wrap: pretty;
+}
+
+/* Mono editorial eyebrow — Latin labels only */
+.type-eyebrow {
+  font-family: var(--font-math-stack);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Tabular Number Anchors */
 .num-anchor {
-  font-family: var(--font-brand-stack);
+  font-family: var(--font-math-stack);
   font-variant-numeric: tabular-nums lining-nums;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 /* English Uppercase Badges and Labels with Controlled Tracking */
 .tracking-tag {
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -359,6 +369,8 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Brand discipline: never synthesize bold/oblique — snap to the closest real weight */
+  font-synthesis: none;
 }
 
 ::selection {
