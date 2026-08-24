@@ -17,6 +17,7 @@ import {
   FileCheck,
   Award,
   BarChart2,
+  ShieldCheck,
 } from "lucide-react";
 import { LogoWordmark } from "./logo";
 import { MATH_SYMBOLS_3D, MathSymbolData } from "@/lib/data/math-symbols";
@@ -190,6 +191,15 @@ export function DrosUniverseShowcase() {
             </button>
 
             <ThemeToggle className="size-9 rounded-xl border border-line bg-surface shadow-sm" />
+
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-neon-lime/40 bg-neon-lime/10 px-3.5 py-2 text-xs font-bold font-ui text-neon-lime hover:bg-neon-lime hover:text-black transition-all shadow-sm"
+              title="الدخول المباشر للوحة الإدارة"
+            >
+              <ShieldCheck size={13} />
+              <span>لوحة الإدارة</span>
+            </Link>
 
             <Link
               href="/login"

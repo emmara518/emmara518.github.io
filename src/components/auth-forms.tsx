@@ -23,15 +23,14 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function performLogin(targetEmail: string, targetPass: string, redirectPath?: string) {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: targetEmail, password: targetPass }),
       });
       const json = await res.json();
       if (!json.ok) {
@@ -39,7 +38,8 @@ export function LoginForm() {
         return;
       }
       const role = json.data.user.role as Role;
-      router.push(next ?? (isAdminRole(role) ? "/admin" : "/dashboard"));
+      const target = redirectPath ?? next ?? (isAdminRole(role) ? "/admin" : "/dashboard");
+      router.push(target);
       router.refresh();
     } catch {
       setError("مشكلة في الاتصال — حاول مرة أخرى");
@@ -48,13 +48,36 @@ export function LoginForm() {
     }
   }
 
-  const demo = (who: "student" | "admin" | "teacher") => () => {
-    setEmail(`${who}@dros-math.com`);
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    await performLogin(email, password);
+  }
+
+  const quickLogin = (who: "student" | "admin" | "teacher") => async () => {
+    const targetEmail = `${who}@dros-math.com`;
+    setEmail(targetEmail);
     setPassword("12345678");
+    await performLogin(targetEmail, "12345678", who === "admin" ? "/admin" : undefined);
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {/* Quick Admin Bypass Button */}
+      <button
+        type="button"
+        disabled={loading}
+        onClick={quickLogin("admin")}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-neon-lime text-black font-extrabold px-4 py-3 text-sm shadow-sm hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer border border-neon-lime"
+      >
+        {loading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+        ⚡ دخول فوري مباشر كمسؤول (Admin One-Click)
+      </button>
+
+      <div className="relative flex items-center justify-center">
+        <div className="border-t border-line w-full" />
+        <span className="bg-surface px-3 text-xs text-muted font-medium shrink-0">أو تسجيل الدخول العادي</span>
+      </div>
+
       <Field label="البريد الإلكتروني">
         <Input
           type="email"
@@ -83,8 +106,8 @@ export function LoginForm() {
         تسجيل الدخول
       </Button>
 
-      <div className="space-y-2">
-        <p className="text-center font-mono text-[11px] text-muted">— حسابات تجريبية (12345678) —</p>
+      <div className="space-y-2 pt-2">
+        <p className="text-center font-mono text-[11px] text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
         <div className="grid grid-cols-3 gap-2">
           {([
             ["student", "طالب"],
@@ -94,8 +117,9 @@ export function LoginForm() {
             <button
               key={who}
               type="button"
-              onClick={demo(who)}
-              className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-muted transition-colors hover:border-brand hover:text-brand"
+              disabled={loading}
+              onClick={quickLogin(who)}
+              className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
             >
               {label}
             </button>

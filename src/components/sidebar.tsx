@@ -16,6 +16,7 @@ import {
   Settings,
   Flame,
   ChevronLeft,
+  ShieldCheck,
 } from "lucide-react";
 import { LogoWordmark } from "./logo";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
 
   const navItems = [
     { href: "/dashboard", label: "الرئيسية", english: "Home", icon: Home },
+    { href: "/admin", label: "لوحة الإدارة", english: "Admin Panel", icon: ShieldCheck, badge: "إدارة" },
     { href: "/courses", label: "المقررات", english: "Courses", icon: BookOpen },
     { href: "/dashboard/exams", label: "الاختبارات", english: "Quizzes", icon: ClipboardList },
     { href: "/dashboard/community", label: "المجتمع", english: "Community", icon: Users },

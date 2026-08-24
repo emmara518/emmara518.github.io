@@ -1,11 +1,47 @@
 "use client";
 
 import { Moon, Sun, Sparkles } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 const THEME_STORAGE_KEY = "dros-theme";
 const THEME_CHANGE_EVENT = "dros-theme-change";
+
+function subscribeTheme(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(THEME_CHANGE_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(THEME_CHANGE_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function getThemeSnapshot(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light") return false;
+    if (stored === "dark") return true;
+    return document.documentElement.classList.contains("dark");
+  } catch {
+    return true;
+  }
+}
+
+function getThemeServerSnapshot(): boolean {
+  return true;
+}
+
+const emptySubscribe = () => () => {};
+
+export function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+}
 
 /**
  * Direct DOM Theme Applier function.
@@ -47,50 +83,9 @@ export function ThemeToggle({
   showLabel?: boolean;
   variant?: "default" | "pill" | "minimal";
 }) {
-  const [mounted, setMounted] = useState<boolean>(false);
-  const [isDark, setIsDark] = useState<boolean>(true);
+  const mounted = useIsMounted();
+  const isDark = useSyncExternalStore(subscribeTheme, getThemeSnapshot, getThemeServerSnapshot);
   const [isRotating, setIsRotating] = useState<boolean>(false);
-
-  useEffect(() => {
-    let initialIsDark = true;
-    try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY);
-      if (stored === "light") {
-        initialIsDark = false;
-      } else if (stored === "dark") {
-        initialIsDark = true;
-      } else if (typeof document !== "undefined") {
-        initialIsDark = document.documentElement.classList.contains("dark");
-      }
-    } catch {
-      // ignore
-    }
-
-    setIsDark(initialIsDark);
-    applyThemeDirectly(initialIsDark);
-    setMounted(true);
-
-    const onThemeChange = (e: Event) => {
-      const customEvent = e as CustomEvent<{ theme: string; isDark: boolean }>;
-      if (customEvent.detail && typeof customEvent.detail.isDark === "boolean") {
-        setIsDark(customEvent.detail.isDark);
-      } else {
-        try {
-          const stored = localStorage.getItem(THEME_STORAGE_KEY);
-          setIsDark(stored !== "light");
-        } catch {
-          // ignore
-        }
-      }
-    };
-
-    window.addEventListener(THEME_CHANGE_EVENT, onThemeChange);
-    window.addEventListener("storage", onThemeChange);
-    return () => {
-      window.removeEventListener(THEME_CHANGE_EVENT, onThemeChange);
-      window.removeEventListener("storage", onThemeChange);
-    };
-  }, []);
 
   const handleToggle = useCallback(
     (e?: React.MouseEvent) => {
@@ -105,20 +100,17 @@ export function ThemeToggle({
       const nextIsDark = !isDark;
       const nextTheme = nextIsDark ? "dark" : "light";
 
-      // 1. Update React state
-      setIsDark(nextIsDark);
-
-      // 2. Immediately mutate DOM document.documentElement and body
+      // Mutate DOM document.documentElement and body
       applyThemeDirectly(nextIsDark);
 
-      // 3. Persist selection to localStorage
+      // Persist selection to localStorage
       try {
         localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
       } catch {
         // Ignore private storage limitations
       }
 
-      // 4. Broadcast synchronization event to all mounted ThemeToggle instances
+      // Broadcast synchronization event to all mounted ThemeToggle instances
       if (typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent(THEME_CHANGE_EVENT, {

@@ -6,11 +6,18 @@ import {
   grades,
   subjects,
   lessons,
+  videos,
+  courseFiles,
+  questionBank,
+  exams,
+  examAttempts,
   orders,
   invoices,
   coupons,
   walletAccounts,
   subscriptions,
+  communityPosts,
+  academicStages,
   auditLogs,
 } from "@/db/schema";
 import { ServiceError } from "../errors";
@@ -210,3 +217,161 @@ export async function countPaidCouponsUnderUse() {
     .from(coupons)
     .where(and(eq(coupons.isActive, true)));
 }
+
+export async function listExamsAdmin() {
+  return db
+    .select({
+      id: exams.id,
+      title: exams.title,
+      mode: exams.mode,
+      durationMin: exams.durationMin,
+      isPublished: exams.isPublished,
+      courseTitle: courses.title,
+      courseSlug: courses.slug,
+      createdAt: exams.createdAt,
+      attemptsCount: sql<number>`(SELECT count(*)::int FROM ${examAttempts} WHERE ${examAttempts.examId} = ${exams.id})`,
+      avgScore: sql<number>`(SELECT COALESCE(avg(${examAttempts.score}), 0)::int FROM ${examAttempts} WHERE ${examAttempts.examId} = ${exams.id})`,
+    })
+    .from(exams)
+    .innerJoin(courses, eq(exams.courseId, courses.id))
+    .orderBy(desc(exams.createdAt))
+    .limit(100);
+}
+
+export async function listExamAttemptsAdmin() {
+  return db
+    .select({
+      id: examAttempts.id,
+      examTitle: exams.title,
+      studentName: users.name,
+      studentEmail: users.email,
+      score: examAttempts.score,
+      totalMarks: examAttempts.totalMarks,
+      submittedAt: examAttempts.submittedAt,
+    })
+    .from(examAttempts)
+    .innerJoin(exams, eq(examAttempts.examId, exams.id))
+    .innerJoin(users, eq(examAttempts.userId, users.id))
+    .orderBy(desc(examAttempts.submittedAt))
+    .limit(100);
+}
+
+export async function listVideosAdmin() {
+  return db
+    .select({
+      id: videos.id,
+      title: videos.title,
+      youtubeVideoId: videos.youtubeVideoId,
+      durationSec: videos.durationSec,
+      lessonTitle: lessons.title,
+      courseTitle: courses.title,
+      sortOrder: videos.sortOrder,
+    })
+    .from(videos)
+    .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+    .innerJoin(courses, eq(lessons.courseId, courses.id))
+    .orderBy(courses.title, videos.sortOrder)
+    .limit(150);
+}
+
+export async function listCourseFilesAdmin() {
+  return db
+    .select({
+      id: courseFiles.id,
+      title: courseFiles.title,
+      kind: courseFiles.kind,
+      sizeBytes: courseFiles.sizeBytes,
+      storageKey: courseFiles.storageKey,
+      isFreePreview: courseFiles.isFreePreview,
+      courseTitle: courses.title,
+      createdAt: courseFiles.createdAt,
+    })
+    .from(courseFiles)
+    .innerJoin(courses, eq(courseFiles.courseId, courses.id))
+    .orderBy(desc(courseFiles.createdAt))
+    .limit(100);
+}
+
+export async function listQuestionBankAdmin() {
+  return db
+    .select({
+      id: questionBank.id,
+      topic: questionBank.topic,
+      kind: questionBank.kind,
+      prompt: questionBank.prompt,
+      options: questionBank.options,
+      correctIndex: questionBank.correctIndex,
+      explanation: questionBank.explanation,
+      difficulty: questionBank.difficulty,
+      marks: questionBank.marks,
+      subjectName: subjects.name,
+    })
+    .from(questionBank)
+    .innerJoin(subjects, eq(questionBank.subjectId, subjects.id))
+    .orderBy(subjects.name, questionBank.difficulty)
+    .limit(150);
+}
+
+export async function listSubscriptionsAdmin() {
+  return db
+    .select({
+      id: subscriptions.id,
+      status: subscriptions.status,
+      startsAt: subscriptions.startsAt,
+      endsAt: subscriptions.endsAt,
+      studentName: users.name,
+      studentEmail: users.email,
+      courseTitle: courses.title,
+      priceCents: courses.priceCents,
+    })
+    .from(subscriptions)
+    .innerJoin(users, eq(subscriptions.userId, users.id))
+    .innerJoin(courses, eq(subscriptions.courseId, courses.id))
+    .orderBy(desc(subscriptions.startsAt))
+    .limit(100);
+}
+
+export async function listInvoicesAdmin() {
+  return db
+    .select({
+      id: invoices.id,
+      number: invoices.number,
+      totalCents: invoices.totalCents,
+      issuedAt: invoices.issuedAt,
+      orderId: invoices.orderId,
+    })
+    .from(invoices)
+    .orderBy(desc(invoices.issuedAt))
+    .limit(100);
+}
+
+export async function listCommunityPostsAdmin() {
+  return db
+    .select({
+      id: communityPosts.id,
+      body: communityPosts.body,
+      likesCount: communityPosts.likesCount,
+      createdAt: communityPosts.createdAt,
+      authorName: users.name,
+      authorRole: users.role,
+      courseTitle: courses.title,
+    })
+    .from(communityPosts)
+    .innerJoin(users, eq(communityPosts.userId, users.id))
+    .leftJoin(courses, eq(communityPosts.courseId, courses.id))
+    .orderBy(desc(communityPosts.createdAt))
+    .limit(100);
+}
+
+export async function listStagesAdmin() {
+  return db
+    .select({
+      id: academicStages.id,
+      name: academicStages.name,
+      slug: academicStages.slug,
+      sortOrder: academicStages.sortOrder,
+    })
+    .from(academicStages)
+    .orderBy(academicStages.sortOrder);
+}
+

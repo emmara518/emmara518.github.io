@@ -19,6 +19,7 @@ export function SiteFooter() {
             <li><Link className="hover:text-neon-lime transition-colors" href="/register">إنشاء حساب طالب</Link></li>
             <li><Link className="hover:text-neon-lime transition-colors" href="/login">تسجيل الدخول</Link></li>
             <li><Link className="hover:text-neon-lime transition-colors" href="/dashboard">لوحة الطالب</Link></li>
+            <li><Link className="hover:text-neon-lime transition-colors font-bold text-amber-500/90" href="/admin">لوحة تحكم الإدارة ⚡</Link></li>
           </ul>
         </div>
 
