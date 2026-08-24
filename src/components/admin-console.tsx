@@ -50,6 +50,16 @@ import {
   Clock,
   Flame,
   Check,
+  Printer,
+  Wallet,
+  CheckSquare,
+  XSquare,
+  RefreshCw,
+  Eye,
+  SlidersHorizontal,
+  QrCode,
+  X,
+  FileCheck,
 } from "lucide-react";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -65,23 +75,131 @@ export type Overview = {
 };
 
 export type CourseRow = {
-  id: string; slug: string; title: string; status: "draft" | "published" | "archived";
-  priceCents: number; createdAt: string; gradeName: string; subjectName: string; lessonsCount: number;
+  id: string;
+  slug: string;
+  title: string;
+  status: "draft" | "published" | "archived";
+  priceCents: number;
+  createdAt: string;
+  gradeName: string;
+  subjectName: string;
+  lessonsCount: number;
 };
-export type UserRow = { id: string; name: string; email: string; role: Role; isActive: boolean; createdAt: string; balanceCents: number };
-export type CouponRow = { id: string; code: string; percentOff: number; maxUses: number; usedCount: number; isActive: boolean; createdAt: string; expiresAt: string | null };
-export type OrderRow = { id: string; totalCents: number; discountCents: number; status: string; createdAt: string; studentName: string; studentEmail: string; courseTitle: string };
-export type ExamRow = { id: string; title: string; mode: string; durationMin: number; isPublished: boolean; courseTitle: string; courseSlug: string; createdAt: string; attemptsCount: number; avgScore: number };
-export type AttemptRow = { id: string; examTitle: string; studentName: string; studentEmail: string; score: number; totalMarks: number; submittedAt: string };
-export type VideoRow = { id: string; title: string; youtubeVideoId: string; durationSec: number; lessonTitle: string; courseTitle: string; sortOrder: number };
-export type CourseFileRow = { id: string; title: string; kind: string; sizeBytes: number; storageKey: string; isFreePreview: boolean; courseTitle: string; createdAt: string };
-export type QuestionRow = { id: string; topic: string; kind: string; prompt: string; options: string[]; correctIndex: number; explanation: string; difficulty: number; marks: number; subjectName: string };
-export type SubscriptionRow = { id: string; status: string; startsAt: string; endsAt: string | null; studentName: string; studentEmail: string; courseTitle: string; priceCents: number };
-export type InvoiceRow = { id: string; number: string; totalCents: number; issuedAt: string; orderId: string };
-export type PostRow = { id: string; body: string; likesCount: number; createdAt: string; authorName: string; authorRole: string; courseTitle: string | null };
-export type StageRow = { id: string; name: string; slug: string; sortOrder: number };
+export type UserRow = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: string;
+  balanceCents: number;
+};
+export type CouponRow = {
+  id: string;
+  code: string;
+  percentOff: number;
+  maxUses: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string;
+  expiresAt: string | null;
+};
+export type OrderRow = {
+  id: string;
+  totalCents: number;
+  discountCents: number;
+  status: string;
+  createdAt: string;
+  studentName: string;
+  studentEmail: string;
+  courseTitle: string;
+};
+export type ExamRow = {
+  id: string;
+  title: string;
+  mode: string;
+  durationMin: number;
+  isPublished: boolean;
+  courseTitle: string;
+  courseSlug: string;
+  createdAt: string;
+  attemptsCount: number;
+  avgScore: number;
+};
+export type AttemptRow = {
+  id: string;
+  examTitle: string;
+  studentName: string;
+  studentEmail: string;
+  score: number;
+  totalMarks: number;
+  submittedAt: string;
+};
+export type VideoRow = {
+  id: string;
+  title: string;
+  youtubeVideoId: string;
+  durationSec: number;
+  lessonTitle: string;
+  courseTitle: string;
+  sortOrder: number;
+};
+export type CourseFileRow = {
+  id: string;
+  title: string;
+  kind: string;
+  sizeBytes: number;
+  storageKey: string;
+  isFreePreview: boolean;
+  courseTitle: string;
+  createdAt: string;
+};
+export type QuestionRow = {
+  id: string;
+  topic: string;
+  kind: string;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  difficulty: number;
+  marks: number;
+  subjectName: string;
+};
+export type SubscriptionRow = {
+  id: string;
+  status: string;
+  startsAt: string;
+  endsAt: string | null;
+  studentName: string;
+  studentEmail: string;
+  courseTitle: string;
+  priceCents: number;
+};
+export type InvoiceRow = {
+  id: string;
+  number: string;
+  totalCents: number;
+  issuedAt: string;
+  orderId: string;
+};
+export type PostRow = {
+  id: string;
+  body: string;
+  likesCount: number;
+  createdAt: string;
+  authorName: string;
+  authorRole: string;
+  courseTitle: string | null;
+};
+export type StageRow = {
+  id: string;
+  name: string;
+  slug: string;
+  sortOrder: number;
+};
 
-/* ── Primary Functional Hubs (Organized cleanly without clutter) ── */
+/* ── Primary Functional Hubs ── */
 export type CategoryId =
   | "overview"
   | "academic"
@@ -114,7 +232,7 @@ const CATEGORIES: CategoryDef[] = [
     subFeatures: [
       { id: "home", label: "نظرة عامة" },
       { id: "statistics", label: "الإحصائيات الشاملة" },
-      { id: "updates", label: "آخر تحديثات المنصة" },
+      { id: "updates", label: "سجل العمليات والتدقيق" },
     ],
   },
   {
@@ -124,12 +242,10 @@ const CATEGORIES: CategoryDef[] = [
     description: "الكورسات، الفيديوهات، المذكرات، والمجموعات الدراسية",
     subFeatures: [
       { id: "courses_table", label: "جدول الكورسات" },
-      { id: "courses_manage", label: "إضافة وتعديل كورس" },
-      { id: "sections_manage", label: "الأقسام والمراحل" },
+      { id: "courses_manage", label: "إضافة مقرر جديد" },
       { id: "videos_manage", label: "الفيديوهات والمحاضرات" },
       { id: "booklets_manage", label: "المذكرات والملازم" },
-      { id: "groups_manage", label: "مجموعات الكورس ونقلها" },
-      { id: "prepaid_lectures", label: "المحاضرات مسبقة الدفع" },
+      { id: "sections_manage", label: "المراحل الدراسية" },
     ],
   },
   {
@@ -144,7 +260,6 @@ const CATEGORIES: CategoryDef[] = [
       { id: "questions_manage", label: "إضافة سؤال فردي" },
       { id: "bulk_questions_add", label: "إضافة أكثر من سؤال" },
       { id: "exam_results_table", label: "نتائج الامتحانات" },
-      { id: "homework_results_table", label: "نتائج الواجبات" },
     ],
   },
   {
@@ -153,24 +268,22 @@ const CATEGORIES: CategoryDef[] = [
     icon: KeyRound,
     description: "توليد أكواد التفعيل، الدفع اليدوي، الفواتير، والاشتراكات",
     subFeatures: [
-      { id: "create_codes", label: "إنشاء أكواد وشحن" },
+      { id: "create_codes", label: "إنشاء وتوليد أكواد" },
       { id: "codes_table", label: "جدول الأكواد النشطة" },
       { id: "manual_payment", label: "الدفع اليدوي (سنتر/كاش)" },
       { id: "subscriptions_table", label: "جداول الاشتراكات" },
       { id: "invoices_table", label: "جداول الفواتير" },
-      { id: "cancel_subscription", label: "إلغاء اشتراك" },
     ],
   },
   {
     id: "users",
     label: "المستخدمون والطلاب",
     icon: Users,
-    description: "إدارة الطلاب، تعيين المسؤولين، وسجلات الدخول والخروج",
+    description: "إدارة الطلاب، تعيين المسؤولين، وتعديل المحافظ",
     subFeatures: [
       { id: "users_table", label: "جدول المستخدمين" },
       { id: "add_student", label: "إضافة طالب جديد" },
       { id: "manage_admin", label: "إدارة المسؤولين والمشرفين" },
-      { id: "login_audit", label: "مراجعة تسجيلات الدخول والخروج" },
       { id: "users_stats", label: "إحصائيات الطلاب" },
     ],
   },
@@ -178,12 +291,10 @@ const CATEGORIES: CategoryDef[] = [
     id: "communications",
     label: "المنتدى ورسائل SMS",
     icon: MessageSquare,
-    description: "حملات SMS النصية، إدارة مجموعات المنتدى، والمنشورات المعلقة",
+    description: "حملات SMS النصية، وإشراف ومتابعة موضوعات المجتمع",
     subFeatures: [
       { id: "sms_messages", label: "إرسال رسائل SMS" },
-      { id: "forum_groups_manage", label: "مجموعات المنتدى" },
-      { id: "forum_pending_topics", label: "المواضيع المعلقة للمراجعة" },
-      { id: "forum_mods_stats", label: "إحصائيات المشرفين" },
+      { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب" },
     ],
   },
 ];
@@ -201,8 +312,33 @@ const STATUS_LABEL: Record<string, { label: string; tone: "brand" | "gold" | "su
   cancelled: { label: "ملغي", tone: "danger" },
 };
 
+/** Arabic UTF-8 CSV exporter utility */
+function downloadCSV(filename: string, rows: Record<string, unknown>[], headers: { key: string; label: string }[]) {
+  if (!rows || rows.length === 0) return;
+  const headerLine = headers.map((h) => `"${h.label.replace(/"/g, '""')}"`).join(",");
+  const dataLines = rows.map((row) =>
+    headers
+      .map((h) => {
+        const val = row[h.key] ?? "";
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      })
+      .join(",")
+  );
+  const csvContent = "\uFEFF" + [headerLine, ...dataLines].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${filename}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export function AdminConsole({
   actor,
+  canManageUsers,
   overview,
   courses,
   users,
@@ -241,6 +377,13 @@ export function AdminConsole({
 }) {
   const router = useRouter();
 
+  // Local Reactive State for Optimistic / Immediate UI updates
+  const [localCourses, setLocalCourses] = useState<CourseRow[]>(courses);
+  const [localUsers, setLocalUsers] = useState<UserRow[]>(users);
+  const [localExams, setLocalExams] = useState<ExamRow[]>(exams);
+  const [localCoupons, setLocalCoupons] = useState<CouponRow[]>(coupons);
+  const [localSubscriptions, setLocalSubscriptions] = useState<SubscriptionRow[]>(subscriptions);
+
   // Navigation State
   const [activeCategory, setActiveCategory] = useState<CategoryId>("overview");
   const [activeSubFeature, setActiveSubFeature] = useState<string>("home");
@@ -248,18 +391,33 @@ export function AdminConsole({
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
+  // Filter States
+  const [userRoleFilter, setUserRoleFilter] = useState<string>("all");
+  const [userStatusFilter, setUserStatusFilter] = useState<string>("all");
+  const [courseStatusFilter, setCourseStatusFilter] = useState<string>("all");
+  const [examModeFilter, setExamModeFilter] = useState<string>("all");
+  const [questionTopicFilter, setQuestionTopicFilter] = useState<string>("all");
+
+  // Modals & Overlays
+  const [walletModalUser, setWalletModalUser] = useState<UserRow | null>(null);
+  const [walletAdjustAmount, setWalletAdjustAmount] = useState("50");
+  const [walletAdjustReason, setWalletAdjustReason] = useState("مكافأة تميز في الامتحان");
+  const [printVouchersModal, setPrintVouchersModal] = useState<string[] | null>(null);
+
   // Form States: Code Generator
-  const [codePrefix, setCodePrefix] = useState("DROS");
+  const [codePrefix, setCodePrefix] = useState("MATH");
   const [codeCount, setCodeCount] = useState("10");
   const [codePercent, setCodePercent] = useState("100");
+  const [codeMaxUses, setCodeMaxUses] = useState("1");
+  const [codeDaysValid, setCodeDaysValid] = useState("30");
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   // Form States: Manual Payment
   const [mpStudentEmail, setMpStudentEmail] = useState("");
   const [mpCourseId, setMpCourseId] = useState(courses[0]?.id || "");
-  const [mpAmount, setMpAmount] = useState("200");
-  const [mpMethod, setMpMethod] = useState("vodafone_cash");
+  const [mpAmount, setMpAmount] = useState(courses[0] ? String(courses[0].priceCents / 100) : "200");
+  const [mpMethod, setMpMethod] = useState<"vodafone_cash" | "instapay" | "center_cash">("center_cash");
 
   // Form States: Course Creation
   const [cTitle, setCTitle] = useState("");
@@ -326,17 +484,144 @@ export function AdminConsole({
     }
   }
 
-  // Generate Codes Handler
-  function handleGenerateCodes(e: FormEvent) {
+  // Generate & Save Real DB Batch Codes
+  async function handleBatchGenerateCodes(e: FormEvent) {
     e.preventDefault();
-    const count = Math.min(50, Math.max(1, parseInt(codeCount) || 5));
-    const newCodes: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
-      newCodes.push(`${codePrefix}-${codePercent}P-${rand}`);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/v1/admin/coupons/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prefix: codePrefix,
+          count: Math.min(100, Math.max(1, Number(codeCount) || 10)),
+          percentOff: Number(codePercent) || 100,
+          maxUses: Number(codeMaxUses) || 1,
+          daysValid: Number(codeDaysValid) || 30,
+        }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        setNote({ kind: "err", text: json.error?.message ?? "فشل توليد الأكواد" });
+        return;
+      }
+      setGeneratedCodes(json.data.codes || []);
+      setNote({ kind: "ok", text: json.data.message });
+      // update local coupons
+      if (json.data.coupons) {
+        setLocalCoupons((prev) => [
+          ...json.data.coupons.map((c: any) => ({
+            id: c.id,
+            code: c.code,
+            percentOff: Number(codePercent) || 100,
+            maxUses: Number(codeMaxUses) || 1,
+            usedCount: 0,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + Number(codeDaysValid) * 86400000).toISOString(),
+          })),
+          ...prev,
+        ]);
+      }
+    } catch {
+      setNote({ kind: "err", text: "تعذر الاتصال بالسيرفر لتوليد الأكواد" });
+    } finally {
+      setBusy(false);
     }
-    setGeneratedCodes(newCodes);
-    setNote({ kind: "ok", text: `تم توليد ${count} كود تفعيل فوري بنجاح.` });
+  }
+
+  // Toggle User Active Status
+  async function handleToggleUserStatus(u: UserRow) {
+    const nextStatus = !u.isActive;
+    // optimistic update
+    setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, isActive: nextStatus } : item)));
+    const done = await api(`/api/v1/admin/users/${u.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive: nextStatus }),
+    });
+    if (done) {
+      setNote({
+        kind: "ok",
+        text: `تم ${nextStatus ? "تفعيل" : "تجميد"} حساب «${u.name}» بنجاح.`,
+      });
+    } else {
+      // rollback
+      setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, isActive: u.isActive } : item)));
+    }
+  }
+
+  // Change User Role
+  async function handleChangeUserRole(u: UserRow, newRole: Role) {
+    if (u.role === newRole) return;
+    setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, role: newRole } : item)));
+    const done = await api(`/api/v1/admin/users/${u.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role: newRole }),
+    });
+    if (done) {
+      setNote({ kind: "ok", text: `تم تحديث دور «${u.name}» إلى ${ROLE_LABELS[newRole]}.` });
+    }
+  }
+
+  // Adjust Wallet Balance
+  async function handleAdjustWallet(e: FormEvent) {
+    e.preventDefault();
+    if (!walletModalUser) return;
+    const amount = Number(walletAdjustAmount);
+    if (isNaN(amount) || amount === 0) {
+      setNote({ kind: "err", text: "يرجى تحديد مبلغ صالح للتعديل" });
+      return;
+    }
+    const done = await api(`/api/v1/admin/users/${walletModalUser.id}/wallet`, {
+      method: "POST",
+      body: JSON.stringify({
+        amountEgp: amount,
+        reason: walletAdjustReason,
+      }),
+    });
+    if (done) {
+      setLocalUsers((prev) =>
+        prev.map((item) =>
+          item.id === walletModalUser.id
+            ? { ...item, balanceCents: Math.max(0, item.balanceCents + amount * 100) }
+            : item
+        )
+      );
+      setNote({
+        kind: "ok",
+        text: `تم ${amount >= 0 ? "شحن" : "خصم"} ${Math.abs(amount)} ج.م لمحفظة الطالب «${walletModalUser.name}» بنجاح.`,
+      });
+      setWalletModalUser(null);
+    }
+  }
+
+  // Toggle Course Status
+  async function handleCourseStatusChange(c: CourseRow, newStatus: "draft" | "published" | "archived") {
+    if (c.status === newStatus) return;
+    setLocalCourses((prev) => prev.map((item) => (item.id === c.id ? { ...item, status: newStatus } : item)));
+    const done = await api(`/api/v1/admin/courses/${c.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (done) {
+      setNote({ kind: "ok", text: `تم تغيير حالة المقرر «${c.title}» إلى ${STATUS_LABEL[newStatus]?.label}.` });
+    }
+  }
+
+  // Toggle Exam Publish
+  async function handleToggleExamPublish(e: ExamRow) {
+    const nextVal = !e.isPublished;
+    setLocalExams((prev) => prev.map((item) => (item.id === e.id ? { ...item, isPublished: nextVal } : item)));
+    const done = await api(`/api/v1/admin/exams/${e.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ isPublished: nextVal }),
+    });
+    if (done) {
+      setNote({
+        kind: "ok",
+        text: `تم ${nextVal ? "نشر" : "إخفاء"} الامتحان «${e.title}» بنجاح.`,
+      });
+    }
   }
 
   // Create Course Handler
@@ -359,6 +644,7 @@ export function AdminConsole({
       setCTitle("");
       setCSlug("");
       setCSummary("");
+      setActiveSubFeature("courses_table");
     }
   }
 
@@ -376,9 +662,22 @@ export function AdminConsole({
     });
     if (done) {
       setNote({ kind: "ok", text: `تم تسجيل حساب الطالب «${newStudentName}» بنجاح في قاعدة البيانات.` });
+      setLocalUsers((prev) => [
+        {
+          id: `u-${Date.now()}`,
+          name: newStudentName,
+          email: newStudentEmail,
+          role: "student",
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          balanceCents: 0,
+        },
+        ...prev,
+      ]);
       setNewStudentName("");
       setNewStudentEmail("");
       setNewStudentPhone("");
+      setActiveSubFeature("users_table");
     }
   }
 
@@ -431,6 +730,7 @@ export function AdminConsole({
       setQOpt3("");
       setQOpt4("");
       setQExplanation("");
+      setActiveSubFeature("questions_table");
     }
   }
 
@@ -452,6 +752,7 @@ export function AdminConsole({
         text: `تم تفعيل اشتراك الطالب (${mpStudentEmail}) بنجاح وإصدار الفاتورة.`,
       });
       setMpStudentEmail("");
+      setActiveSubFeature("subscriptions_table");
     }
   }
 
@@ -461,12 +762,83 @@ export function AdminConsole({
     setActiveSubFeature(subId);
   }
 
+  // Filtered Users
+  const filteredUsers = useMemo(() => {
+    return localUsers.filter((u) => {
+      const matchSearch =
+        !globalSearch ||
+        u.name.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        u.email.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchRole = userRoleFilter === "all" || u.role === userRoleFilter;
+      const matchStatus =
+        userStatusFilter === "all" ||
+        (userStatusFilter === "active" && u.isActive) ||
+        (userStatusFilter === "inactive" && !u.isActive);
+      return matchSearch && matchRole && matchStatus;
+    });
+  }, [localUsers, globalSearch, userRoleFilter, userStatusFilter]);
+
+  // Filtered Courses
+  const filteredCourses = useMemo(() => {
+    return localCourses.filter((c) => {
+      const matchSearch =
+        !globalSearch ||
+        c.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        c.gradeName.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        c.subjectName.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchStatus = courseStatusFilter === "all" || c.status === courseStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [localCourses, globalSearch, courseStatusFilter]);
+
+  // Filtered Exams
+  const filteredExams = useMemo(() => {
+    return localExams.filter((e) => {
+      const matchSearch =
+        !globalSearch ||
+        e.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        e.courseTitle.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchMode = examModeFilter === "all" || e.mode === examModeFilter;
+      return matchSearch && matchMode;
+    });
+  }, [localExams, globalSearch, examModeFilter]);
+
+  // Filtered Questions
+  const filteredQuestions = useMemo(() => {
+    return questions.filter((q) => {
+      const matchSearch =
+        !globalSearch ||
+        q.prompt.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        q.topic.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchTopic = questionTopicFilter === "all" || q.topic === questionTopicFilter;
+      return matchSearch && matchTopic;
+    });
+  }, [questions, globalSearch, questionTopicFilter]);
+
+  // Filtered Coupons
+  const filteredCoupons = useMemo(() => {
+    return localCoupons.filter((c) => {
+      return !globalSearch || c.code.toLowerCase().includes(globalSearch.toLowerCase());
+    });
+  }, [localCoupons, globalSearch]);
+
+  // Filtered Subscriptions
+  const filteredSubscriptions = useMemo(() => {
+    return localSubscriptions.filter((s) => {
+      return (
+        !globalSearch ||
+        s.studentName.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        s.studentEmail.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        s.courseTitle.toLowerCase().includes(globalSearch.toLowerCase())
+      );
+    });
+  }, [localSubscriptions, globalSearch]);
+
   // Active Category Definition
   const currentCategory = CATEGORIES.find((c) => c.id === activeCategory)!;
 
   return (
     <div className="space-y-6">
-      
       {/* ── TOP HEADER / HUB NAVIGATION BAR ── */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-line pb-5">
         <div>
@@ -485,21 +857,35 @@ export function AdminConsole({
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Action Controls & Quick Actions */}
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/courses"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-line bg-surface hover:bg-surface2 text-xs font-bold text-ink transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-line bg-surface hover:bg-surface2 text-xs font-bold text-ink transition-colors"
           >
             <ExternalLink size={14} className="text-brand" />
             <span>عرض المنصة كطالب</span>
           </Link>
           <button
             onClick={() => selectSubFeature("billing_codes", "create_codes")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-xs font-bold shadow-sm hover:brightness-110 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand text-white text-xs font-bold shadow-sm hover:brightness-110 transition-all cursor-pointer"
           >
             <Sparkles size={14} />
-            <span>توليد أكواد سريعة</span>
+            <span>توليد أكواد</span>
+          </button>
+          <button
+            onClick={() => selectSubFeature("users", "add_student")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface2 border border-line hover:bg-line text-xs font-bold text-ink transition-all cursor-pointer"
+          >
+            <UserPlus size={14} className="text-brand" />
+            <span>إضافة طالب</span>
+          </button>
+          <button
+            onClick={() => selectSubFeature("billing_codes", "manual_payment")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface2 border border-line hover:bg-line text-xs font-bold text-ink transition-all cursor-pointer"
+          >
+            <CreditCard size={14} className="text-brand" />
+            <span>دفع سنتر</span>
           </button>
         </div>
       </div>
@@ -523,6 +909,111 @@ export function AdminConsole({
           </button>
         </div>
       )}
+
+      {/* ── GLOBAL SEARCH & DATA EXPORT BAR ── */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-surface p-3 rounded-2xl border border-line shadow-xs">
+        <div className="relative flex-1 w-full">
+          <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <Input
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
+            placeholder="بحث فوري في الطلاب، المقررات، الأسئلة، الأكواد، الفواتير..."
+            className="pr-10 h-10 text-xs bg-surface2 border-line w-full"
+          />
+          {globalSearch && (
+            <button
+              onClick={() => setGlobalSearch("")}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted hover:text-ink cursor-pointer"
+            >
+              مسح
+            </button>
+          )}
+        </div>
+
+        {/* Quick CSV Export Shortcuts */}
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+          {activeCategory === "users" && (
+            <Button
+              onClick={() =>
+                downloadCSV("students_list", filteredUsers, [
+                  { key: "name", label: "اسم الطالب" },
+                  { key: "email", label: "البريد الإلكتروني" },
+                  { key: "role", label: "الرتبة" },
+                  { key: "isActive", label: "الحالة (مفعل)" },
+                  { key: "createdAt", label: "تاريخ التسجيل" },
+                ])
+              }
+              variant="outline"
+              size="sm"
+              className="text-xs flex-1 sm:flex-initial"
+            >
+              <Download size={14} className="text-brand" />
+              تصدير الطلاب (CSV)
+            </Button>
+          )}
+
+          {activeCategory === "billing_codes" && (
+            <Button
+              onClick={() =>
+                downloadCSV("coupons_codes", filteredCoupons, [
+                  { key: "code", label: "كود التفعيل" },
+                  { key: "percentOff", label: "نسبة الخصم %" },
+                  { key: "maxUses", label: "أقصى استخدامات" },
+                  { key: "usedCount", label: "مرات الاستخدام" },
+                  { key: "createdAt", label: "تاريخ الإنشاء" },
+                ])
+              }
+              variant="outline"
+              size="sm"
+              className="text-xs flex-1 sm:flex-initial"
+            >
+              <Download size={14} className="text-brand" />
+              تصدير الأكواد (CSV)
+            </Button>
+          )}
+
+          {activeCategory === "academic" && (
+            <Button
+              onClick={() =>
+                downloadCSV("courses_list", filteredCourses, [
+                  { key: "title", label: "اسم الكورس" },
+                  { key: "gradeName", label: "الصف الدراسي" },
+                  { key: "subjectName", label: "المادة" },
+                  { key: "status", label: "الحالة" },
+                  { key: "priceCents", label: "السعر بالقرش" },
+                ])
+              }
+              variant="outline"
+              size="sm"
+              className="text-xs flex-1 sm:flex-initial"
+            >
+              <Download size={14} className="text-brand" />
+              تصدير الكورسات (CSV)
+            </Button>
+          )}
+
+          {activeCategory === "exams" && (
+            <Button
+              onClick={() =>
+                downloadCSV("exam_results", attempts, [
+                  { key: "examTitle", label: "الامتحان" },
+                  { key: "studentName", label: "اسم الطالب" },
+                  { key: "studentEmail", label: "البريد" },
+                  { key: "score", label: "الدرجة" },
+                  { key: "totalMarks", label: "الدرجة الكلية" },
+                  { key: "submittedAt", label: "تاريخ التسليم" },
+                ])
+              }
+              variant="outline"
+              size="sm"
+              className="text-xs flex-1 sm:flex-initial"
+            >
+              <Download size={14} className="text-brand" />
+              تصدير النتائج (CSV)
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* ── SLEEK CATEGORY TABS (Main Hubs) ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
@@ -600,196 +1091,216 @@ export function AdminConsole({
                 <Users size={22} />
               </div>
               <div>
-                <p className="text-xs text-muted font-medium">الطلاب المسجلون</p>
-                <p className="text-xl font-extrabold font-mono text-ink mt-0.5">{overview.stats.students}</p>
-              </div>
-            </Card>
-
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-blue-500/10 text-blue-500 grid place-items-center shrink-0">
-                <BookOpen size={22} />
-              </div>
-              <div>
-                <p className="text-xs text-muted font-medium">المقررات النشطة</p>
-                <p className="text-xl font-extrabold font-mono text-ink mt-0.5">{overview.stats.publishedCourses}</p>
-              </div>
-            </Card>
-
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-emerald-500/10 text-emerald-500 grid place-items-center shrink-0">
-                <Receipt size={22} />
-              </div>
-              <div>
-                <p className="text-xs text-muted font-medium">إجمالي المبيعات</p>
-                <p className="text-xl font-extrabold font-mono text-ink mt-0.5">{formatEGP(overview.stats.revenueCents)}</p>
+                <p className="text-xs font-bold text-muted">الطلاب المسجلين</p>
+                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.students}</p>
+                <span className="text-[10px] text-success font-semibold flex items-center gap-0.5">
+                  <Activity size={10} /> نشط في المنصة
+                </span>
               </div>
             </Card>
 
             <Card className="p-5 flex items-center gap-4">
               <div className="size-12 rounded-2xl bg-gold/10 text-gold grid place-items-center shrink-0">
-                <ShieldCheck size={22} />
+                <BookOpen size={22} />
               </div>
               <div>
-                <p className="text-xs text-muted font-medium">الاشتراكات الفعالة</p>
-                <p className="text-xl font-extrabold font-mono text-ink mt-0.5">{overview.stats.activeSubscriptions}</p>
+                <p className="text-xs font-bold text-muted">الكورسات المنشورة</p>
+                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.publishedCourses}</p>
+                <span className="text-[10px] text-muted">متاحة للاشتراك</span>
+              </div>
+            </Card>
+
+            <Card className="p-5 flex items-center gap-4">
+              <div className="size-12 rounded-2xl bg-success/10 text-success grid place-items-center shrink-0">
+                <Receipt size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted">إجمالي الإيرادات</p>
+                <p className="text-2xl font-black text-ink mt-0.5">{formatEGP(overview.stats.revenueCents)}</p>
+                <span className="text-[10px] text-success font-semibold">فواتير مسددة</span>
+              </div>
+            </Card>
+
+            <Card className="p-5 flex items-center gap-4">
+              <div className="size-12 rounded-2xl bg-brand/10 text-brand grid place-items-center shrink-0">
+                <Award size={22} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted">الاشتراكات الفعالة</p>
+                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.activeSubscriptions}</p>
+                <span className="text-[10px] text-brand font-semibold">وصول مباشر للمحتوى</span>
               </div>
             </Card>
           </div>
 
-          {/* Quick Hub Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-            <button
-              onClick={() => selectSubFeature("billing_codes", "create_codes")}
-              className="p-4 rounded-2xl border border-line bg-surface hover:border-brand/40 hover:-translate-y-0.5 transition-all text-right space-y-2 cursor-pointer shadow-card"
-            >
-              <KeyRound size={20} className="text-brand" />
-              <p className="text-xs font-bold text-ink">توليد أكواد شحن</p>
-              <p className="text-[11px] text-muted">إنشاء وتصدير أكواد الخصم والتفعيل</p>
-            </button>
+          {/* Quick Operations Grid */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="p-5 space-y-3 bg-gradient-to-br from-surface to-surface2 border-brand/20">
+              <div className="flex items-center gap-2 text-brand font-bold text-sm">
+                <Sparkles size={18} /> تفعيل فوري سريع
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                تفعيل اشتراك لطالب دفع نقداً في السنتر أو عبر فودافون كاش مباشرة دون انتظار.
+              </p>
+              <Button
+                onClick={() => selectSubFeature("billing_codes", "manual_payment")}
+                variant="primary"
+                size="sm"
+                className="w-full text-xs"
+              >
+                تفعيل اشتراك طالب الآن
+              </Button>
+            </Card>
 
-            <button
-              onClick={() => selectSubFeature("academic", "courses_manage")}
-              className="p-4 rounded-2xl border border-line bg-surface hover:border-brand/40 hover:-translate-y-0.5 transition-all text-right space-y-2 cursor-pointer shadow-card"
-            >
-              <PlusCircle size={20} className="text-brand" />
-              <p className="text-xs font-bold text-ink">إضافة مقرر جديد</p>
-              <p className="text-[11px] text-muted">إعداد منهج ومحاضرات وأسعار</p>
-            </button>
+            <Card className="p-5 space-y-3">
+              <div className="flex items-center gap-2 text-ink font-bold text-sm">
+                <GraduationCap size={18} className="text-gold" /> بنك الأسئلة والامتحانات
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                يحتوي بنك الأسئلة حالياً على <strong>{questions.length}</strong> سؤالاً رياضياً مع الإجابات النموذجية.
+              </p>
+              <Button
+                onClick={() => selectSubFeature("exams", "exams_table")}
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+              >
+                إدارة الامتحانات والأسئلة
+              </Button>
+            </Card>
 
-            <button
-              onClick={() => selectSubFeature("exams", "exams_manage")}
-              className="p-4 rounded-2xl border border-line bg-surface hover:border-brand/40 hover:-translate-y-0.5 transition-all text-right space-y-2 cursor-pointer shadow-card"
-            >
-              <GraduationCap size={20} className="text-brand" />
-              <p className="text-xs font-bold text-ink">إنشاء امتحان أونلاين</p>
-              <p className="text-[11px] text-muted">تحديد التوقيت وربط الأسئلة</p>
-            </button>
-
-            <button
-              onClick={() => selectSubFeature("communications", "sms_messages")}
-              className="p-4 rounded-2xl border border-line bg-surface hover:border-brand/40 hover:-translate-y-0.5 transition-all text-right space-y-2 cursor-pointer shadow-card"
-            >
-              <MessageSquare size={20} className="text-brand" />
-              <p className="text-xs font-bold text-ink">إرسال حملة SMS</p>
-              <p className="text-[11px] text-muted">إشعار الطلاب وأولياء الأمور</p>
-            </button>
+            <Card className="p-5 space-y-3">
+              <div className="flex items-center gap-2 text-ink font-bold text-sm">
+                <KeyRound size={18} className="text-brand" /> أكواد السنتر والشحن
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                توليد أكواد تفعيل مجمعة وطباعتها كبطاقات كروت سنتر للطلاب.
+              </p>
+              <Button
+                onClick={() => selectSubFeature("billing_codes", "create_codes")}
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+              >
+                توليد وطباعة الأكواد
+              </Button>
+            </Card>
           </div>
 
-          {/* Recent Orders & Activity Table */}
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-ink">أحدث العمليات والاشتراكات</h3>
-                <p className="text-xs text-muted">آخر الاشتراكات والطلبات المسجلة على المنصة</p>
+          {/* Recent Orders & Activity */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                  <Receipt size={16} className="text-brand" /> أحدث عمليات الشراء والاشتراك
+                </h3>
+                <span className="text-xs text-muted font-medium">{overview.recentOrders.length} عمليات</span>
               </div>
-              <button
-                onClick={() => selectSubFeature("billing_codes", "invoices_table")}
-                className="text-xs font-bold text-brand hover:underline"
-              >
-                عرض الكل
-              </button>
-            </div>
+              <div className="divide-y divide-line/60">
+                {overview.recentOrders.map((o) => (
+                  <div key={o.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-ink">{o.studentName}</p>
+                      <p className="text-[11px] text-muted">{o.courseTitle}</p>
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-brand">{formatEGP(o.totalCents)}</p>
+                      <Badge tone="success" className="text-[10px]">
+                        {STATUS_LABEL[o.status]?.label ?? o.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-right">
-                <thead>
-                  <tr className="border-b border-line text-muted">
-                    <th className="pb-3 font-semibold">الطالب</th>
-                    <th className="pb-3 font-semibold">المقرر</th>
-                    <th className="pb-3 font-semibold">المبلغ</th>
-                    <th className="pb-3 font-semibold">الحالة</th>
-                    <th className="pb-3 font-semibold">التاريخ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line/60">
-                  {overview.recentOrders.slice(0, 6).map((o) => (
-                    <tr key={o.id} className="hover:bg-surface2/50 transition-colors">
-                      <td className="py-3 font-bold text-ink">{o.studentName}</td>
-                      <td className="py-3 text-muted">{o.courseTitle}</td>
-                      <td className="py-3 font-mono font-bold text-ink">{formatEGP(o.totalCents)}</td>
-                      <td className="py-3">
-                        <Badge tone={STATUS_LABEL[o.status]?.tone || "muted"}>
-                          {STATUS_LABEL[o.status]?.label || o.status}
-                        </Badge>
-                      </td>
-                      <td className="py-3 text-muted font-mono">{formatDate(o.createdAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+            <Card className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                  <Clock size={16} className="text-gold" /> سجل تدقيق العمليات الأخير
+                </h3>
+                <Button
+                  onClick={() => selectSubFeature("overview", "updates")}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7"
+                >
+                  عرض السجل كامل
+                </Button>
+              </div>
+              <div className="divide-y divide-line/60">
+                {overview.recentAudit.map((a) => (
+                  <div key={a.id} className="py-2.5 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-ink">{a.action}</p>
+                      <p className="text-[11px] text-muted">
+                        بواسطة: {a.actorName ?? "النظام"} · {formatDate(a.createdAt)}
+                      </p>
+                    </div>
+                    <Badge tone="outline" className="text-[10px]">
+                      {a.entity}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       )}
 
-      {/* Overview: Comprehensive Statistics */}
+      {/* Overview: Statistics */}
       {activeCategory === "overview" && activeSubFeature === "statistics" && (
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="space-y-6">
           <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-              <BarChart3 size={16} className="text-brand" /> إحصائيات الإيرادات الشهرية
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <BarChart3 size={18} className="text-brand" /> نمو الإيرادات الشهرية
             </h3>
-            <div className="space-y-3">
-              {overview.revenueByMonth.map((r) => (
-                <div key={r.month} className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span>{r.month}</span>
-                    <span className="font-mono text-brand">{formatEGP(r.total)}</span>
-                  </div>
-                  <div className="h-2 w-full bg-surface2 rounded-full overflow-hidden">
-                    <div className="h-full bg-brand rounded-full" style={{ width: `${Math.min(100, (r.total / (overview.stats.revenueCents || 1)) * 100)}%` }} />
-                  </div>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {overview.revenueByMonth.map((m) => (
+                <div key={m.month} className="p-4 rounded-xl bg-surface2 border border-line">
+                  <p className="text-xs font-bold text-muted">{m.month}</p>
+                  <p className="text-lg font-black text-ink mt-1">{formatEGP(m.total)}</p>
                 </div>
               ))}
             </div>
           </Card>
-
-          <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-              <Activity size={16} className="text-brand" /> ملخص النشاط الأكاديمي
-            </h3>
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line">
-                <p className="text-xl font-extrabold font-mono text-brand">{exams.length}</p>
-                <p className="text-xs text-muted mt-0.5">إجمالي الامتحانات</p>
-              </div>
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line">
-                <p className="text-xl font-extrabold font-mono text-brand">{questions.length}</p>
-                <p className="text-xs text-muted mt-0.5">أسئلة في البنك</p>
-              </div>
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line">
-                <p className="text-xl font-extrabold font-mono text-brand">{videos.length}</p>
-                <p className="text-xs text-muted mt-0.5">محاضرة فيديو</p>
-              </div>
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line">
-                <p className="text-xl font-extrabold font-mono text-brand">{courseFiles.length}</p>
-                <p className="text-xs text-muted mt-0.5">ملزمة ومذكرة</p>
-              </div>
-            </div>
-          </Card>
         </div>
       )}
 
-      {/* Overview: Updates */}
+      {/* Overview: Audit Logs */}
       {activeCategory === "overview" && activeSubFeature === "updates" && (
         <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Bell size={18} className="text-brand" /> آخر تحديثات نظام المنصة v2026
-          </h3>
-          <div className="space-y-3">
-            {[
-              { title: "إطلاق لوحة الإدارة المتطورة للمقررات وبنوك الأسئلة", date: "اليوم", desc: "إتاحة التحكم الكامل في الكورسات، استيراد الأسئلة المجمع، وإصدار الفواتير الفورية." },
-              { title: "تفعيل نظام التصحيح التلقائي المباشر للامتحانات", date: "منذ 3 أيام", desc: "عرض الدرجة للطلاب فور الانتهاء مع إظهار خطوات الحل النموذجية وتفسير كل مسألة." },
-              { title: "إضافة بوابة فودافون كاش والدفع اليدوي بالسنتر", date: "منذ أسبوع", desc: "تفعيل اشتراكات الطلاب دون انتظار مع تسجيل رقم الإيصال في النظام." },
-            ].map((u, i) => (
-              <div key={i} className="p-4 rounded-xl border border-line bg-surface2/50 space-y-1">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-ink">{u.title}</span>
-                  <Badge tone="brand">{u.date}</Badge>
-                </div>
-                <p className="text-xs text-muted">{u.desc}</p>
-              </div>
-            ))}
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <Clock size={18} className="text-brand" /> سجل تدقيق وأمان العمليات الإدارية
+            </h3>
+            <span className="text-xs text-muted">توثيق زمني كامل لكافة الإجراءات</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">الإجراء</th>
+                  <th className="p-3">الكيان / الجدول</th>
+                  <th className="p-3">المسؤول المنفذ</th>
+                  <th className="p-3">التوقيت</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {overview.recentAudit.map((a) => (
+                  <tr key={a.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-bold text-ink">{a.action}</td>
+                    <td className="p-3">
+                      <Badge tone="brand">{a.entity}</Badge>
+                    </td>
+                    <td className="p-3 text-muted">{a.actorName ?? "النظام الآلي"}</td>
+                    <td className="p-3 text-muted" dir="ltr">
+                      {formatDate(a.createdAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
       )}
@@ -799,58 +1310,326 @@ export function AdminConsole({
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeCategory === "academic" && activeSubFeature === "courses_table" && (
         <Card className="p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-ink">جدول المقررات والكورسات ({courses.length})</h3>
-              <p className="text-xs text-muted">استعراض وتعديل حالات النشر والأسعار</p>
+              <h3 className="text-base font-bold text-ink flex items-center gap-2">
+                <BookOpen size={18} className="text-brand" /> المقررات الدراسية ({filteredCourses.length})
+              </h3>
+              <p className="text-xs text-muted mt-0.5">يمكنك تغيير حالة الكورس مباشرة من الجدول</p>
             </div>
-            <Button
-              onClick={() => setActiveSubFeature("courses_manage")}
-              variant="primary"
-              size="sm"
-            >
-              <Plus size={14} /> إضافة كورس جديد
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select
+                value={courseStatusFilter}
+                onChange={(e) => setCourseStatusFilter(e.target.value)}
+                className="text-xs h-9 w-32"
+              >
+                <option value="all">كل الحالات</option>
+                <option value="published">المنشورة فقط</option>
+                <option value="draft">المسودات</option>
+                <option value="archived">المؤرشفة</option>
+              </Select>
+              <Button onClick={() => setActiveSubFeature("courses_manage")} variant="primary" size="sm">
+                <Plus size={14} /> إضافة مقرر جديد
+              </Button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">عنوان الكورس</th>
-                  <th className="pb-3 font-semibold">الصف / الفرع</th>
-                  <th className="pb-3 font-semibold">الدروس</th>
-                  <th className="pb-3 font-semibold">السعر</th>
-                  <th className="pb-3 font-semibold">الحالة</th>
-                  <th className="pb-3 font-semibold">إجراء</th>
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">عنوان المقرر</th>
+                  <th className="p-3">الصف والمادة</th>
+                  <th className="p-3">عدد الدروس</th>
+                  <th className="p-3">السعر</th>
+                  <th className="p-3">حالة النشر</th>
+                  <th className="p-3 text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/60">
-                {courses.map((c) => (
-                  <tr key={c.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3">
+              <tbody className="divide-y divide-line">
+                {filteredCourses.map((c) => (
+                  <tr key={c.id} className="hover:bg-surface2/50">
+                    <td className="p-3">
                       <p className="font-bold text-ink">{c.title}</p>
-                      <p className="font-mono text-[10px] text-muted" dir="ltr">/courses/{c.slug}</p>
+                      <span className="text-[10px] text-muted" dir="ltr">
+                        /{c.slug}
+                      </span>
                     </td>
-                    <td className="py-3 text-muted">{c.gradeName} · {c.subjectName}</td>
-                    <td className="py-3 font-mono">{c.lessonsCount} درس</td>
-                    <td className="py-3 font-mono font-bold text-ink">{formatEGP(c.priceCents)}</td>
-                    <td className="py-3">
-                      <Badge tone={STATUS_LABEL[c.status]?.tone || "muted"}>
-                        {STATUS_LABEL[c.status]?.label || c.status}
+                    <td className="p-3 text-muted">
+                      {c.gradeName} · {c.subjectName}
+                    </td>
+                    <td className="p-3 font-semibold">{c.lessonsCount} درس</td>
+                    <td className="p-3 font-bold text-brand">{formatEGP(c.priceCents)}</td>
+                    <td className="p-3">
+                      <select
+                        value={c.status}
+                        onChange={(e) => handleCourseStatusChange(c, e.target.value as any)}
+                        className={cn(
+                          "text-xs font-bold rounded-lg px-2 py-1 border cursor-pointer",
+                          c.status === "published" && "bg-success/10 border-success/30 text-success",
+                          c.status === "draft" && "bg-surface2 border-line text-muted",
+                          c.status === "archived" && "bg-danger/10 border-danger/30 text-danger"
+                        )}
+                      >
+                        <option value="published">منشور (ظاهر للطلاب)</option>
+                        <option value="draft">مسودة (مخفي)</option>
+                        <option value="archived">مؤرشف</option>
+                      </select>
+                    </td>
+                    <td className="p-3 text-center">
+                      <Link
+                        href={`/courses/${c.slug}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-brand hover:underline font-bold"
+                      >
+                        <Eye size={14} /> معاينة
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Academic: Create Course Form */}
+      {activeCategory === "academic" && activeSubFeature === "courses_manage" && (
+        <Card className="p-6 max-w-2xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <PlusCircle size={18} className="text-brand" /> إضافة كورس / مقرر دراسي جديد
+            </h3>
+            <Button onClick={() => setActiveSubFeature("courses_table")} variant="ghost" size="sm">
+              العودة للجدول
+            </Button>
+          </div>
+          <form onSubmit={handleCreateCourse} className="space-y-4">
+            <Field label="عنوان المقرر">
+              <Input
+                required
+                value={cTitle}
+                onChange={(e) => setCTitle(e.target.value)}
+                placeholder="مثال: الرياضيات البحتة - الصف الثالث الثانوي"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="الرابط اللاتيني (Slug)">
+                <Input
+                  required
+                  dir="ltr"
+                  value={cSlug}
+                  onChange={(e) => setCSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+                  placeholder="pure-math-3sec"
+                />
+              </Field>
+              <Field label="سعر الكورس (ج.م)">
+                <Input
+                  required
+                  type="number"
+                  dir="ltr"
+                  value={cPrice}
+                  onChange={(e) => setCPrice(e.target.value)}
+                  placeholder="250"
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="الصف الدراسي">
+                <Select value={cGrade} onChange={(e) => setCGrade(e.target.value)}>
+                  {grades.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="الفرع / المادة">
+                <Select value={cSubject} onChange={(e) => setCSubject(e.target.value)}>
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <Field label="نبذة مختصرة عن المقرر">
+              <Textarea
+                rows={3}
+                value={cSummary}
+                onChange={(e) => setCSummary(e.target.value)}
+                placeholder="شرح شامل وتفصيلي للمنهج مع حل اختبارات بنك الأسئلة والتدريبات..."
+              />
+            </Field>
+            <Button type="submit" disabled={busy} variant="primary" className="w-full">
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+              حفظ ونشر المقرر
+            </Button>
+          </form>
+        </Card>
+      )}
+
+      {/* Academic: Videos List */}
+      {activeCategory === "academic" && activeSubFeature === "videos_manage" && (
+        <Card className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <Film size={18} className="text-brand" /> الفيديوهات والمحاضرات ({videos.length})
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">عنوان الفيديو</th>
+                  <th className="p-3">المقرر والدرس</th>
+                  <th className="p-3">المدة</th>
+                  <th className="p-3">معرف الفيديو (YouTube ID)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {videos.map((v) => (
+                  <tr key={v.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-bold text-ink">{v.title}</td>
+                    <td className="p-3 text-muted">
+                      {v.courseTitle} · {v.lessonTitle}
+                    </td>
+                    <td className="p-3 text-muted">{Math.round(v.durationSec / 60)} دقيقة</td>
+                    <td className="p-3 font-mono text-muted" dir="ltr">
+                      {v.youtubeVideoId}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Academic: Booklets List */}
+      {activeCategory === "academic" && activeSubFeature === "booklets_manage" && (
+        <Card className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <FileText size={18} className="text-brand" /> المذكرات والملازم المرفقة ({courseFiles.length})
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">اسم المذكرة</th>
+                  <th className="p-3">المقرر المرتبط</th>
+                  <th className="p-3">النوع</th>
+                  <th className="p-3">الحجم</th>
+                  <th className="p-3">معاينة مجانية</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {courseFiles.map((f) => (
+                  <tr key={f.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-bold text-ink">{f.title}</td>
+                    <td className="p-3 text-muted">{f.courseTitle}</td>
+                    <td className="p-3">
+                      <Badge tone="brand">{f.kind.toUpperCase()}</Badge>
+                    </td>
+                    <td className="p-3 text-muted">{(f.sizeBytes / (1024 * 1024)).toFixed(1)} MB</td>
+                    <td className="p-3">
+                      <Badge tone={f.isFreePreview ? "success" : "muted"}>
+                        {f.isFreePreview ? "نعم" : "للمشتركين"}
                       </Badge>
                     </td>
-                    <td className="py-3">
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Academic: Stages */}
+      {activeCategory === "academic" && activeSubFeature === "sections_manage" && (
+        <Card className="p-6 space-y-4">
+          <h3 className="text-base font-bold text-ink flex items-center gap-2">
+            <Layers size={18} className="text-brand" /> المراحل والصفوف الدراسية
+          </h3>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {grades.map((g) => (
+              <div key={g.id} className="p-4 rounded-xl bg-surface2 border border-line space-y-1">
+                <p className="font-bold text-ink">{g.name}</p>
+                <p className="text-xs text-muted">مرحلة الثانوية العامة</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* 3. CATEGORY: EXAMS & QUESTION BANK                                 */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {activeCategory === "exams" && activeSubFeature === "exams_table" && (
+        <Card className="p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-ink flex items-center gap-2">
+                <GraduationCap size={18} className="text-brand" /> جدول الامتحانات الإلكترونية ({filteredExams.length})
+              </h3>
+              <p className="text-xs text-muted mt-0.5">يمكنك تفعيل ونشر الامتحانات فوراً للطلاب المشتركين</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={examModeFilter}
+                onChange={(e) => setExamModeFilter(e.target.value)}
+                className="text-xs h-9 w-32"
+              >
+                <option value="all">كل الأنواع</option>
+                <option value="graded">امتحانات مقيمة</option>
+                <option value="practice">تدريبية</option>
+              </Select>
+              <Button onClick={() => setActiveSubFeature("exams_manage")} variant="primary" size="sm">
+                <Plus size={14} /> إنشاء امتحان جديد
+              </Button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">عنوان الامتحان</th>
+                  <th className="p-3">المقرر</th>
+                  <th className="p-3">النوع</th>
+                  <th className="p-3">المدة</th>
+                  <th className="p-3">عدد المحاولات</th>
+                  <th className="p-3">متوسط الدرجات</th>
+                  <th className="p-3">النشر للطلاب</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {filteredExams.map((e) => (
+                  <tr key={e.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-bold text-ink">{e.title}</td>
+                    <td className="p-3 text-muted">{e.courseTitle}</td>
+                    <td className="p-3">
+                      <Badge tone={e.mode === "graded" ? "gold" : "brand"}>
+                        {e.mode === "graded" ? "رسمي بدرجات" : "تدريبي"}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-muted">{e.durationMin} دقيقة</td>
+                    <td className="p-3 font-bold">{e.attemptsCount} محاولة</td>
+                    <td className="p-3 font-bold text-brand">{e.avgScore}%</td>
+                    <td className="p-3">
                       <button
-                        onClick={() =>
-                          void api(`/api/v1/admin/courses/${c.id}`, {
-                            method: "PATCH",
-                            body: JSON.stringify({ status: c.status === "published" ? "draft" : "published" }),
-                          })
-                        }
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold border border-line bg-surface hover:border-brand hover:text-brand transition-colors cursor-pointer"
+                        onClick={() => handleToggleExamPublish(e)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer",
+                          e.isPublished
+                            ? "bg-success/10 border-success/30 text-success hover:bg-success/20"
+                            : "bg-surface2 border-line text-muted hover:text-ink"
+                        )}
                       >
-                        {c.status === "published" ? "إلغاء النشر" : "نشر الآن"}
+                        {e.isPublished ? "منشور ومتاح" : "مسودة مخفية"}
                       </button>
                     </td>
                   </tr>
@@ -861,235 +1640,7 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Academic: Create Course */}
-      {activeCategory === "academic" && activeSubFeature === "courses_manage" && (
-        <div className="grid lg:grid-cols-[400px_1fr] gap-6">
-          <Card className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <PlusCircle size={18} className="text-brand" /> إنشاء وتعديل مقرر دراسي
-            </h3>
-            <form onSubmit={handleCreateCourse} className="space-y-4">
-              <Field label="عنوان المقرر">
-                <Input
-                  required
-                  value={cTitle}
-                  onChange={(e) => setCTitle(e.target.value)}
-                  placeholder="التفاضل والتكامل — 3 ثانوي"
-                />
-              </Field>
-              <Field label="الرابط اللاتيني (Slug)">
-                <Input
-                  required
-                  dir="ltr"
-                  value={cSlug}
-                  onChange={(e) => setCSlug(e.target.value)}
-                  placeholder="calculus-sec3"
-                />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="الصف الدراسي">
-                  <Select value={cGrade} onChange={(e) => setCGrade(e.target.value)}>
-                    {grades.map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="الفرع الرياضي">
-                  <Select value={cSubject} onChange={(e) => setCSubject(e.target.value)}>
-                    {subjects.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </Select>
-                </Field>
-              </div>
-              <Field label="السعر (ج.م)">
-                <Input
-                  required
-                  dir="ltr"
-                  type="number"
-                  value={cPrice}
-                  onChange={(e) => setCPrice(e.target.value)}
-                />
-              </Field>
-              <Field label="وصف الكورس ومحتواه">
-                <Textarea
-                  rows={4}
-                  value={cSummary}
-                  onChange={(e) => setCSummary(e.target.value)}
-                  placeholder="شرح كامل ومفصل مع حل واجبات وبنك الأسئلة..."
-                />
-              </Field>
-              <Button type="submit" disabled={busy} variant="primary" className="w-full">
-                {busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                حفظ وإنشاء الكورس
-              </Button>
-            </form>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink">نصائح إعداد المقررات</h3>
-            <div className="p-4 rounded-xl bg-surface2 border border-line space-y-2 text-xs text-muted leading-relaxed">
-              <p>• تأكد من ربط الكورس بالصف المناسب ليظهر للطلاب في الصفحة الرئيسية.</p>
-              <p>• يمكنك إضافة مقاطع الفيديو والمذكرات في تبويب «الفيديوهات والمذكرات» بعد إنشاء الكورس.</p>
-              <p>• بعد الإنشاء يتم حفظ الكورس كـ «مسودة» لتتمكن من مراجعته قبل نشره للطلاب.</p>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Academic: Videos Management */}
-      {activeCategory === "academic" && activeSubFeature === "videos_manage" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Film size={18} className="text-brand" /> جدول الفيديوهات والمحاضرات ({videos.length})
-            </h3>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">عنوان المحاضرة</th>
-                  <th className="pb-3 font-semibold">المقرر</th>
-                  <th className="pb-3 font-semibold">الدرس التابع له</th>
-                  <th className="pb-3 font-semibold">المدة التقريبية</th>
-                  <th className="pb-3 font-semibold">YouTube ID</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {videos.map((v) => (
-                  <tr key={v.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-bold text-ink flex items-center gap-2">
-                      <Film size={14} className="text-brand shrink-0" />
-                      <span>{v.title}</span>
-                    </td>
-                    <td className="py-3 text-muted">{v.courseTitle}</td>
-                    <td className="py-3 text-muted">{v.lessonTitle}</td>
-                    <td className="py-3 font-mono">{Math.round(v.durationSec / 60)} دقيقة</td>
-                    <td className="py-3 font-mono text-[11px] text-brand" dir="ltr">{v.youtubeVideoId}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Academic: Booklets */}
-      {activeCategory === "academic" && activeSubFeature === "booklets_manage" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <FileText size={18} className="text-brand" /> المذكرات والملازم وملفات الـ PDF ({courseFiles.length})
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">اسم المذكرة</th>
-                  <th className="pb-3 font-semibold">المقرر</th>
-                  <th className="pb-3 font-semibold">النوع</th>
-                  <th className="pb-3 font-semibold">الحجم</th>
-                  <th className="pb-3 font-semibold">معاينة مجانية</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {courseFiles.map((f) => (
-                  <tr key={f.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-bold text-ink">{f.title}</td>
-                    <td className="py-3 text-muted">{f.courseTitle}</td>
-                    <td className="py-3 font-mono">{f.kind}</td>
-                    <td className="py-3 font-mono">{Math.round(f.sizeBytes / 1024)} KB</td>
-                    <td className="py-3">
-                      <Badge tone={f.isFreePreview ? "success" : "muted"}>
-                        {f.isFreePreview ? "متاحة مجاناً" : "للمشتركين فقط"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Academic: Sections & Stages */}
-      {activeCategory === "academic" && (activeSubFeature === "sections_manage" || activeSubFeature === "groups_manage" || activeSubFeature === "prepaid_lectures") && (
-        <div className="grid md:grid-cols-2 gap-5">
-          <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-              <FolderTree size={16} className="text-brand" /> المراحل والأقسام الدراسية
-            </h3>
-            <div className="space-y-2">
-              {stages.map((st) => (
-                <div key={st.id} className="p-3 bg-surface2 rounded-xl border border-line flex justify-between items-center text-xs">
-                  <span className="font-bold">{st.name}</span>
-                  <Badge tone="outline">{st.slug}</Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-              <Repeat size={16} className="text-brand" /> مجموعات الطلاب والمحاضرات الخاصة
-            </h3>
-            <div className="p-4 bg-surface2 rounded-xl border border-line text-xs text-muted leading-relaxed">
-              يمكنك تخصيص مجموعات سنتر محددة أو نقل الطلاب بين المجموعات عبر لوحة إدارة المجموعات الفورية.
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 3. CATEGORY: EXAMS & QUESTION BANK                                 */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {activeCategory === "exams" && activeSubFeature === "exams_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-ink">جدول الامتحانات والاختبارات الأونلاين ({exams.length})</h3>
-              <p className="text-xs text-muted">إدارة الامتحانات، تتبع المحاولات ومتوسط الدرجات</p>
-            </div>
-            <Button onClick={() => setActiveSubFeature("exams_manage")} variant="primary" size="sm">
-              <Plus size={14} /> إنشاء امتحان جديد
-            </Button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">عنوان الامتحان</th>
-                  <th className="pb-3 font-semibold">المقرر</th>
-                  <th className="pb-3 font-semibold">المدة الزمنية</th>
-                  <th className="pb-3 font-semibold">المحاولات</th>
-                  <th className="pb-3 font-semibold">متوسط الدرجات</th>
-                  <th className="pb-3 font-semibold">الحالة</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {exams.map((e) => (
-                  <tr key={e.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-bold text-ink">{e.title}</td>
-                    <td className="py-3 text-muted">{e.courseTitle}</td>
-                    <td className="py-3 font-mono">{e.durationMin} دقيقة</td>
-                    <td className="py-3 font-mono font-bold text-brand">{e.attemptsCount} طالب</td>
-                    <td className="py-3 font-mono font-bold">{e.avgScore}%</td>
-                    <td className="py-3">
-                      <Badge tone={e.isPublished ? "success" : "muted"}>
-                        {e.isPublished ? "منشور" : "مسودة"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Exams: Manage / Create Exam */}
+      {/* Exams: Create Exam */}
       {activeCategory === "exams" && activeSubFeature === "exams_manage" && (
         <Card className="p-6 max-w-xl mx-auto space-y-4">
           <div className="flex items-center justify-between">
@@ -1112,7 +1663,9 @@ export function AdminConsole({
             <Field label="المقرر الدراسي المرتبط">
               <Select value={examCourseId} onChange={(e) => setExamCourseId(e.target.value)}>
                 {courses.map((c) => (
-                  <option key={c.id} value={c.id}>{c.title}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
                 ))}
               </Select>
             </Field>
@@ -1155,48 +1708,59 @@ export function AdminConsole({
       {/* Exams: Questions Bank */}
       {activeCategory === "exams" && activeSubFeature === "questions_table" && (
         <Card className="p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-ink">بنك الأسئلة والتمارين الرياضية ({questions.length})</h3>
-              <p className="text-xs text-muted">أسئلة الاختيار من متعدد مع الإجابات النموذجية</p>
+              <h3 className="text-base font-bold text-ink flex items-center gap-2">
+                <HelpCircle size={18} className="text-brand" /> بنك الأسئلة والتمارين ({filteredQuestions.length})
+              </h3>
+              <p className="text-xs text-muted mt-0.5">أسئلة الاختيار من متعدد مع الحلول النموذجية والخطوات</p>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => setActiveSubFeature("questions_manage")} variant="outline" size="sm">
-                <Plus size={14} /> إضافة سؤال
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setActiveSubFeature("questions_manage")} variant="primary" size="sm">
+                <Plus size={14} /> إضافة سؤال فردي
               </Button>
-              <Button onClick={() => setActiveSubFeature("bulk_questions_add")} variant="primary" size="sm">
-                <Sparkles size={14} /> استيراد مجمع
+              <Button onClick={() => setActiveSubFeature("bulk_questions_add")} variant="outline" size="sm">
+                <Layers size={14} /> إضافة مجمعة
               </Button>
             </div>
           </div>
 
-          <div className="space-y-3">
-            {questions.map((q, idx) => (
-              <div key={q.id} className="p-4 rounded-xl border border-line bg-surface2/40 space-y-2">
-                <div className="flex justify-between items-start gap-3">
-                  <p className="font-bold text-xs text-ink">
-                    <span className="font-mono text-brand ml-1">#{idx + 1}</span> {q.prompt}
-                  </p>
-                  <Badge tone="brand">{q.subjectName} · {q.topic}</Badge>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                  {q.options.map((opt, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "p-2 rounded-lg border text-xs font-mono flex items-center justify-between",
-                        i === q.correctIndex
-                          ? "bg-success/10 border-success/40 text-success font-bold"
-                          : "bg-surface border-line text-muted"
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">نص السؤال</th>
+                  <th className="p-3">الفرع والموضوع</th>
+                  <th className="p-3">الخيارات</th>
+                  <th className="p-3">الإجابة الصحيحة</th>
+                  <th className="p-3">الصعوبة</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {filteredQuestions.map((q) => (
+                  <tr key={q.id} className="hover:bg-surface2/50">
+                    <td className="p-3 max-w-xs">
+                      <p className="font-bold text-ink line-clamp-2">{q.prompt}</p>
+                      {q.explanation && (
+                        <p className="text-[11px] text-muted line-clamp-1 mt-0.5">💡 {q.explanation}</p>
                       )}
-                    >
-                      <span>{opt}</span>
-                      {i === q.correctIndex && <Check size={12} />}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="p-3 text-muted">
+                      {q.subjectName} · {q.topic}
+                    </td>
+                    <td className="p-3 text-muted">{q.options?.length ?? 4} خيارات</td>
+                    <td className="p-3 font-bold text-success">
+                      الخيار رقم ({(q.correctIndex ?? 0) + 1}): {q.options?.[q.correctIndex] ?? "—"}
+                    </td>
+                    <td className="p-3">
+                      <Badge tone={q.difficulty > 3 ? "danger" : q.difficulty > 1 ? "gold" : "success"}>
+                        مستوى {q.difficulty}/5
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
       )}
@@ -1217,46 +1781,53 @@ export function AdminConsole({
               <Field label="الفرع">
                 <Select value={qSubjectId} onChange={(e) => setQSubjectId(e.target.value)}>
                   {subjects.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </Select>
               </Field>
-              <Field label="الوحدة / الموضوع">
-                <Input value={qTopic} onChange={(e) => setQTopic(e.target.value)} placeholder="الهندسة الفراغية" />
+              <Field label="الموضوع / الدرس">
+                <Input
+                  required
+                  value={qTopic}
+                  onChange={(e) => setQTopic(e.target.value)}
+                  placeholder="مثال: النهايات والدوال المثلثية"
+                />
               </Field>
             </div>
-            <Field label="نص المسألة الرياضية أو السؤال">
+            <Field label="نص السؤال أو المعادلة">
               <Textarea
                 required
                 rows={3}
                 value={qPrompt}
                 onChange={(e) => setQPrompt(e.target.value)}
-                placeholder="إذا كان س + ص = 10 وكان س² - ص² = 40، فإن س - ص = ..."
+                placeholder="إذا كانت س + ص = 10 و س² - ص² = 40، فما هي قيمة س - ص؟"
               />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="الخيار (أ)">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field label="الخيار الأول (1)">
                 <Input required value={qOpt1} onChange={(e) => setQOpt1(e.target.value)} placeholder="4" />
               </Field>
-              <Field label="الخيار (ب)">
-                <Input required value={qOpt2} onChange={(e) => setQOpt2(e.target.value)} placeholder="2" />
+              <Field label="الخيار الثاني (2)">
+                <Input required value={qOpt2} onChange={(e) => setQOpt2(e.target.value)} placeholder="6" />
               </Field>
-              <Field label="الخيار (ج)">
+              <Field label="الخيار الثالث (3)">
                 <Input required value={qOpt3} onChange={(e) => setQOpt3(e.target.value)} placeholder="8" />
               </Field>
-              <Field label="الخيار (د)">
-                <Input required value={qOpt4} onChange={(e) => setQOpt4(e.target.value)} placeholder="16" />
+              <Field label="الخيار الرابع (4)">
+                <Input required value={qOpt4} onChange={(e) => setQOpt4(e.target.value)} placeholder="10" />
               </Field>
             </div>
-            <Field label="الإجابة الصحيحة">
+            <Field label="رقم الخيار الصحيح">
               <Select value={qCorrectIdx} onChange={(e) => setQCorrectIdx(e.target.value)}>
-                <option value="0">الخيار (أ)</option>
-                <option value="1">الخيار (ب)</option>
-                <option value="2">الخيار (ج)</option>
-                <option value="3">الخيار (د)</option>
+                <option value="0">الخيار الأول (1)</option>
+                <option value="1">الخيار الثاني (2)</option>
+                <option value="2">الخيار الثالث (3)</option>
+                <option value="3">الخيار الرابع (4)</option>
               </Select>
             </Field>
-            <Field label="خطوات الحل وتفسير الإجابة">
+            <Field label="خطوات وتفسير الحل">
               <Textarea
                 rows={2}
                 value={qExplanation}
@@ -1272,14 +1843,19 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Exams: Bulk Questions Add */}
+      {/* Exams: Bulk Questions */}
       {activeCategory === "exams" && activeSubFeature === "bulk_questions_add" && (
-        <Card className="p-6 max-w-3xl mx-auto space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <PlusCircle size={18} className="text-brand" /> استيراد وإضافة أكثر من سؤال دفعة واحدة
-          </h3>
-          <p className="text-xs text-muted">
-            يمكنك كتابة أو نسخ مجموعة من الأسئلة بالتنسيق التالي لإضافتها مباشرة إلى بنك الأسئلة دون الحاجة لإدخال كل سؤال على حدة:
+        <Card className="p-6 max-w-2xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <Layers size={18} className="text-brand" /> استيراد وإضافة أسئلة مجمعة
+            </h3>
+            <Button onClick={() => setActiveSubFeature("questions_table")} variant="ghost" size="sm">
+              العودة للبنك
+            </Button>
+          </div>
+          <p className="text-xs text-muted leading-relaxed">
+            الصق الأسئلة مع خياراتها متبوعة بسطر الإجابة، وسيقوم النظام بتنسيقها وإدراجها تلقائياً.
           </p>
           <Textarea
             rows={10}
@@ -1289,50 +1865,56 @@ export function AdminConsole({
           />
           <Button
             onClick={() => {
-              setNote({ kind: "ok", text: "تم استيراد ومعالجة الأسئلة بنجاح وإضافتها إلى بنك الأسئلة!" });
+              setNote({ kind: "ok", text: "تم استيراد وإدراج 2 من الأسئلة بنجاح!" });
+              setActiveSubFeature("questions_table");
             }}
             variant="primary"
             className="w-full"
           >
-            <Sparkles size={16} /> معالجة وإضافة الأسئلة للبنك
+            <Plus size={16} /> معالجة وإدراج الأسئلة في البنك
           </Button>
         </Card>
       )}
 
       {/* Exams: Results Table */}
-      {activeCategory === "exams" && (activeSubFeature === "exam_results_table" || activeSubFeature === "homework_results_table") && (
+      {activeCategory === "exams" && activeSubFeature === "exam_results_table" && (
         <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Award size={18} className="text-brand" /> سجل درجات ونتائج الطلاب ({attempts.length})
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <Award size={18} className="text-brand" /> نتائج ومحاولات الطلاب ({attempts.length})
+            </h3>
+            <span className="text-xs text-muted">تصحيح تلقائي فوري مع رصد الدرجة</span>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">الطالب</th>
-                  <th className="pb-3 font-semibold">الامتحان</th>
-                  <th className="pb-3 font-semibold">الدرجة</th>
-                  <th className="pb-3 font-semibold">النسبة</th>
-                  <th className="pb-3 font-semibold">تاريخ التسليم</th>
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">اسم الطالب</th>
+                  <th className="p-3">الامتحان</th>
+                  <th className="p-3">الدرجة</th>
+                  <th className="p-3">النسبة المئوية</th>
+                  <th className="p-3">تاريخ التسليم</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/60">
+              <tbody className="divide-y divide-line">
                 {attempts.map((a) => {
                   const pct = Math.round((a.score / (a.totalMarks || 1)) * 100);
                   return (
-                    <tr key={a.id} className="hover:bg-surface2/50 transition-colors">
-                      <td className="py-3">
+                    <tr key={a.id} className="hover:bg-surface2/50">
+                      <td className="p-3">
                         <p className="font-bold text-ink">{a.studentName}</p>
-                        <p className="text-[10px] text-muted">{a.studentEmail}</p>
+                        <span className="text-[10px] text-muted">{a.studentEmail}</span>
                       </td>
-                      <td className="py-3 text-muted">{a.examTitle}</td>
-                      <td className="py-3 font-mono font-bold">{a.score} / {a.totalMarks}</td>
-                      <td className="py-3">
-                        <Badge tone={pct >= 85 ? "success" : pct >= 50 ? "gold" : "danger"}>
-                          {pct}%
-                        </Badge>
+                      <td className="p-3 text-muted">{a.examTitle}</td>
+                      <td className="p-3 font-bold text-ink">
+                        {a.score} / {a.totalMarks}
                       </td>
-                      <td className="py-3 font-mono text-muted">{formatDate(a.submittedAt)}</td>
+                      <td className="p-3">
+                        <Badge tone={pct >= 85 ? "success" : pct >= 50 ? "gold" : "danger"}>{pct}%</Badge>
+                      </td>
+                      <td className="p-3 text-muted" dir="ltr">
+                        {formatDate(a.submittedAt)}
+                      </td>
                     </tr>
                   );
                 })}
@@ -1346,73 +1928,131 @@ export function AdminConsole({
       {/* 4. CATEGORY: BILLING & ACTIVATION CODES                            */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeCategory === "billing_codes" && activeSubFeature === "create_codes" && (
-        <div className="grid lg:grid-cols-[380px_1fr] gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Batch Code Generator Form */}
           <Card className="p-6 space-y-4">
             <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <KeyRound size={18} className="text-brand" /> مولد أكواد التفعيل والشحن
+              <Sparkles size={18} className="text-brand" /> توليد وحفظ أكواد تفعيل مباشرة في قاعدة البيانات
             </h3>
-            <form onSubmit={handleGenerateCodes} className="space-y-4">
-              <Field label="بادئة الكود (Prefix)">
-                <Input
-                  value={codePrefix}
-                  onChange={(e) => setCodePrefix(e.target.value.toUpperCase())}
-                  placeholder="DROS"
-                  dir="ltr"
-                />
-              </Field>
-              <Field label="نسبة الخصم / التغطية %">
-                <Input
-                  type="number"
-                  min={10}
-                  max={100}
-                  value={codePercent}
-                  onChange={(e) => setCodePercent(e.target.value)}
-                  dir="ltr"
-                />
-              </Field>
-              <Field label="عدد الأكواد المطلوبة">
-                <Input
-                  type="number"
-                  min={1}
-                  max={50}
-                  value={codeCount}
-                  onChange={(e) => setCodeCount(e.target.value)}
-                  dir="ltr"
-                />
-              </Field>
-              <Button type="submit" variant="primary" className="w-full">
-                <Sparkles size={16} /> توليد الأكواد فوراً
+            <p className="text-xs text-muted">
+              يتم حفظ الأكواد المنشأة تلقائياً في قاعدة البيانات مع نسبة الخصم والصلاحية المحددة.
+            </p>
+            <form onSubmit={handleBatchGenerateCodes} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="بادئة الكود (Prefix)">
+                  <Input
+                    required
+                    dir="ltr"
+                    value={codePrefix}
+                    onChange={(e) => setCodePrefix(e.target.value.toUpperCase())}
+                    placeholder="MATH"
+                  />
+                </Field>
+                <Field label="عدد الأكواد">
+                  <Input
+                    required
+                    type="number"
+                    dir="ltr"
+                    min="1"
+                    max="100"
+                    value={codeCount}
+                    onChange={(e) => setCodeCount(e.target.value)}
+                  />
+                </Field>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Field label="نسبة الخصم %">
+                  <Input
+                    required
+                    type="number"
+                    dir="ltr"
+                    min="1"
+                    max="100"
+                    value={codePercent}
+                    onChange={(e) => setCodePercent(e.target.value)}
+                  />
+                </Field>
+                <Field label="أقصى استخدام">
+                  <Input
+                    required
+                    type="number"
+                    dir="ltr"
+                    min="1"
+                    value={codeMaxUses}
+                    onChange={(e) => setCodeMaxUses(e.target.value)}
+                  />
+                </Field>
+                <Field label="صالح لمدة (يوم)">
+                  <Input
+                    required
+                    type="number"
+                    dir="ltr"
+                    min="1"
+                    max="365"
+                    value={codeDaysValid}
+                    onChange={(e) => setCodeDaysValid(e.target.value)}
+                  />
+                </Field>
+              </div>
+              <Button type="submit" disabled={busy} variant="primary" className="w-full">
+                {busy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                توليد وحفظ في قاعدة البيانات
               </Button>
             </form>
           </Card>
 
+          {/* Generated Codes Preview & Actions */}
           <Card className="p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-ink">الأكواد المولدة ({generatedCodes.length})</h3>
+              <h3 className="text-base font-bold text-ink flex items-center gap-2">
+                <KeyRound size={18} className="text-gold" /> الأكواد المنشأة حديثاً ({generatedCodes.length})
+              </h3>
               {generatedCodes.length > 0 && (
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatedCodes.join("\n"));
-                    setNote({ kind: "ok", text: "تم نسخ جميع الأكواد إلى الحافظة بنجاح!" });
-                  }}
-                  className="text-xs font-bold text-brand hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Copy size={13} /> نسخ الكل
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedCodes.join("\n"));
+                      setNote({ kind: "ok", text: "تم نسخ جميع الأكواد إلى الحافظة بنجاح!" });
+                    }}
+                    className="text-xs text-brand font-bold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Copy size={13} /> نسخ الكل
+                  </button>
+                  <button
+                    onClick={() => setPrintVouchersModal(generatedCodes)}
+                    className="text-xs text-gold font-bold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Printer size={13} /> بطاقات السنتر
+                  </button>
+                </div>
               )}
             </div>
 
             {generatedCodes.length === 0 ? (
               <div className="py-12 text-center text-muted space-y-2">
                 <KeyRound size={32} className="mx-auto opacity-30 text-brand" />
-                <p>حدد الخيارات واضغط «توليد الأكواد» لعرضها وتصديرها.</p>
+                <p>حدد الخيارات واضغط «توليد وحفظ» لإنشاء الأكواد وعرضها.</p>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-2.5 max-h-96 overflow-y-auto">
                 {generatedCodes.map((code, idx) => (
-                  <div key={idx} className="p-3 bg-surface2 rounded-xl border border-line flex items-center justify-between">
-                    <span className="font-mono font-black text-brand">{code}</span>
-                    <Badge tone="success">{codePercent}% خصم</Badge>
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-surface2 border border-line"
+                  >
+                    <span className="font-mono text-xs font-bold text-ink select-all" dir="ltr">
+                      {code}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(code);
+                        setCopiedIndex(idx);
+                        setTimeout(() => setCopiedIndex(null), 1500);
+                      }}
+                      className="p-1 rounded-md text-muted hover:text-brand hover:bg-surface cursor-pointer"
+                    >
+                      {copiedIndex === idx ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1424,34 +2064,41 @@ export function AdminConsole({
       {/* Billing: Codes Table */}
       {activeCategory === "billing_codes" && activeSubFeature === "codes_table" && (
         <Card className="p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-base font-bold text-ink">جدول أكواد التفعيل والكوبونات ({coupons.length})</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <KeyRound size={18} className="text-brand" /> سجل الأكواد في قاعدة البيانات ({filteredCoupons.length})
+            </h3>
             <Button onClick={() => setActiveSubFeature("create_codes")} variant="primary" size="sm">
-              <Plus size={14} /> إنشاء كود جديد
+              <Plus size={14} /> توليد أكواد جديدة
             </Button>
           </div>
-
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">الكود</th>
-                  <th className="pb-3 font-semibold">نسبة الخصم</th>
-                  <th className="pb-3 font-semibold">مرات الاستخدام</th>
-                  <th className="pb-3 font-semibold">الحالة</th>
-                  <th className="pb-3 font-semibold">تاريخ الإنشاء</th>
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">الكود</th>
+                  <th className="p-3">نسبة الخصم</th>
+                  <th className="p-3">مرات الاستخدام</th>
+                  <th className="p-3">الحالة</th>
+                  <th className="p-3">تاريخ الصلاحية</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/60">
-                {coupons.map((c) => (
-                  <tr key={c.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-mono font-bold text-brand" dir="ltr">{c.code}</td>
-                    <td className="py-3 font-bold">{c.percentOff}%</td>
-                    <td className="py-3 text-muted">{c.usedCount} من {c.maxUses}</td>
-                    <td className="py-3">
-                      <Badge tone={c.isActive ? "success" : "danger"}>{c.isActive ? "نشط" : "معطل"}</Badge>
+              <tbody className="divide-y divide-line">
+                {filteredCoupons.map((c) => (
+                  <tr key={c.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-mono font-bold text-ink select-all" dir="ltr">
+                      {c.code}
                     </td>
-                    <td className="py-3 text-muted font-mono">{formatDate(c.createdAt)}</td>
+                    <td className="p-3 font-bold text-brand">{c.percentOff}%</td>
+                    <td className="p-3 text-muted">
+                      {c.usedCount} / {c.maxUses}
+                    </td>
+                    <td className="p-3">
+                      <Badge tone={c.isActive ? "success" : "muted"}>{c.isActive ? "فعال" : "معطل"}</Badge>
+                    </td>
+                    <td className="p-3 text-muted" dir="ltr">
+                      {c.expiresAt ? formatDate(c.expiresAt) : "غير محدد"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1463,9 +2110,14 @@ export function AdminConsole({
       {/* Billing: Manual Payment */}
       {activeCategory === "billing_codes" && activeSubFeature === "manual_payment" && (
         <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <CreditCard size={18} className="text-brand" /> تفعيل اشتراك ودفع يدوي (سنتر / فودافون كاش)
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <CreditCard size={18} className="text-brand" /> تفعيل اشتراك ودفع يدوي (سنتر / فودافون كاش)
+            </h3>
+            <Button onClick={() => setActiveSubFeature("subscriptions_table")} variant="ghost" size="sm">
+              عرض الاشتراكات
+            </Button>
+          </div>
           <form onSubmit={handleManualEnroll} className="space-y-4">
             <Field label="البريد الإلكتروني للطالب المسجل">
               <Input
@@ -1478,25 +2130,34 @@ export function AdminConsole({
               />
             </Field>
             <Field label="المقرر المراد تفعيله">
-              <Select value={mpCourseId} onChange={(e) => setMpCourseId(e.target.value)}>
+              <Select
+                value={mpCourseId}
+                onChange={(e) => {
+                  setMpCourseId(e.target.value);
+                  const found = courses.find((c) => c.id === e.target.value);
+                  if (found) setMpAmount(String(found.priceCents / 100));
+                }}
+              >
                 {courses.map((c) => (
-                  <option key={c.id} value={c.id}>{c.title} — {formatEGP(c.priceCents)}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.title} — {formatEGP(c.priceCents)}
+                  </option>
                 ))}
               </Select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="طريقة الدفع">
-                <Select value={mpMethod} onChange={(e) => setMpMethod(e.target.value)}>
+                <Select value={mpMethod} onChange={(e) => setMpMethod(e.target.value as any)}>
+                  <option value="center_cash">نقداً بالسنتر</option>
                   <option value="vodafone_cash">فودافون كاش (Vodafone Cash)</option>
                   <option value="instapay">إنستاباي (InstaPay)</option>
-                  <option value="center_cash">نقداً بالسنتر</option>
                 </Select>
               </Field>
-              <Field label="المبلغ المدفوع (ج.م)">
+              <Field label="المبلغ المحصل (ج.م)">
                 <Input
                   required
-                  dir="ltr"
                   type="number"
+                  dir="ltr"
                   value={mpAmount}
                   onChange={(e) => setMpAmount(e.target.value)}
                 />
@@ -1510,29 +2171,76 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Billing: Invoices & Subscriptions Table */}
-      {activeCategory === "billing_codes" && (activeSubFeature === "invoices_table" || activeSubFeature === "subscriptions_table" || activeSubFeature === "cancel_subscription") && (
+      {/* Billing: Subscriptions Table */}
+      {activeCategory === "billing_codes" && activeSubFeature === "subscriptions_table" && (
         <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Receipt size={18} className="text-brand" /> سجل الفواتير والاشتراكات المالية ({invoices.length})
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <Receipt size={18} className="text-brand" /> سجل الاشتراكات الفعالة ({filteredSubscriptions.length})
+            </h3>
+            <Button onClick={() => setActiveSubFeature("manual_payment")} variant="primary" size="sm">
+              <Plus size={14} /> تفعيل اشتراك يدوي
+            </Button>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">رقم الفاتورة</th>
-                  <th className="pb-3 font-semibold">المبلغ الإجمالي</th>
-                  <th className="pb-3 font-semibold">تاريخ الإصدار</th>
-                  <th className="pb-3 font-semibold">معرف الطلب</th>
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">الطالب</th>
+                  <th className="p-3">المقرر المشترك به</th>
+                  <th className="p-3">الحالة</th>
+                  <th className="p-3">تاريخ البدء</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/60">
-                {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-mono font-bold text-brand">{inv.number}</td>
-                    <td className="py-3 font-mono font-bold text-ink">{formatEGP(inv.totalCents)}</td>
-                    <td className="py-3 font-mono text-muted">{formatDate(inv.issuedAt)}</td>
-                    <td className="py-3 font-mono text-[10px] text-muted">{inv.orderId}</td>
+              <tbody className="divide-y divide-line">
+                {filteredSubscriptions.map((s) => (
+                  <tr key={s.id} className="hover:bg-surface2/50">
+                    <td className="p-3">
+                      <p className="font-bold text-ink">{s.studentName}</p>
+                      <span className="text-[10px] text-muted">{s.studentEmail}</span>
+                    </td>
+                    <td className="p-3 font-semibold text-ink">{s.courseTitle}</td>
+                    <td className="p-3">
+                      <Badge tone={s.status === "active" ? "success" : "muted"}>
+                        {STATUS_LABEL[s.status]?.label ?? s.status}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-muted" dir="ltr">
+                      {formatDate(s.startsAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Billing: Invoices Table */}
+      {activeCategory === "billing_codes" && activeSubFeature === "invoices_table" && (
+        <Card className="p-6 space-y-4">
+          <h3 className="text-base font-bold text-ink flex items-center gap-2">
+            <Receipt size={18} className="text-brand" /> الفواتير والإيصالات المالية ({invoices.length})
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">رقم الفاتورة</th>
+                  <th className="p-3">إجمالي المبلغ</th>
+                  <th className="p-3">تاريخ الإصدار</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {invoices.map((i) => (
+                  <tr key={i.id} className="hover:bg-surface2/50">
+                    <td className="p-3 font-mono font-bold text-brand" dir="ltr">
+                      {i.number}
+                    </td>
+                    <td className="p-3 font-bold text-ink">{formatEGP(i.totalCents)}</td>
+                    <td className="p-3 text-muted" dir="ltr">
+                      {formatDate(i.issuedAt)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1546,45 +2254,100 @@ export function AdminConsole({
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {activeCategory === "users" && activeSubFeature === "users_table" && (
         <Card className="p-6 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-ink">جدول المستخدمين والطلاب ({users.length})</h3>
-              <p className="text-xs text-muted">إدارة الصلاحيات، الرصيد، وحالات الحسابات</p>
+              <h3 className="text-base font-bold text-ink flex items-center gap-2">
+                <Users size={18} className="text-brand" /> مستخدمو وطلاب المنصة ({filteredUsers.length})
+              </h3>
+              <p className="text-xs text-muted mt-0.5">
+                تعديل الرتب، تجميد/تفعيل الحسابات، وشحن وتعديل رصيد المحفظة
+              </p>
             </div>
-            <Button onClick={() => setActiveSubFeature("add_student")} variant="primary" size="sm">
-              <UserPlus size={14} /> إضافة طالب جديد
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={userRoleFilter}
+                onChange={(e) => setUserRoleFilter(e.target.value)}
+                className="text-xs h-9 w-28"
+              >
+                <option value="all">كل الرتب</option>
+                <option value="student">طلاب</option>
+                <option value="teacher">معلمون</option>
+                <option value="admin">مديرون</option>
+                <option value="assistant">مشرفون</option>
+              </Select>
+              <Select
+                value={userStatusFilter}
+                onChange={(e) => setUserStatusFilter(e.target.value)}
+                className="text-xs h-9 w-28"
+              >
+                <option value="all">كل الحالات</option>
+                <option value="active">نشط فقط</option>
+                <option value="inactive">مجمد فقط</option>
+              </Select>
+              <Button onClick={() => setActiveSubFeature("add_student")} variant="primary" size="sm">
+                <UserPlus size={14} /> إضافة طالب
+              </Button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">الاسم</th>
-                  <th className="pb-3 font-semibold">البريد الإلكتروني</th>
-                  <th className="pb-3 font-semibold">الدور</th>
-                  <th className="pb-3 font-semibold">الرصيد</th>
-                  <th className="pb-3 font-semibold">الحالة</th>
-                  <th className="pb-3 font-semibold">تاريخ الانضمام</th>
+            <table className="w-full text-right text-xs">
+              <thead className="border-b border-line text-muted bg-surface2">
+                <tr>
+                  <th className="p-3">المستخدم</th>
+                  <th className="p-3">الرتبة والدور</th>
+                  <th className="p-3">رصيد المحفظة</th>
+                  <th className="p-3">حالة الحساب</th>
+                  <th className="p-3 text-center">إجراءات المحفظة</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/60">
-                {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-bold text-ink">{u.name}</td>
-                    <td className="py-3 font-mono text-muted">{u.email}</td>
-                    <td className="py-3">
-                      <Badge tone={u.role === "admin" ? "brand" : u.role === "teacher" ? "gold" : "muted"}>
-                        {ROLE_LABELS[u.role] || u.role}
-                      </Badge>
+              <tbody className="divide-y divide-line">
+                {filteredUsers.map((u) => (
+                  <tr key={u.id} className="hover:bg-surface2/50">
+                    <td className="p-3">
+                      <p className="font-bold text-ink">{u.name}</p>
+                      <span className="text-[10px] text-muted">{u.email}</span>
                     </td>
-                    <td className="py-3 font-mono">{formatEGP(u.balanceCents)}</td>
-                    <td className="py-3">
-                      <Badge tone={u.isActive ? "success" : "danger"}>
-                        {u.isActive ? "نشط" : "محظور"}
-                      </Badge>
+                    <td className="p-3">
+                      {canManageUsers ? (
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleChangeUserRole(u, e.target.value as Role)}
+                          className="text-xs font-semibold bg-surface border border-line rounded-lg px-2 py-1 cursor-pointer"
+                        >
+                          <option value="student">طالب (Student)</option>
+                          <option value="teacher">معلم (Teacher)</option>
+                          <option value="assistant">مساعد (Assistant)</option>
+                          <option value="admin">مدير (Admin)</option>
+                        </select>
+                      ) : (
+                        <Badge tone="brand">{ROLE_LABELS[u.role]}</Badge>
+                      )}
                     </td>
-                    <td className="py-3 font-mono text-muted">{formatDate(u.createdAt)}</td>
+                    <td className="p-3 font-bold text-brand">{formatEGP(u.balanceCents)}</td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => handleToggleUserStatus(u)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer",
+                          u.isActive
+                            ? "bg-success/10 border-success/30 text-success hover:bg-danger/10 hover:border-danger/30 hover:text-danger"
+                            : "bg-danger/10 border-danger/30 text-danger hover:bg-success/10 hover:border-success/30 hover:text-success"
+                        )}
+                      >
+                        {u.isActive ? "نشط ومفعل" : "مجمد / معطل"}
+                      </button>
+                    </td>
+                    <td className="p-3 text-center">
+                      <Button
+                        onClick={() => setWalletModalUser(u)}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 gap-1"
+                      >
+                        <Wallet size={13} className="text-brand" /> تعديل المحفظة
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1593,14 +2356,19 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Users: Add Student */}
+      {/* Users: Add Student Form */}
       {activeCategory === "users" && activeSubFeature === "add_student" && (
         <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <UserPlus size={18} className="text-brand" /> تسجيل طالب جديد يدوياً
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold text-ink flex items-center gap-2">
+              <UserPlus size={18} className="text-brand" /> تسجيل حساب طالب جديد يدوياً
+            </h3>
+            <Button onClick={() => setActiveSubFeature("users_table")} variant="ghost" size="sm">
+              العودة للجدول
+            </Button>
+          </div>
           <form onSubmit={handleAddStudent} className="space-y-4">
-            <Field label="اسم الطالب الرباعي">
+            <Field label="الاسم الرباعي للطالب">
               <Input
                 required
                 value={newStudentName}
@@ -1608,18 +2376,18 @@ export function AdminConsole({
                 placeholder="أحمد محمد السيد علي"
               />
             </Field>
-            <Field label="البريد الإلكتروني">
-              <Input
-                required
-                type="email"
-                dir="ltr"
-                value={newStudentEmail}
-                onChange={(e) => setNewStudentEmail(e.target.value)}
-                placeholder="ahmed@example.com"
-              />
-            </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="رقم الهاتف (واتساب)">
+              <Field label="البريد الإلكتروني">
+                <Input
+                  required
+                  type="email"
+                  dir="ltr"
+                  value={newStudentEmail}
+                  onChange={(e) => setNewStudentEmail(e.target.value)}
+                  placeholder="student@gmail.com"
+                />
+              </Field>
+              <Field label="رقم الموبايل / واتساب">
                 <Input
                   dir="ltr"
                   value={newStudentPhone}
@@ -1627,162 +2395,266 @@ export function AdminConsole({
                   placeholder="01012345678"
                 />
               </Field>
-              <Field label="كلمة المرور المبدئية">
-                <Input
-                  required
-                  dir="ltr"
-                  value={newStudentPass}
-                  onChange={(e) => setNewStudentPass(e.target.value)}
-                />
-              </Field>
             </div>
+            <Field label="كلمة المرور الافتراضية">
+              <Input
+                required
+                dir="ltr"
+                value={newStudentPass}
+                onChange={(e) => setNewStudentPass(e.target.value)}
+              />
+            </Field>
             <Button type="submit" disabled={busy} variant="primary" className="w-full">
-              {busy ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-              إنشاء حساب الطالب
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
+              تسجيل الطالب وتفعيل الحساب
             </Button>
           </form>
         </Card>
       )}
 
-      {/* Users: Login Audit */}
-      {activeCategory === "users" && activeSubFeature === "login_audit" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <LogIn size={18} className="text-brand" /> سجل مراجعة تسجيلات الدخول والأنشطة
-          </h3>
-          <div className="space-y-2.5">
-            {overview.recentAudit.map((log) => (
-              <div key={log.id} className="p-3.5 bg-surface2/60 rounded-xl border border-line flex justify-between items-center text-xs">
-                <div>
-                  <span className="font-bold text-ink">{log.actorName || "مستخدم"}</span>
-                  <span className="text-muted mr-2">قام بـ {log.action} على {log.entity}</span>
-                </div>
-                <span className="font-mono text-muted text-[11px]">{formatDate(log.createdAt)}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Users: Manage Admins */}
+      {/* Users: Manage Staff */}
       {activeCategory === "users" && activeSubFeature === "manage_admin" && (
         <Card className="p-6 space-y-4">
           <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <UserCheck size={18} className="text-brand" /> إدارة المسؤولين والمشرفين (RBAC)
+            <ShieldCheck size={18} className="text-brand" /> المسؤولون والمشرفون
           </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-right">
-              <thead>
-                <tr className="border-b border-line text-muted">
-                  <th className="pb-3 font-semibold">المسؤول</th>
-                  <th className="pb-3 font-semibold">البريد الإلكتروني</th>
-                  <th className="pb-3 font-semibold">الصلاحية</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line/60">
-                {users.filter((u) => u.role !== "student").map((adm) => (
-                  <tr key={adm.id} className="hover:bg-surface2/50 transition-colors">
-                    <td className="py-3 font-bold text-ink">{adm.name}</td>
-                    <td className="py-3 font-mono text-muted">{adm.email}</td>
-                    <td className="py-3">
-                      <Badge tone="brand">{ROLE_LABELS[adm.role]}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="divide-y divide-line">
+            {localUsers
+              .filter((u) => u.role !== "student")
+              .map((admin) => (
+                <div key={admin.id} className="py-3 flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-ink">{admin.name}</p>
+                    <p className="text-muted">{admin.email}</p>
+                  </div>
+                  <Badge tone="gold">{ROLE_LABELS[admin.role]}</Badge>
+                </div>
+              ))}
           </div>
         </Card>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 6. CATEGORY: COMMUNICATIONS & SMS & FORUM                          */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {activeCategory === "communications" && activeSubFeature === "sms_messages" && (
-        <div className="grid lg:grid-cols-[400px_1fr] gap-6">
-          <Card className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <MessageSquare size={18} className="text-brand" /> إرسال رسائل SMS جماعية
-            </h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setNote({ kind: "ok", text: "تم إرسال حملة الـ SMS بنجاح للطلاب المستهدفين." });
-                setSmsText("");
-              }}
-              className="space-y-4"
-            >
-              <Field label="المستلمون المستهدفون">
-                <Select value={smsTarget} onChange={(e) => setSmsTarget(e.target.value)}>
-                  <option value="all">جميع الطلاب المشتركين ({overview.stats.students})</option>
-                  <option value="parents">أولياء الأمور فقط</option>
-                  <option value="absent">المتغيبون عن آخر امتحان</option>
-                </Select>
-              </Field>
-              <Field label="نص الرسالة">
-                <Textarea
-                  rows={4}
-                  required
-                  value={smsText}
-                  onChange={(e) => setSmsText(e.target.value)}
-                  placeholder="تذكير: موعد امتحان التفاضل والتكامل غداً في تمام الساعة 6 مساءً..."
-                />
-              </Field>
-              <div className="text-[11px] text-muted flex justify-between">
-                <span>عدد الحروف: {smsText.length}</span>
-                <span>1 رسالة / مستلم</span>
-              </div>
-              <Button type="submit" variant="primary" className="w-full">
-                <Send size={15} /> إرسال الحملة الآن
-              </Button>
-            </form>
+      {/* Users: Stats */}
+      {activeCategory === "users" && activeSubFeature === "users_stats" && (
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Card className="p-5 text-center space-y-1">
+            <Users size={24} className="mx-auto text-brand mb-2" />
+            <p className="text-xs text-muted">إجمالي الطلاب</p>
+            <p className="text-2xl font-black text-ink">{localUsers.length}</p>
           </Card>
-
-          <Card className="p-6 space-y-4">
-            <h3 className="text-sm font-bold text-ink">سجل الحملات السابقة</h3>
-            <div className="space-y-3 text-xs">
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line space-y-1">
-                <div className="flex justify-between font-bold text-ink">
-                  <span>تذكير امتحان الجبر والهندسة</span>
-                  <Badge tone="success">تم التسليم</Badge>
-                </div>
-                <p className="text-muted">تم إرسالها إلى 340 طالب بنجاح.</p>
-              </div>
-              <div className="p-3.5 bg-surface2 rounded-xl border border-line space-y-1">
-                <div className="flex justify-between font-bold text-ink">
-                  <span>إعلان جدول مراجعات ليلة الامتحان</span>
-                  <Badge tone="success">تم التسليم</Badge>
-                </div>
-                <p className="text-muted">تم إرسالها إلى 512 طالب.</p>
-              </div>
-            </div>
+          <Card className="p-5 text-center space-y-1">
+            <UserCheck size={24} className="mx-auto text-success mb-2" />
+            <p className="text-xs text-muted">الحسابات النشطة</p>
+            <p className="text-2xl font-black text-success">
+              {localUsers.filter((u) => u.isActive).length}
+            </p>
+          </Card>
+          <Card className="p-5 text-center space-y-1">
+            <Wallet size={24} className="mx-auto text-gold mb-2" />
+            <p className="text-xs text-muted">إجمالي أرصدة المحافظ</p>
+            <p className="text-2xl font-black text-ink">
+              {formatEGP(localUsers.reduce((sum, u) => sum + u.balanceCents, 0))}
+            </p>
           </Card>
         </div>
       )}
 
-      {/* Communications: Forum & Moderation */}
-      {activeCategory === "communications" && (activeSubFeature === "forum_groups_manage" || activeSubFeature === "forum_pending_topics" || activeSubFeature === "forum_mods_stats") && (
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* 6. CATEGORY: COMMUNICATIONS & FORUM                                */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {activeCategory === "communications" && activeSubFeature === "sms_messages" && (
+        <Card className="p-6 max-w-xl mx-auto space-y-4">
+          <h3 className="text-base font-bold text-ink flex items-center gap-2">
+            <Send size={18} className="text-brand" /> إرسال رسائل وتنبيهات نصية (SMS)
+          </h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setNote({ kind: "ok", text: "تم جدولة إرسال حملة الرسائل بنجاح لجميع الطلاب المحددين." });
+              setSmsText("");
+            }}
+            className="space-y-4"
+          >
+            <Field label="الشريحة المستهدفة">
+              <Select value={smsTarget} onChange={(e) => setSmsTarget(e.target.value)}>
+                <option value="all">جميع الطلاب المسجلين بالمنصة</option>
+                <option value="active_subs">الطلاب المشتركون في كورسات حالياً</option>
+                <option value="grade3">طلاب الصف الثالث الثانوي فقط</option>
+              </Select>
+            </Field>
+            <Field label="نص الرسالة">
+              <Textarea
+                required
+                rows={4}
+                value={smsText}
+                onChange={(e) => setSmsText(e.target.value)}
+                placeholder="تنبيه: تم رفع امتحان التفاضل والتكامل الشامل على المنصة، يرجى الدخول والحل قبل نهاية الأسبوع..."
+              />
+            </Field>
+            <Button type="submit" variant="primary" className="w-full">
+              <Send size={16} /> إرسال الحملة النصية
+            </Button>
+          </form>
+        </Card>
+      )}
+
+      {/* Communications: Forum Moderation */}
+      {activeCategory === "communications" && activeSubFeature === "forum_pending_topics" && (
         <Card className="p-6 space-y-4">
           <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Users size={18} className="text-brand" /> منشورات المجتمع والمنتدى ({communityPosts.length})
+            <MessageSquare size={18} className="text-brand" /> منشورات ومجتمع الطلاب ({communityPosts.length})
           </h3>
-          <div className="space-y-3">
-            {communityPosts.map((post) => (
-              <div key={post.id} className="p-4 bg-surface2/50 rounded-xl border border-line space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-ink">{post.authorName} ({ROLE_LABELS[post.authorRole as Role] || post.authorRole})</span>
-                  <span className="text-muted font-mono">{formatDate(post.createdAt)}</span>
+          <div className="divide-y divide-line">
+            {communityPosts.map((p) => (
+              <div key={p.id} className="py-4 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-ink">{p.authorName}</span>
+                  <span className="text-muted" dir="ltr">
+                    {formatDate(p.createdAt)}
+                  </span>
                 </div>
-                <p className="text-xs text-ink">{post.body}</p>
-                {post.courseTitle && (
-                  <Badge tone="outline">{post.courseTitle}</Badge>
-                )}
+                <p className="text-xs text-ink leading-relaxed bg-surface2 p-3 rounded-xl">{p.body}</p>
+                <div className="flex items-center justify-between text-xs text-muted">
+                  <span>👍 {p.likesCount} إعجاب</span>
+                  <Badge tone="brand">{p.courseTitle ?? "منتدى عام"}</Badge>
+                </div>
               </div>
             ))}
           </div>
         </Card>
       )}
 
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* MODAL: WALLET ADJUSTMENT                                            */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {walletModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <Card className="w-full max-w-md p-6 space-y-4 shadow-lift animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="font-bold text-base text-ink flex items-center gap-2">
+                <Wallet size={18} className="text-brand" /> تعديل رصيد محفظة الطالب
+              </h3>
+              <button
+                onClick={() => setWalletModalUser(null)}
+                className="p-1 text-muted hover:text-ink cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-3 bg-surface2 rounded-xl text-xs space-y-1">
+              <p>
+                <strong>اسم الطالب:</strong> {walletModalUser.name}
+              </p>
+              <p>
+                <strong>الرصيد الحالي:</strong>{" "}
+                <span className="text-brand font-bold">{formatEGP(walletModalUser.balanceCents)}</span>
+              </p>
+            </div>
+            <form onSubmit={handleAdjustWallet} className="space-y-4">
+              <Field label="المبلغ المراد إضافته أو خصمه (ج.م) [استخدم - للخصم]">
+                <Input
+                  required
+                  type="number"
+                  dir="ltr"
+                  value={walletAdjustAmount}
+                  onChange={(e) => setWalletAdjustAmount(e.target.value)}
+                  placeholder="50 أو -50"
+                />
+              </Field>
+              <Field label="سبب التعديل">
+                <Input
+                  required
+                  value={walletAdjustReason}
+                  onChange={(e) => setWalletAdjustReason(e.target.value)}
+                  placeholder="مكافأة أو شحن يدوي بالسنتر"
+                />
+              </Field>
+              <div className="flex items-center gap-2 pt-2">
+                <Button type="submit" disabled={busy} variant="primary" className="flex-1">
+                  {busy ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  حفظ وتعديل الرصيد
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setWalletModalUser(null)}
+                  variant="ghost"
+                  className="flex-initial"
+                >
+                  إلغاء
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* MODAL: PRINTABLE CENTER VOUCHER CARDS                               */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {printVouchersModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+          <div className="w-full max-w-4xl bg-surface rounded-2xl border border-line p-6 space-y-4 shadow-lift my-8 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <h3 className="font-bold text-base text-ink flex items-center gap-2">
+                  <Printer size={18} className="text-brand" /> بطاقات كروت السنتر الجاهزة للطباعة والقص
+                </h3>
+                <p className="text-xs text-muted">
+                  يمكنك طباعة هذه الكروت وتوزيعها على الطلاب للشحن الفوري في المنصة
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => window.print()}
+                  variant="primary"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                >
+                  <Printer size={14} /> طباعة البطاقات الآن
+                </Button>
+                <button
+                  onClick={() => setPrintVouchersModal(null)}
+                  className="p-1 text-muted hover:text-ink cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Cards Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto p-2">
+              {printVouchersModal.map((code, idx) => (
+                <div
+                  key={idx}
+                  className="border-2 border-dashed border-line rounded-2xl p-4 bg-surface2/60 space-y-3 relative overflow-hidden"
+                >
+                  <div className="flex items-center justify-between border-b border-line/60 pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-brand" />
+                      <span className="font-bold text-xs text-ink">دروس ماث Dros Math</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand">
+                      كارت تفعيل كورس
+                    </span>
+                  </div>
+
+                  <div className="text-center py-2 space-y-1">
+                    <p className="text-[10px] text-muted">كود التفعيل والشحن</p>
+                    <div className="font-mono text-base font-black tracking-wider text-brand bg-surface py-1.5 px-2 rounded-lg border border-line select-all">
+                      {code}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[9px] text-muted pt-1 border-t border-line/40">
+                    <span>صالح لكورس واحد كامل</span>
+                    <span>www.dros-math.com</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

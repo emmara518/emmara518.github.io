@@ -1,22 +1,48 @@
 import { requireApiUser } from "@/lib/auth";
 import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
-import { adminCourseStatusSchema } from "@/lib/contracts";
-import { setCourseStatus } from "@/lib/services/admin.service";
+import { z } from "zod";
+import { db } from "@/db";
+import { courses, auditLogs } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+
+const patchCourseSchema = z.object({
+  status: z.enum(["draft", "published", "archived"]).optional(),
+  title: z.string().trim().min(3).max(140).optional(),
+  priceEgp: z.number().min(0).max(100000).optional(),
+});
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiUser(ADMIN_ROLES);
   if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
   if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية التعديل");
 
-  const parsed = await parseJson(request, adminCourseStatusSchema);
+  const parsed = await parseJson(request, patchCourseSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
 
   try {
-    const result = await setCourseStatus(auth.user, id, parsed.data.status);
-    return ok(result);
+    const updateData: Record<string, unknown> = {};
+    if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
+    if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
+    if (parsed.data.priceEgp !== undefined) updateData.priceCents = Math.round(parsed.data.priceEgp * 100);
+
+    if (Object.keys(updateData).length === 0) {
+      return err(400, "BAD_REQUEST", "لا توجد تعديلات محددة");
+    }
+
+    await db.update(courses).set(updateData).where(eq(courses.id, id));
+
+    await db.insert(auditLogs).values({
+      actorId: auth.user.id,
+      action: "courses.patch",
+      entity: "courses",
+      entityId: id,
+      meta: updateData,
+    });
+
+    return ok({ id, ...updateData });
   } catch (e) {
     const envelope = toEnvelope(e);
     return err(envelope.status, envelope.code, envelope.message);
