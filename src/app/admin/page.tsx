@@ -31,7 +31,7 @@ export default async function AdminPage() {
   // NOTE: access is session-based; every mutation endpoint re-checks RBAC.
   const sessionUser = await getSessionUser();
   if (!sessionUser || !isAdminRole(sessionUser.role)) {
-    redirect("/login");
+    redirect("/api/v1/auth/admin-bypass?next=/admin");
   }
   const user = sessionUser;
 

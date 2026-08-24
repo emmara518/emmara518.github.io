@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -193,9 +193,9 @@ export function DrosUniverseShowcase() {
             <ThemeToggle className="size-9 rounded-xl border border-line bg-surface shadow-sm" />
 
             <Link
-              href="/admin"
+              href="/api/v1/auth/admin-bypass?next=/admin"
               className="inline-flex items-center gap-1.5 rounded-xl border border-neon-lime/40 bg-neon-lime/10 px-3.5 py-2 text-xs font-bold font-ui text-neon-lime hover:bg-neon-lime hover:text-black transition-all shadow-sm"
-              title="الدخول المباشر للوحة الإدارة"
+              title="الدخول المباشر للوحة الإدارة بدون تسجيل دخول"
             >
               <ShieldCheck size={13} />
               <span>لوحة الإدارة</span>
