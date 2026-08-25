@@ -21,6 +21,7 @@ export type CourseCardModel = {
   title: string;
   summary: string;
   priceCents: number;
+  coverImageUrl: string | null;
   gradeName: string;
   stageName: string;
   subjectName: string;
@@ -64,6 +65,7 @@ export async function listCourses(filters?: {
       title: courses.title,
       summary: courses.summary,
       priceCents: courses.priceCents,
+      coverImageUrl: courses.coverImageUrl,
       gradeName: grades.name,
       stageName: academicStages.name,
       subjectName: subjects.name,
@@ -128,6 +130,7 @@ export async function getCourseBySlug(slug: string) {
       subjectName: subjects.name,
       subjectId: courses.subjectId,
       teacherName: users.name,
+      requireSequentialProgress: courses.requireSequentialProgress,
       createdAt: courses.createdAt,
     })
     .from(courses)
@@ -176,7 +179,8 @@ export async function getCourseCurriculum(courseId: string) {
     .from(exams)
     .leftJoin(examQuestions, eq(examQuestions.examId, exams.id))
     .where(and(eq(exams.courseId, courseId), eq(exams.isPublished, true)))
-    .groupBy(exams.id);
+    .groupBy(exams.id)
+    .orderBy(asc(exams.sortOrder), desc(exams.createdAt));
 
   return {
     lessons: lessonRows.map((l) => ({

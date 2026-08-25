@@ -1,29 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  ArrowDown,
+  ArrowUp,
+  Ban,
   BarChart3,
   BookOpen,
   Check,
   CheckCircle2,
+  CheckCheck,
   Clock,
   Copy,
   CreditCard,
   Download,
   ExternalLink,
   Eye,
+  EyeOff,
   Film,
   FileText,
   GraduationCap,
   HelpCircle,
   Image as ImageIcon,
+  ImagePlus,
   KeyRound,
   Layers,
+  Link2,
   ListChecks,
   Loader2,
   MessageSquare,
+  Paperclip,
+  Pencil,
   Plus,
   PlusCircle,
   Printer,
@@ -43,7 +52,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
-import { CATEGORIES, type CategoryId } from "./admin/nav-config";
+import { CATEGORIES, findSubFeature, type CategoryId } from "./admin/nav-config";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { formatDate, formatEGP } from "@/lib/format";
@@ -71,6 +80,7 @@ import type {
   CourseRow,
   ExamRow,
   InvoiceRow,
+  LessonRow,
   OrderRow,
   Overview,
   PostRow,
@@ -304,6 +314,7 @@ export function AdminConsole({
   exams,
   attempts,
   videos,
+  lessons,
   courseFiles,
   questions,
   subscriptions,
@@ -323,6 +334,7 @@ export function AdminConsole({
   exams: ExamRow[];
   attempts: AttemptRow[];
   videos: VideoRow[];
+  lessons: LessonRow[];
   courseFiles: CourseFileRow[];
   questions: QuestionRow[];
   subscriptions: SubscriptionRow[];
@@ -341,6 +353,7 @@ export function AdminConsole({
   const [localCoupons, setLocalCoupons] = useSyncedState(coupons);
   const [localSubscriptions, setLocalSubscriptions] = useSyncedState(subscriptions);
   const [localStages, setLocalStages] = useSyncedState(stages);
+  const [localLessons, setLocalLessons] = useSyncedState(lessons);
 
   /* Navigation — state lives in AdminNavProvider so the sidebar, topbar and
      palette all share it (and the URL mirrors the active view). */
@@ -349,6 +362,7 @@ export function AdminConsole({
     setCategory: setActiveCategory,
     subFeature: activeSubFeature,
     setSubFeature: setActiveSubFeature,
+    setBadges,
   } = useAdminNav();
   const [globalSearch, setGlobalSearch] = useState("");
   const [busy, setBusy] = useState(false);
@@ -485,6 +499,35 @@ export function AdminConsole({
   const [prRejectOpen, setPrRejectOpen] = useState<string | null>(null);
   const [prRejectNote, setPrRejectNote] = useState("");
 
+  /* ── Live sidebar badges (pending work counters) + per-view document title ── */
+  const viewRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const pendingPosts = communityPosts.filter((p) => (p.status || "approved") === "pending").length;
+    const activeCoupons = localCoupons.filter(
+      (c) => c.isActive && !(c.maxUses > 0 && c.usedCount >= c.maxUses)
+    ).length;
+    const activeSubs = localSubscriptions.filter((s) => s.status === "active").length;
+    setBadges({
+      forum_pending_topics: pendingPosts,
+      codes_table: activeCoupons,
+      subscriptions_table: activeSubs,
+      payment_requests: paymentRequests.filter((r) => r.status === "pending").length,
+      orders_table: orders.filter((o) => o.status === "pending").length,
+    });
+  }, [communityPosts, localCoupons, localSubscriptions, paymentRequests, orders, setBadges]);
+
+  useEffect(() => {
+    const el = viewRef.current;
+    if (el) {
+      el.classList.remove("view-enter");
+      void el.offsetWidth;
+      el.classList.add("view-enter");
+    }
+    document.title = `${
+      findSubFeature(activeSubFeature)?.sub.label ?? "لوحة الإدارة"
+    } · لوحة الإدارة | دروس ماث`;
+  }, [activeCategory, activeSubFeature]);
+
   /* Manual payment */
   const [mpStudentEmail, setMpStudentEmail] = useState("");
   const [mpCourseId, setMpCourseId] = useState(courses[0]?.id || "");
@@ -498,6 +541,15 @@ export function AdminConsole({
   const [cSubject, setCSubject] = useState(subjects[0]?.id || "");
   const [cPrice, setCPrice] = useState("250");
   const [cSummary, setCSummary] = useState("");
+  const [cCover, setCCover] = useState("");
+  const [cSequential, setCSequential] = useState(false);
+
+  /* Course cover quick-edit modal */
+  const [coverModal, setCoverModal] = useState<{ course: CourseRow; url: string } | null>(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+
+  /* Course content management dialog (videos manager) */
+  const [contentCourseId, setContentCourseId] = useState<string | null>(null);
 
   /* Question creator */
   const [qSubjectId, setQSubjectId] = useState(subjects[0]?.id || "");
@@ -920,6 +972,107 @@ export function AdminConsole({
     });
   }
 
+  /* ── Community moderation & assistant replies ── */
+  type ReplyRow = {
+    id: string;
+    body: string;
+    mediaKind: string;
+    mediaKey: string | null;
+    createdAt: string;
+    authorName: string;
+    authorRole: string;
+  };
+  const [postStatusFilter, setPostStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [postReplies, setPostReplies] = useState<Record<string, { loading: boolean; rows: ReplyRow[] }>>({});
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, { body: string; mediaKind: string; file: File | null }>>({});
+  const [replyBusy, setReplyBusy] = useState<Record<string, boolean>>({});
+
+  const visiblePosts = useMemo(() => {
+    if (postStatusFilter === "all") return communityPosts;
+    return communityPosts.filter((p) => (p.status || "approved") === postStatusFilter);
+  }, [communityPosts, postStatusFilter]);
+
+  async function setPostStatus(p: PostRow, status: "approved" | "rejected" | "pending") {
+    const key = `post-${p.id}`;
+    markPending(key);
+    const done = await api(`/api/v1/admin/community/posts/${p.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }, { noRefresh: true });
+    unmarkPending(key);
+    if (done) {
+      pushToast("ok", status === "approved" ? "تم اعتماد المنشور وظاهر للطلاب." : status === "rejected" ? "تم رفض المنشور." : "أُعيد المنشور لقيد المراجعة.");
+      router.refresh();
+    }
+  }
+
+  async function fetchReplies(postId: string) {
+    setPostReplies((prev) => ({ ...prev, [postId]: { loading: true, rows: prev[postId]?.rows ?? [] } }));
+    try {
+      const res = await fetch(`/api/v1/admin/community/posts/${postId}/replies`);
+      const json = await res.json();
+      setPostReplies((prev) => ({
+        ...prev,
+        [postId]: { loading: false, rows: json.ok ? json.data.replies : [] },
+      }));
+    } catch {
+      setPostReplies((prev) => ({ ...prev, [postId]: { loading: false, rows: [] } }));
+    }
+  }
+
+  function toggleReplies(postId: string) {
+    if (postReplies[postId]) {
+      setPostReplies((prev) => {
+        const next = { ...prev };
+        delete next[postId];
+        return next;
+      });
+    } else {
+      void fetchReplies(postId);
+    }
+  }
+
+  function updateReplyDraft(postId: string, patch: Partial<{ body: string; mediaKind: string; file: File | null }>) {
+    setReplyDrafts((prev) => ({
+      ...prev,
+      [postId]: Object.assign({ body: "", mediaKind: "none", file: null }, prev[postId], patch),
+    }));
+  }
+
+  async function submitReply(p: PostRow) {
+    const draft = replyDrafts[p.id];
+    if (!draft || (!draft.body.trim() && draft.mediaKind === "none")) {
+      pushToast("info", "اكتب رداً أو أرفق ملفاً أولاً");
+      return;
+    }
+    if ((draft.mediaKind === "image" || draft.mediaKind === "video" || draft.mediaKind === "file") && !draft.file) {
+      pushToast("err", "اختر الملف المطلوب إرفاقه");
+      return;
+    }
+    setReplyBusy((prev) => ({ ...prev, [p.id]: true }));
+    try {
+      const form = new FormData();
+      form.set("body", draft.body);
+      form.set("mediaKind", draft.mediaKind);
+      if (draft.file) form.set("media", draft.file);
+      const res = await fetch(`/api/v1/admin/community/posts/${p.id}/replies`, { method: "POST", body: form });
+      const json = await res.json();
+      if (json.ok) {
+        pushToast("ok", "تم نشر الرد على المنشور.");
+        updateReplyDraft(p.id, { body: "", mediaKind: "none", file: null });
+        await fetchReplies(p.id);
+        router.refresh();
+      } else {
+        pushToast("err", json.error?.message ?? "فشل إرسال الرد");
+      }
+    } catch {
+      pushToast("err", "مشكلة في الاتصال بالسيرفر");
+    } finally {
+      setReplyBusy((prev) => ({ ...prev, [p.id]: false }));
+    }
+  }
+
+
   async function handleCreateCourse(e: FormEvent) {
     e.preventDefault();
     const done = await api("/api/v1/admin/courses", {
@@ -932,6 +1085,8 @@ export function AdminConsole({
         gradeId: cGrade,
         subjectId: cSubject,
         priceEgp: Number(cPrice || "0"),
+        coverUrl: cCover || undefined,
+        requireSequential: cSequential,
       }),
     });
     if (done) {
@@ -939,8 +1094,203 @@ export function AdminConsole({
       setCTitle("");
       setCSlug("");
       setCSummary("");
+      setCCover("");
+      setCSequential(false);
       setActiveSubFeature("courses_table");
     }
+  }
+
+  async function handleSaveCover() {
+    if (!coverModal) return;
+    setCoverBusy(true);
+    const done = await api(`/api/v1/admin/courses/${coverModal.course.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ coverUrl: coverModal.url }),
+    });
+    setCoverBusy(false);
+    if (done) {
+      pushToast("ok", "تم تحديث صورة غلاف الكورس.");
+      setLocalCourses((prev) =>
+        prev.map((c) => (c.id === coverModal.course.id ? { ...c, coverImageUrl: coverModal.url || null } : c))
+      );
+      setCoverModal(null);
+    }
+  }
+
+  async function handleToggleSequential(course: CourseRow) {
+    const next = !course.requireSequentialProgress;
+    const done = await api(`/api/v1/admin/courses/${course.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ requireSequential: next }),
+    }, { noRefresh: true });
+    if (done) {
+      pushToast("ok", next
+        ? "تم تفعيل التسلسل الإجباري — الطالب لن ينتقل للفيديو التالي قبل إتمام الحالي."
+        : "تم تعطيل التسلسل الإجباري.");
+      setLocalCourses((prev) =>
+        prev.map((c) => (c.id === course.id ? { ...c, requireSequentialProgress: next } : c))
+      );
+    }
+  }
+
+  /* ── Reordering (exams within a course, videos within a lesson) ── */
+  async function persistReorder(entity: "videos" | "lessons" | "exams", ids: string[]) {
+    const done = await api("/api/v1/admin/reorder", {
+      method: "POST",
+      body: JSON.stringify({ entity, ids }),
+    }, { noRefresh: true, silent: true });
+    if (!done) pushToast("err", "فشل حفظ الترتيب الجديد");
+    return Boolean(done);
+  }
+
+  async function moveExam(exam: ExamRow, dir: -1 | 1) {
+    const siblings = localExams
+      .filter((e) => e.courseSlug === exam.courseSlug)
+      .sort((a, b) => a.sortOrder - b.sortOrder || new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const idx = siblings.findIndex((e) => e.id === exam.id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= siblings.length) return;
+    const next = [...siblings];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    setLocalExams((prev) =>
+      prev.map((e) => {
+        const pos = next.findIndex((n) => n.id === e.id);
+        return pos >= 0 ? { ...e, sortOrder: pos + 1 } : e;
+      })
+    );
+    if (await persistReorder("exams", next.map((e) => e.id))) pushToast("ok", "تم تحديث ترتيب الامتحانات.");
+  }
+
+  async function moveVideo(video: VideoRow, dir: -1 | 1) {
+    const siblings = videos.filter((v) => v.lessonId === video.lessonId);
+    const idx = siblings.findIndex((v) => v.id === video.id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= siblings.length) return;
+    const next = [...siblings];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    if (await persistReorder("videos", next.map((v) => v.id))) {
+      pushToast("ok", "تم تحديث ترتيب المحاضرات.");
+      router.refresh();
+    }
+  }
+
+  async function moveLesson(lesson: LessonRow, dir: -1 | 1) {
+    const siblings = localLessons
+      .filter((l) => l.courseId === lesson.courseId)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
+    const idx = siblings.findIndex((l) => l.id === lesson.id);
+    const swapIdx = idx + dir;
+    if (idx < 0 || swapIdx < 0 || swapIdx >= siblings.length) return;
+    const next = [...siblings];
+    [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+    setLocalLessons((prev) =>
+      prev.map((l) => {
+        const pos = next.findIndex((n) => n.id === l.id);
+        return pos >= 0 ? { ...l, sortOrder: pos + 1 } : l;
+      })
+    );
+    if (await persistReorder("lessons", next.map((l) => l.id))) pushToast("ok", "تم تحديث ترتيب الدروس.");
+  }
+
+  /* ── Per-video view limit ── */
+  const [maxViewsDraft, setMaxViewsDraft] = useState<Record<string, string>>({});
+
+  /* ── Advanced users search ── */
+  const [advQuery, setAdvQuery] = useState("");
+  const [advCourse, setAdvCourse] = useState("all");
+  const [advRole, setAdvRole] = useState("all");
+  const [advStatus, setAdvStatus] = useState("all");
+  const [advFrom, setAdvFrom] = useState("");
+  const [advTo, setAdvTo] = useState("");
+
+  const filteredAdvancedUsers = useMemo(() => {
+    const q = advQuery.trim().toLowerCase();
+    return localUsers.filter((u) => {
+      if (
+        q &&
+        !u.name.toLowerCase().includes(q) &&
+        !u.email.toLowerCase().includes(q) &&
+        !(u.phone ?? "").toLowerCase().includes(q)
+      )
+        return false;
+      if (advRole !== "all" && u.role !== advRole) return false;
+      if (advStatus === "active" && !u.isActive) return false;
+      if (advStatus === "frozen" && u.isActive) return false;
+      if (advCourse !== "all" && !(Array.isArray(u.enrolledCourseIds) && u.enrolledCourseIds.includes(advCourse)))
+        return false;
+      if (advFrom && new Date(u.createdAt) < new Date(`${advFrom}T00:00:00`)) return false;
+      if (advTo && new Date(u.createdAt) > new Date(`${advTo}T23:59:59`)) return false;
+      return true;
+    });
+  }, [localUsers, advQuery, advRole, advStatus, advCourse, advFrom, advTo]);
+
+  async function saveMaxViews(video: VideoRow) {
+    const raw = (maxViewsDraft[video.id] ?? "").trim();
+    const value = raw === "" ? null : Number(raw);
+    if (value !== null && (!Number.isFinite(value) || value < 1)) {
+      pushToast("err", "أدخل عدداً صحيحاً للمشاهدات أو اتركه فارغاً لغير محدود");
+      return;
+    }
+    const done = await api(`/api/v1/admin/videos/${video.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ maxViews: value }),
+    }, { noRefresh: true, silent: true });
+    if (done === null) {
+      pushToast("err", "فشل تحديث عدد المشاهدات");
+      return;
+    }
+    pushToast("ok", value == null ? "المشاهدات غير محدودة لهذا الفيديو." : `تم تحديد ${value} مشاهدات كحد أقصى.`);
+    router.refresh();
+  }
+
+  /* ── Inline rename (lesson / video) inside the course content dialog ── */
+  type RenameTarget =
+    | { kind: "lesson"; id: string; title: string }
+    | { kind: "video"; id: string; title: string; youtubeId: string };
+  const [renameTarget, setRenameTarget] = useState<RenameTarget | null>(null);
+  const [renameBusy, setRenameBusy] = useState(false);
+
+  function updateRename(fields: Partial<RenameTarget>) {
+    setRenameTarget((prev) => (prev ? ({ ...prev, ...fields } as RenameTarget) : prev));
+  }
+
+  async function saveRename() {
+    if (!renameTarget) return;
+    const title = renameTarget.title.trim();
+    if (title.length < 2) {
+      pushToast("err", "العنوان قصير جداً");
+      return;
+    }
+    setRenameBusy(true);
+    let okDone = false;
+    if (renameTarget.kind === "lesson") {
+      okDone = await api(`/api/v1/admin/lessons/${renameTarget.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ title }),
+      }, { noRefresh: true, silent: true }) !== null;
+      if (okDone) {
+        setLocalLessons((prev) => prev.map((l) => (l.id === renameTarget.id ? { ...l, title } : l)));
+      }
+    } else {
+      const ytId = renameTarget.youtubeId.trim();
+      if (!/^[A-Za-z0-9_-]{8,24}$/.test(ytId)) {
+        setRenameBusy(false);
+        pushToast("err", "معرف يوتيوب غير صالح");
+        return;
+      }
+      okDone = await api(`/api/v1/admin/videos/${renameTarget.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ title, youtubeId: ytId }),
+      }, { noRefresh: true, silent: true }) !== null;
+    }
+    setRenameBusy(false);
+    if (!okDone) {
+      pushToast("err", "فشل حفظ التعديل — تأكد من تسجيل الدخول بصلاحيات المشرف");
+      return;
+    }
+    pushToast("ok", "تم حفظ التعديل بنجاح.");
+    setRenameTarget(null);
+    router.refresh();
   }
 
   async function handleAddStudent(e: FormEvent) {
@@ -1476,6 +1826,31 @@ export function AdminConsole({
   /* ── Table column definitions ── */
   const courseColumns: Column<CourseRow>[] = [
     {
+      key: "cover",
+      header: "الغلاف",
+      render: (c) => (
+        <button
+          type="button"
+          onClick={() => setCoverModal({ course: c, url: c.coverImageUrl ?? "" })}
+          title="تعديل صورة الغلاف"
+          aria-label={`تعديل غلاف ${c.title}`}
+          className="group relative block size-14 cursor-pointer overflow-hidden rounded-xl border border-line bg-surface2 transition-colors hover:border-brand/60"
+        >
+          {c.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={c.coverImageUrl} alt="" className="size-full object-cover" />
+          ) : (
+            <span className="grid size-full place-items-center text-muted">
+              <ImageIcon size={16} />
+            </span>
+          )}
+          <span className="absolute inset-0 grid place-items-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+            <ImagePlus size={15} className="text-white" />
+          </span>
+        </button>
+      ),
+    },
+    {
       key: "title",
       header: "عنوان المقرر",
       sortValue: (c) => c.title,
@@ -1535,6 +1910,29 @@ export function AdminConsole({
       hideOnMobile: true,
       render: (c) => (
         <div className="flex items-center justify-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setCoverModal({ course: c, url: c.coverImageUrl ?? "" })}
+            aria-label={`تعديل غلاف ${c.title}`}
+            title="تعديل الغلاف"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-brand/50 hover:text-brand"
+          >
+            <ImagePlus size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={() => handleToggleSequential(c)}
+            aria-pressed={c.requireSequentialProgress}
+            title={c.requireSequentialProgress ? "التسلسل الإجباري مفعّل — اضغط للتعطيل" : "تفعيل التسلسل الإجباري للفيديوهات"}
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1.5 text-xs transition-colors",
+              c.requireSequentialProgress
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-line text-muted hover:border-brand/50 hover:text-brand"
+            )}
+          >
+            <Link2 size={14} />
+          </button>
           <Link
             href={`/courses/${c.slug}`}
             target="_blank"
@@ -1606,6 +2004,40 @@ export function AdminConsole({
   ];
 
   const examColumns: Column<ExamRow>[] = [
+    {
+      key: "order",
+      header: "الترتيب",
+      render: (e) => {
+        const siblings = localExams.filter((x) => x.courseSlug === e.courseSlug);
+        const isFirst = e.sortOrder <= 1;
+        const isLast = e.sortOrder >= siblings.length;
+        return (
+          <div className="flex items-center gap-1">
+            <span className="grid size-6 place-items-center rounded-md bg-surface2 text-[11px] font-bold tabular-nums text-muted">
+              {e.sortOrder}
+            </span>
+            <button
+              type="button"
+              onClick={() => moveExam(e, -1)}
+              disabled={isFirst}
+              aria-label={`تحريك ${e.title} لأعلى`}
+              className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ArrowUp size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => moveExam(e, 1)}
+              disabled={isLast}
+              aria-label={`تحريك ${e.title} لأسفل`}
+              className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ArrowDown size={13} />
+            </button>
+          </div>
+        );
+      },
+    },
     {
       key: "title",
       header: "عنوان الامتحان",
@@ -2012,39 +2444,6 @@ export function AdminConsole({
     },
   ];
 
-  const videoColumns: Column<VideoRow>[] = [
-    {
-      key: "title",
-      header: "عنوان الفيديو",
-      sortValue: (v) => v.title,
-      render: (v) => (
-        <div>
-          <p className="font-semibold text-ink">{v.title}</p>
-          <span className="text-[11px] text-muted">{v.courseTitle} · {v.lessonTitle}</span>
-        </div>
-      ),
-    },
-    {
-      key: "duration",
-      header: "المدة",
-      sortValue: (v) => v.durationSec,
-      render: (v) => <span className="tabular-nums text-muted">{Math.round(v.durationSec / 60)} دقيقة</span>,
-    },
-    {
-      key: "order",
-      header: "الترتيب",
-      sortValue: (v) => v.sortOrder,
-      render: (v) => <span className="tabular-nums text-muted">#{v.sortOrder}</span>,
-    },
-    {
-      key: "yt",
-      header: "معرف يوتيوب",
-      render: (v) => (
-        <span className="font-mono text-xs text-muted" dir="ltr">{v.youtubeVideoId}</span>
-      ),
-    },
-  ];
-
   const fileColumns: Column<CourseFileRow>[] = [
     {
       key: "title",
@@ -2077,11 +2476,90 @@ export function AdminConsole({
     },
   ];
 
+  const advancedUserColumns: Column<UserRow>[] = [
+    {
+      key: "name",
+      header: "المستخدم",
+      sortValue: (u) => u.name,
+      render: (u) => (
+        <div>
+          <p className="font-semibold text-ink">{u.name}</p>
+          <span className="text-[11px] text-muted" dir="ltr">{u.email}</span>
+        </div>
+      ),
+    },
+    {
+      key: "phone",
+      header: "الموبايل",
+      render: (u) =>
+        u.phone ? (
+          <span className="font-mono text-xs tabular-nums text-muted" dir="ltr">{u.phone}</span>
+        ) : (
+          <span className="text-muted">—</span>
+        ),
+    },
+    {
+      key: "role",
+      header: "الرتبة",
+      render: (u) => <Badge tone={u.role === "student" ? "brand" : "gold"}>{ROLE_LABELS[u.role]}</Badge>,
+    },
+    {
+      key: "courses",
+      header: "الكورسات المشترك بها",
+      render: (u) => {
+        const ids = Array.isArray(u.enrolledCourseIds) ? u.enrolledCourseIds : [];
+        if (ids.length === 0) return <span className="text-xs text-muted">غير مشترك</span>;
+        return (
+          <div className="flex max-w-56 flex-wrap gap-1">
+            {ids.map((cid) => (
+              <span key={cid} className="rounded-md bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold text-brand">
+                {localCourses.find((c) => c.id === cid)?.title ?? "كورس"}
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (u) => <Badge tone={u.isActive ? "success" : "muted"}>{u.isActive ? "نشط" : "مجمّد"}</Badge>,
+    },
+    {
+      key: "balance",
+      header: "المحفظة",
+      sortValue: (u) => u.balanceCents,
+      render: (u) => <span className="tabular-nums font-semibold text-gold">{formatEGP(u.balanceCents)}</span>,
+    },
+    {
+      key: "joined",
+      header: "التسجيل",
+      sortValue: (u) => new Date(u.createdAt).getTime(),
+      render: (u) => <span className="text-muted tabular-nums" dir="ltr">{formatDate(u.createdAt)}</span>,
+    },
+    {
+      key: "actions",
+      header: "",
+      className: "text-center",
+      render: (u) => (
+        <button
+          type="button"
+          onClick={() => setProfileUser(u)}
+          title="الملف الكامل للطالب"
+          aria-label={`فتح ملف ${u.name}`}
+          className="cursor-pointer rounded-lg border border-line px-2 py-1.5 text-muted transition-colors hover:border-brand/50 hover:text-brand"
+        >
+          <Eye size={14} />
+        </button>
+      ),
+    },
+  ];
+
   return (
     <TablePrefsProvider
       value={{ density, pageSize, onPageSizeChange: changePageSize }}
     >
-    <div className="space-y-6">
+    <div ref={viewRef} className="view-enter space-y-6">
       {/* ── TOP HEADER ── */}
       <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
         <div>
@@ -2331,77 +2809,6 @@ export function AdminConsole({
             <KpiCard icon={Receipt} label="إجمالي الإيرادات" value={formatEGP(overview.stats.revenueCents)} hint="فواتير مسددة" hintTone="success" iconTone="success" />
             <KpiCard icon={GraduationCap} label="الاشتراكات الفعالة" value={overview.stats.activeSubscriptions} hint="وصول مباشر للمحتوى" />
           </div>
-
-          {/* Setup checklist */}
-          <Card className="space-y-4 p-5">
-            <SectionHeader
-              icon={ListChecks}
-              title="قائمة تجهيز المنصة"
-              hint="خطوات التشغيل الأساسية — تكتمل تلقائياً أولاً بأول"
-              actions={
-                <span className="rounded-full border border-line bg-surface2 px-3 py-1 text-xs font-semibold tabular-nums text-ink">
-                  {[
-                    localCourses.some((c) => c.status === "published"),
-                    localUsers.some((u) => u.role === "student"),
-                    localExams.some((e) => e.isPublished),
-                    questions.length > 0,
-                    localCoupons.length > 0,
-                  ].filter(Boolean).length} / 5
-                </span>
-              }
-            />
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                {
-                  done: localCourses.some((c) => c.status === "published"),
-                  label: "نشر أول مقرر دراسي",
-                  action: () => selectSubFeature("academic", "courses_manage"),
-                },
-                {
-                  done: localUsers.some((u) => u.role === "student"),
-                  label: "تسجيل أول طالب",
-                  action: () => selectSubFeature("users", "add_student"),
-                },
-                {
-                  done: localExams.some((e) => e.isPublished),
-                  label: "نشر أول امتحان إلكتروني",
-                  action: () => selectSubFeature("exams", "exams_manage"),
-                },
-                {
-                  done: questions.length > 0,
-                  label: "تغذية بنك الأسئلة",
-                  action: () => selectSubFeature("exams", "bulk_questions_add"),
-                },
-                {
-                  done: localCoupons.length > 0,
-                  label: "توليد أكواد تفعيل للسنتر",
-                  action: () => selectSubFeature("billing_codes", "create_codes"),
-                },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.action}
-                  className={cn(
-                    "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-start text-xs font-medium transition-all",
-                    item.done
-                      ? "border-success/30 bg-success/10 text-ink"
-                      : "border-line bg-surface2/60 text-muted hover:border-brand/40 hover:text-ink"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "grid size-5 shrink-0 place-items-center rounded-full",
-                      item.done ? "bg-success text-white" : "border border-line bg-surface text-muted"
-                    )}
-                  >
-                    {item.done ? <Check size={12} /> : "+"}
-                  </span>
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </Card>
 
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="space-y-3 border-brand/20 bg-gradient-to-br from-surface to-surface2 p-5">
@@ -2663,6 +3070,41 @@ export function AdminConsole({
                 placeholder="شرح شامل وتفصيلي للمنهج مع حل اختبارات بنك الأسئلة والتدريبات..."
               />
             </Field>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
+              <Field label="رابط صورة الغلاف (اختياري)" hint="تظهر على كارت الكورس في صفحة الكورسات — اتركه فارغاً للغلاف التلقائي">
+                <Input
+                  dir="ltr"
+                  value={cCover}
+                  onChange={(e) => setCCover(e.target.value)}
+                  placeholder="https://i.ytimg.com/vi/.../maxresdefault.jpg"
+                />
+              </Field>
+              {cCover ? (
+                <div className="flex items-end pb-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cCover}
+                    alt="معاينة الغلاف"
+                    className="h-16 w-28 rounded-xl border border-line object-cover"
+                    onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.2")}
+                  />
+                </div>
+              ) : null}
+            </div>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface2/50 p-3.5 transition-colors hover:border-brand/40">
+              <input
+                type="checkbox"
+                checked={cSequential}
+                onChange={(e) => setCSequential(e.target.checked)}
+                className="mt-0.5 size-4 accent-[var(--brand)]"
+              />
+              <span>
+                <span className="block text-xs font-bold text-ink">تسلسل إجباري للمشاهدة</span>
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">
+                  لن يستطيع الطالب فتح الفيديو التالي قبل إكمال الفيديو السابق بالترتيب.
+                </span>
+              </span>
+            </label>
             <Button type="submit" disabled={busy} variant="primary" className="w-full">
               {busy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
               حفظ ونشر المقرر
@@ -2672,15 +3114,83 @@ export function AdminConsole({
       )}
 
       {activeCategory === "academic" && activeSubFeature === "videos_manage" && (
-        <Card className="space-y-4 p-6">
-          <SectionHeader icon={Film} title="الفيديوهات والمحاضرات" count={videos.length} hint="جميع محاضرات المنصة مرتبة بالمقرر والدرس" />
-          <AdminTable
-            columns={videoColumns}
-            rows={videos}
-            emptyTitle="لا توجد فيديوهات بعد"
-            emptyHint="ستظهر هنا جميع محاضرات المنصة بعد ربطها بالدروس."
-          />
-        </Card>
+        <div className="space-y-4">
+          <Card className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <SectionHeader
+              icon={Film}
+              title="إدارة الفيديوهات والمحاضرات"
+              count={localCourses.length}
+              hint="اختر كورساً لفتح لوحة التخصيص الكاملة: ترتيب الدروس والمحاضرات وحد المشاهدات"
+            />
+            <span className="rounded-xl border border-line bg-surface2 px-3 py-2 text-[11px] font-medium text-muted">
+              اترك حقل المشاهدات فارغاً = غير محدود
+            </span>
+          </Card>
+
+          {localCourses.length === 0 ? (
+            <Card className="grid place-items-center gap-2 p-14 text-center">
+              <Film size={24} className="text-muted" />
+              <p className="font-bold">لا توجد كورسات بعد</p>
+              <p className="text-sm text-muted">أنشئ كورساً أولاً ثم أضف دروسه وفيديوهاته.</p>
+              <Button onClick={() => setActiveSubFeature("courses_manage")} variant="primary" size="sm">
+                <Plus size={14} /> إضافة كورس
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {localCourses.map((course) => {
+                const courseLessons = localLessons.filter((l) => l.courseId === course.id);
+                const lessonsTotal = courseLessons.length;
+                const videosTotal = videos.filter((v) => courseLessons.some((l) => l.id === v.lessonId)).length;
+                return (
+                  <button
+                    key={course.id}
+                    type="button"
+                    onClick={() => setContentCourseId(course.id)}
+                    className="group flex cursor-pointer flex-col gap-3 rounded-2xl border border-line bg-surface p-4 text-start shadow-card transition-all hover:border-brand/50 hover:shadow-lift"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl border border-line bg-surface2">
+                        {course.coverImageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={course.coverImageUrl} alt="" className="size-full object-cover" />
+                        ) : (
+                          <span className="grid size-full place-items-center text-muted">
+                            <BookOpen size={18} />
+                          </span>
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-ink group-hover:text-brand">{course.title}</p>
+                        <p className="mt-0.5 truncate text-[11px] text-muted">{course.gradeName} · {course.subjectName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-muted">
+                        <Layers size={11} className="me-1 inline text-brand" />
+                        {lessonsTotal} درس
+                      </span>
+                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-muted">
+                        <Film size={11} className="me-1 inline text-brand" />
+                        {videosTotal} فيديو
+                      </span>
+                      {course.requireSequentialProgress && (
+                        <span className="rounded-lg bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
+                          <Link2 size={11} className="me-1 inline" />
+                          متسلسل
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-auto inline-flex items-center gap-1.5 border-t border-line pt-3 text-xs font-bold text-brand">
+                      فتح لوحة تخصيص الكورس
+                      <ArrowUp size={13} className="-rotate-90 transition-transform group-hover:-translate-x-0.5" />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {activeCategory === "academic" && activeSubFeature === "booklets_manage" && (
@@ -3636,40 +4146,656 @@ export function AdminConsole({
 
       {activeCategory === "communications" && activeSubFeature === "forum_pending_topics" && (
         <Card className="space-y-4 p-6">
-          <SectionHeader icon={MessageSquare} title="منشورات ومجتمع الطلاب" count={communityPosts.length} hint="راجع المنشورات واحذف أي محتوى غير لائق" />
-          {communityPosts.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">لا توجد منشورات بعد.</p>
+          <SectionHeader
+            icon={MessageSquare}
+            title="مراجعة منشورات المجتمع"
+            count={communityPosts.filter((p) => (p.status || "approved") === "pending").length}
+            hint="اعتمد المنشورات لتظهر للطلاب، وردّ على أسئلة الطلاب بحل مصور أو فيديو يظهر كتعليق أسفل المنشور"
+            actions={
+              <div className="flex items-center gap-1.5" role="group" aria-label="تصفية بالحالة">
+                {([
+                  ["pending", "قيد المراجعة"],
+                  ["approved", "معتمدة"],
+                  ["rejected", "مرفوضة"],
+                  ["all", "الكل"],
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setPostStatusFilter(value)}
+                    aria-pressed={postStatusFilter === value}
+                    className={cn(
+                      "cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all",
+                      postStatusFilter === value
+                        ? "border-brand bg-brand/10 text-brand"
+                        : "border-line bg-surface text-muted hover:text-ink"
+                    )}
+                  >
+                    {label}
+                    {value !== "all" && (
+                      <span className="ms-1 tabular-nums opacity-70">
+                        ({communityPosts.filter((p) => (p.status || "approved") === value).length})
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            }
+          />
+
+          {visiblePosts.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted">لا توجد منشورات في هذه الحالة.</p>
           ) : (
             <div className="divide-y divide-line">
-              {communityPosts.map((p) => {
+              {visiblePosts.map((p) => {
                 const key = `post-${p.id}`;
+                const status = (p.status || "approved") as string;
+                const draft = replyDrafts[p.id] ?? { body: "", mediaKind: "none", file: null as File | null };
+                const replies = postReplies[p.id];
                 return (
-                  <div key={p.id} className={cn("space-y-2 py-4", pendingIds.has(key) && "opacity-50")}>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-ink">{p.authorName}</span>
-                      <span className="tabular-nums text-muted" dir="ltr">{formatDate(p.createdAt)}</span>
-                    </div>
-                    <p className="rounded-xl bg-surface2 p-3 text-[13px] leading-relaxed text-ink">{p.body}</p>
-                    <div className="flex items-center justify-between text-xs text-muted">
-                      <span className="tabular-nums">👍 {p.likesCount} إعجاب</span>
+                  <div key={p.id} className={cn("space-y-3 py-4", pendingIds.has(key) && "opacity-50")}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="font-semibold text-ink">
+                        {p.authorName}
+                        {p.repliesCount > 0 && (
+                          <span className="ms-2 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-brand">
+                            {p.repliesCount} رد
+                          </span>
+                        )}
+                      </span>
                       <div className="flex items-center gap-2">
+                        <Badge tone={status === "approved" ? "success" : status === "rejected" ? "danger" : "gold"}>
+                          {status === "approved" ? "معتمد" : status === "rejected" ? "مرفوض" : "قيد المراجعة"}
+                        </Badge>
                         <Badge tone="brand">{p.courseTitle ?? "منتدى عام"}</Badge>
-                        <button
-                          type="button"
-                          onClick={() => requestDeletePost(p)}
-                          disabled={pendingIds.has(key)}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1 transition-colors hover:border-danger/50 hover:text-danger"
-                        >
-                          <Trash2 size={12} /> حذف
-                        </button>
+                        <span className="tabular-nums text-muted" dir="ltr">{formatDate(p.createdAt)}</span>
                       </div>
                     </div>
+                    <p className="rounded-xl bg-surface2 p-3 text-[13px] leading-relaxed text-ink">{p.body}</p>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {status !== "approved" && (
+                        <Button onClick={() => setPostStatus(p, "approved")} variant="primary" size="sm" disabled={pendingIds.has(key)}>
+                          <CheckCheck size={13} /> اعتماد
+                        </Button>
+                      )}
+                      {status !== "rejected" && (
+                        <Button onClick={() => setPostStatus(p, "rejected")} variant="outline" size="sm" disabled={pendingIds.has(key)}>
+                          <Ban size={13} /> رفض
+                        </Button>
+                      )}
+                      <Button onClick={() => toggleReplies(p.id)} variant="ghost" size="sm">
+                        <MessageSquare size={13} />
+                        {replies ? "إخفاء الردود" : `الردود${p.repliesCount > 0 ? ` (${p.repliesCount})` : ""}`}
+                      </Button>
+                      <span className="tabular-nums text-[11px] text-muted">👍 {p.likesCount}</span>
+                      <button
+                        type="button"
+                        onClick={() => requestDeletePost(p)}
+                        disabled={pendingIds.has(key)}
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-[11px] transition-colors hover:border-danger/50 hover:text-danger"
+                      >
+                        <Trash2 size={12} /> حذف
+                      </button>
+                    </div>
+
+                    {/* Assistant replies thread */}
+                    {replies && (
+                      <div className="space-y-2 rounded-xl border border-line bg-surface2/30 p-3">
+                        {replies.loading ? (
+                          <p className="flex items-center justify-center gap-2 py-3 text-xs text-muted">
+                            <Loader2 size={14} className="animate-spin" /> جارٍ تحميل الردود...
+                          </p>
+                        ) : replies.rows.length === 0 ? (
+                          <p className="py-2 text-center text-xs text-muted">لا توجد ردود بعد — كن أول من يجيب على الطالب.</p>
+                        ) : (
+                          replies.rows.map((r) => (
+                            <div key={r.id} className="space-y-1.5 rounded-lg border border-line bg-surface p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                <span className="inline-flex items-center gap-1.5 font-semibold text-brand">
+                                  <ShieldCheck size={12} /> {r.authorName}
+                                  <span className="text-muted">· مشرف</span>
+                                </span>
+                                <span className="tabular-nums text-muted" dir="ltr">{formatDate(r.createdAt)}</span>
+                              </div>
+                              {r.body && <p className="text-xs leading-relaxed text-ink">{r.body}</p>}
+                              {r.mediaKey && r.mediaKind === "image" && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={`/api/v1/community/replies/${r.id}/media`}
+                                  alt="مرفق الحل"
+                                  className="max-h-64 rounded-lg border border-line object-contain"
+                                />
+                              )}
+                              {r.mediaKey && r.mediaKind === "video" && (
+                                <video controls src={`/api/v1/community/replies/${r.id}/media`} className="max-h-64 w-full rounded-lg border border-line" />
+                              )}
+                              {r.mediaKey && (r.mediaKind === "file" || r.mediaKind === "none") && (
+                                <a
+                                  href={`/api/v1/community/replies/${r.id}/media`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
+                                >
+                                  <Paperclip size={12} /> فتح المرفق
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        )}
+
+                        {/* Reply composer */}
+                        <div className="space-y-2 rounded-lg border border-dashed border-line bg-surface p-3">
+                          <Textarea
+                            rows={2}
+                            value={draft.body}
+                            onChange={(e) => updateReplyDraft(p.id, { body: e.target.value })}
+                            placeholder="اكتب حل السؤال أو شرحاً للطالب..."
+                            aria-label={`الرد على منشور ${p.authorName}`}
+                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Select
+                              value={draft.mediaKind}
+                              onChange={(e) => updateReplyDraft(p.id, { mediaKind: e.target.value, file: null })}
+                              aria-label="نوع المرفق"
+                              className="h-8 w-36 text-xs"
+                            >
+                              <option value="none">بدون مرفق</option>
+                              <option value="image">صورة حل</option>
+                              <option value="video">فيديو حل</option>
+                              <option value="file">ملف (PDF...)</option>
+                            </Select>
+                            {draft.mediaKind !== "none" && (
+                              <>
+                                <input
+                                  type="file"
+                                  accept={draft.mediaKind === "image" ? "image/*" : draft.mediaKind === "video" ? "video/mp4,video/webm,video/quicktime" : ".pdf,.doc,.docx,.zip"}
+                                  onChange={(e) => updateReplyDraft(p.id, { file: e.target.files?.[0] ?? null })}
+                                  aria-label="اختيار ملف المرفق"
+                                  className="text-[11px] text-muted file:cursor-pointer file:rounded-lg file:border file:border-line file:bg-surface2 file:px-2 file:py-1 file:text-[11px] file:font-semibold"
+                                />
+                                {draft.file && <span className="max-w-40 truncate text-[11px] text-muted">{draft.file.name}</span>}
+                              </>
+                            )}
+                            <Button
+                              onClick={() => submitReply(p)}
+                              disabled={replyBusy[p.id]}
+                              variant="primary"
+                              size="sm"
+                              className="ms-auto"
+                            >
+                              {replyBusy[p.id] ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                              نشر الرد
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           )}
         </Card>
+      )}
+
+      {/* ═══ ADVANCED SEARCH & FILTERS ═══ */}
+      {activeCategory === "advanced_search" && activeSubFeature === "users_advanced" && (
+        <div className="space-y-4">
+          <Card className="space-y-4 p-5">
+            <SectionHeader
+              icon={UserPlus}
+              title="البحث المتقدم في المستخدمين والطلاب"
+              count={filteredAdvancedUsers.length}
+              hint="ابحث بالاسم أو البريد أو رقم الموبايل، وصفّي النتائج بالرتبة والحالة والاشتراك في كورس محدد وتاريخ التسجيل"
+            />
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="بحث فوري">
+                <div className="relative">
+                  <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+                  <Input
+                    value={advQuery}
+                    onChange={(e) => setAdvQuery(e.target.value)}
+                    placeholder="اسم / بريد / موبايل..."
+                    className="h-10 border-line bg-surface2 pr-9 text-xs"
+                    aria-label="بحث في المستخدمين"
+                  />
+                </div>
+              </Field>
+              <Field label="الاشتراك في كورس">
+                <Select value={advCourse} onChange={(e) => setAdvCourse(e.target.value)} className="h-10 text-xs">
+                  <option value="all">كل الكورسات (أو بدون)</option>
+                  {localCourses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="من تاريخ">
+                  <input
+                    type="date"
+                    value={advFrom}
+                    onChange={(e) => setAdvFrom(e.target.value)}
+                    aria-label="التسجيل من تاريخ"
+                    className="h-10 cursor-pointer rounded-xl border border-line bg-surface px-2.5 text-xs tabular-nums text-ink outline-none focus:border-brand"
+                  />
+                </Field>
+                <Field label="إلى تاريخ">
+                  <input
+                    type="date"
+                    value={advTo}
+                    onChange={(e) => setAdvTo(e.target.value)}
+                    aria-label="التسجيل إلى تاريخ"
+                    className="h-10 cursor-pointer rounded-xl border border-line bg-surface px-2.5 text-xs tabular-nums text-ink outline-none focus:border-brand"
+                  />
+                </Field>
+              </div>
+            </div>
+            <FilterChips
+              label="تصفية بالرتبة"
+              value={advRole}
+              onChange={setAdvRole}
+              options={[
+                { value: "all", label: "كل الرتب" },
+                { value: "student", label: "طلاب", count: localUsers.filter((u) => u.role === "student").length },
+                { value: "parent", label: "أولياء أمور", count: localUsers.filter((u) => u.role === "parent").length },
+                { value: "center", label: "سناتر", count: localUsers.filter((u) => u.role === "center").length },
+                { value: "teacher", label: "مدرّسون", count: localUsers.filter((u) => u.role === "teacher").length },
+                { value: "admin", label: "مشرفون", count: localUsers.filter((u) => u.role === "admin").length },
+              ]}
+            />
+            <FilterChips
+              label="تصفية بالحالة"
+              value={advStatus}
+              onChange={setAdvStatus}
+              options={[
+                { value: "all", label: "الكل" },
+                { value: "active", label: "نشط", count: localUsers.filter((u) => u.isActive).length },
+                { value: "frozen", label: "مجمّد", count: localUsers.filter((u) => !u.isActive).length },
+              ]}
+            />
+            {(advQuery || advCourse !== "all" || advRole !== "all" || advStatus !== "all" || advFrom || advTo) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAdvQuery("");
+                  setAdvCourse("all");
+                  setAdvRole("all");
+                  setAdvStatus("all");
+                  setAdvFrom("");
+                  setAdvTo("");
+                }}
+                className="cursor-pointer text-xs font-bold text-brand hover:underline"
+              >
+                مسح كل عوامل التصفية ✕
+              </button>
+            )}
+          </Card>
+
+          <Card className="space-y-3 p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-ink">
+                النتائج: <span className="tabular-nums text-brand">{filteredAdvancedUsers.length}</span> مستخدم
+              </p>
+              {canManageUsers && filteredAdvancedUsers.length > 0 && (
+                <Button
+                  onClick={() =>
+                    downloadCSV(
+                      "advanced_users_search",
+                      filteredAdvancedUsers,
+                      [
+                        { key: "name", label: "الاسم" },
+                        { key: "email", label: "البريد الإلكتروني" },
+                        { key: "phone", label: "الموبايل" },
+                        { key: "roleLabel", label: "الرتبة" },
+                        { key: "status", label: "الحالة" },
+                        { key: "courses", label: "الكورسات المشترك بها" },
+                        { key: "balance", label: "رصيد المحفظة" },
+                        { key: "createdAt", label: "تاريخ التسجيل" },
+                      ]
+                    )
+                  }
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  <Download size={14} className="text-brand" /> تصدير CSV
+                </Button>
+              )}
+            </div>
+            <AdminTable
+              columns={advancedUserColumns}
+              rows={filteredAdvancedUsers}
+              emptyTitle="لا توجد نتائج مطابقة"
+              emptyHint="جرّب تعديل كلمة البحث أو إزالة بعض الفلاتر."
+            />
+          </Card>
+        </div>
+      )}
+
+      {/* ═══ MODAL: COURSE CONTENT MANAGER (videos & lessons) ═══ */}
+      {contentCourseId && (
+        (() => {
+          const course = localCourses.find((c) => c.id === contentCourseId);
+          if (!course) return null;
+          const courseLessons = localLessons
+            .filter((l) => l.courseId === contentCourseId)
+            .sort((a, b) => a.sortOrder - b.sortOrder);
+          return (
+            <div
+              className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+              onMouseDown={(e) => {
+                if (e.target === e.currentTarget) setContentCourseId(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setContentCourseId(null);
+              }}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="content-manager-title"
+                className="flex max-h-[88vh] w-full max-w-3xl animate-in fade-in zoom-in-95 flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-lift"
+              >
+                {/* dialog header */}
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4">
+                  <div className="min-w-0">
+                    <h3 id="content-manager-title" className="truncate font-brand text-base font-bold text-ink">
+                      {course.title}
+                    </h3>
+                    <p className="text-[11px] text-muted">
+                      لوحة التخصيص الكاملة · {courseLessons.length} درس ·{" "}
+                      {videos.filter((v) => courseLessons.some((l) => l.id === v.lessonId)).length} فيديو
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setContentCourseId(null)}
+                    aria-label="إغلاق لوحة التخصيص"
+                    className="cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-surface2 hover:text-ink"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* dialog body */}
+                <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-5">
+                  {courseLessons.length === 0 ? (
+                    <div className="grid place-items-center gap-2 py-14 text-center">
+                      <Layers size={22} className="text-muted" />
+                      <p className="text-sm font-bold">لا توجد دروس في هذا الكورس بعد</p>
+                      <p className="max-w-sm text-xs leading-relaxed text-muted">
+                        تُضاف الدروس والفيديوهات ضمن استيراد المحتوى، وستظهر هنا فور توفرها لتتمكن من ترتيبها وتخصيصها.
+                      </p>
+                    </div>
+                  ) : (
+                    courseLessons.map((lesson, li) => {
+                      const lessonVideos = videos.filter((v) => v.lessonId === lesson.id);
+                      return (
+                        <section key={lesson.id} className="space-y-2.5 rounded-xl border border-line bg-surface2/30 p-4">
+                          {/* lesson header with reorder + rename */}
+                          <div className="flex flex-wrap items-center gap-2 border-b border-line pb-2.5">
+                            <div className="flex items-center">
+                              <button
+                                type="button"
+                                onClick={() => moveLesson(lesson, -1)}
+                                disabled={li === 0}
+                                aria-label={`تحريك الدرس ${lesson.title} لأعلى`}
+                                title="تحريك الدرس لأعلى"
+                                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+                              >
+                                <ArrowUp size={13} />
+                              </button>
+                              <span className="grid size-6 place-items-center rounded-md bg-surface text-[11px] font-bold tabular-nums text-muted">
+                                {li + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => moveLesson(lesson, 1)}
+                                disabled={li === courseLessons.length - 1}
+                                aria-label={`تحريك الدرس ${lesson.title} لأسفل`}
+                                title="تحريك الدرس لأسفل"
+                                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+                              >
+                                <ArrowDown size={13} />
+                              </button>
+                            </div>
+                            {renameTarget?.kind === "lesson" && renameTarget.id === lesson.id ? (
+                              <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                                <Input
+                                  value={renameTarget.title}
+                                  onChange={(e) => updateRename({ title: e.target.value })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveRename();
+                                    if (e.key === "Escape") setRenameTarget(null);
+                                  }}
+                                  autoFocus
+                                  aria-label="اسم الدرس الجديد"
+                                  className="h-8 flex-1 text-xs"
+                                />
+                                <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">
+                                  {renameBusy ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                                </Button>
+                                <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]">
+                                  <X size={11} />
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <p className="min-w-0 flex-1 truncate text-xs font-bold text-ink">{lesson.title}</p>
+                                <button
+                                  type="button"
+                                  onClick={() => setRenameTarget({ kind: "lesson", id: lesson.id, title: lesson.title })}
+                                  title="إعادة تسمية الدرس"
+                                  aria-label={`إعادة تسمية ${lesson.title}`}
+                                  className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                              </>
+                            )}
+                            {lesson.isFreePreview && <Badge tone="success">معاينة مجانية</Badge>}
+                            <span className="rounded-md bg-surface px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                              {lessonVideos.length} فيديو
+                            </span>
+                          </div>
+
+                          {/* videos of the lesson */}
+                          {lessonVideos.length === 0 ? (
+                            <p className="py-2 text-center text-[11px] text-muted">لا توجد فيديوهات في هذا الدرس بعد.</p>
+                          ) : (
+                            lessonVideos.map((v, vi) => {
+                              const draft = maxViewsDraft[v.id] ?? (v.maxViews != null ? String(v.maxViews) : "");
+                              return (
+                                <div
+                                  key={v.id}
+                                  className={cn(
+                                    "flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 transition-colors hover:border-brand/30",
+                                    pendingIds.has(`video-${v.id}`) && "opacity-50"
+                                  )}
+                                >
+                                  <div className="flex items-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => moveVideo(v, -1)}
+                                      disabled={vi === 0}
+                                      aria-label={`تحريك ${v.title} لأعلى`}
+                                      title="تحريك لأعلى"
+                                      className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+                                    >
+                                      <ArrowUp size={12} />
+                                    </button>
+                                    <span className="grid size-5 place-items-center rounded bg-surface2 text-[10px] font-bold tabular-nums text-muted">
+                                      {vi + 1}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => moveVideo(v, 1)}
+                                      disabled={vi === lessonVideos.length - 1}
+                                      aria-label={`تحريك ${v.title} لأسفل`}
+                                      title="تحريك لأسفل"
+                                      className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+                                    >
+                                      <ArrowDown size={12} />
+                                    </button>
+                                  </div>
+                                  <div className="min-w-0 flex-1 basis-44">
+                                    {renameTarget?.kind === "video" && renameTarget.id === v.id ? (
+                                      <div className="space-y-1.5">
+                                        <Input
+                                          value={renameTarget.title}
+                                          onChange={(e) => updateRename({ title: e.target.value })}
+                                          autoFocus
+                                          aria-label="عنوان الفيديو الجديد"
+                                          className="h-7 text-xs"
+                                        />
+                                        <div className="flex items-center gap-1.5" dir="ltr">
+                                          <Input
+                                            value={renameTarget.youtubeId}
+                                            onChange={(e) => updateRename({ youtubeId: e.target.value })}
+                                            aria-label="معرف يوتيوب"
+                                            placeholder="YouTube ID"
+                                            className="h-7 flex-1 font-mono text-[11px]"
+                                          />
+                                          <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">
+                                            {renameBusy ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                                            حفظ
+                                          </Button>
+                                          <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]">
+                                            <X size={11} />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <p className="truncate text-xs font-semibold text-ink">{v.title}</p>
+                                        <p className="font-mono text-[10px] tabular-nums text-muted">
+                                          {Math.round(v.durationSec / 60)} دقيقة · <span dir="ltr">{v.youtubeVideoId}</span>
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                  {!(renameTarget?.kind === "video" && renameTarget.id === v.id) && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setRenameTarget({ kind: "video", id: v.id, title: v.title, youtubeId: v.youtubeVideoId })
+                                        }
+                                        title="تعديل العنوان ومعرف يوتيوب"
+                                        aria-label={`تعديل ${v.title}`}
+                                        className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand"
+                                      >
+                                        <Pencil size={12} />
+                                      </button>
+                                      <div className="flex items-center gap-1.5">
+                                        <EyeOff size={12} className="text-muted" />
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          dir="ltr"
+                                          value={draft}
+                                          onChange={(e) =>
+                                            setMaxViewsDraft((prev) => ({ ...prev, [v.id]: e.target.value }))
+                                          }
+                                          placeholder="∞"
+                                          aria-label={`حد مشاهدات ${v.title}`}
+                                          className="h-7 w-16 border-line bg-surface2/50 text-center text-xs tabular-nums"
+                                        />
+                                        <Button
+                                          onClick={() => saveMaxViews(v)}
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-7 px-2 text-[10px]"
+                                        >
+                                          حفظ
+                                        </Button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </section>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* dialog footer */}
+                <div className="flex shrink-0 items-center justify-between border-t border-line px-5 py-3">
+                  <p className="text-[11px] leading-relaxed text-muted">
+                    الترتيب هنا هو نفسه ترتيب المشاهدة عند الطالب — والتسلسل الإجباري يتبعه أيضاً.
+                  </p>
+                  <Button onClick={() => setContentCourseId(null)} variant="primary" size="sm">
+                    تم
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()
+      )}
+
+      {/* ═══ MODAL: COURSE COVER EDITOR ═══ */}
+      {coverModal && (
+        <div
+          className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setCoverModal(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setCoverModal(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cover-modal-title"
+            className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
+          >
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 id="cover-modal-title" className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+                <ImagePlus size={18} className="text-brand" /> صورة غلاف الكورس
+              </h3>
+              <button
+                type="button"
+                onClick={() => setCoverModal(null)}
+                aria-label="إغلاق"
+                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:text-ink"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-xs font-bold text-ink">{coverModal.course.title}</p>
+            <Field label="رابط الصورة" hint="الصق رابط صورة مباشر (JPG/PNG/WebP) — اتركه فارغاً للغلاف التلقائي حسب المادة">
+              <Input
+                dir="ltr"
+                value={coverModal.url}
+                onChange={(e) => setCoverModal({ ...coverModal, url: e.target.value })}
+                placeholder="https://i.ytimg.com/vi/.../maxresdefault.jpg"
+              />
+            </Field>
+            <div className="grid h-36 place-items-center overflow-hidden rounded-xl border border-line bg-surface2">
+              {coverModal.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={coverModal.url} alt="معاينة الغلاف" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-xs text-muted">معاينة الغلاف التلقائي</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSaveCover} disabled={coverBusy} variant="primary" className="flex-1">
+                {coverBusy ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                حفظ الغلاف
+              </Button>
+              <Button onClick={() => setCoverModal(null)} variant="ghost">إلغاء</Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ═══ MODAL: WALLET ADJUSTMENT ═══ */}

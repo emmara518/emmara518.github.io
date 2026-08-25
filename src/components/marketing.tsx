@@ -145,6 +145,7 @@ export type CourseCardData = {
   title: string;
   summary: string;
   priceCents: number;
+  coverImageUrl?: string | null;
   gradeName: string;
   subjectName: string;
   lessonsCount: number;
@@ -152,6 +153,9 @@ export type CourseCardData = {
 };
 
 function getCourseCoverImage(course: CourseCardData): string {
+  // Admin-assigned cover wins over the keyword heuristic.
+  if (course.coverImageUrl) return course.coverImageUrl;
+
   const s = (course.slug || "").toLowerCase();
   const sub = (course.subjectName || "").toLowerCase();
   const t = (course.title || "").toLowerCase();
@@ -166,7 +170,7 @@ function getCourseCoverImage(course: CourseCardData): string {
     return "/images/courses/geometry.jpg";
   }
   if (s.includes("revision") || s.includes("final") || t.includes("مراجعة") || t.includes("شاملة")) {
-    return "/images/courses/final_revision.jpg";
+    return "/images/courses/algebra.jpg";
   }
   // Default for algebra and general secondary mathematics
   return "/images/courses/algebra.jpg";

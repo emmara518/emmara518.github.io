@@ -122,6 +122,7 @@ export async function seedDatabase(targetDb: any) {
       passwordHash,
       name: "سارة أشرف",
       phone: "01012345678",
+      guardianPhone: "01098765432",
       role: "student",
       gradeId: (gradeBySlug.get("sec-2") as any)!.id,
     })
@@ -133,6 +134,7 @@ export async function seedDatabase(targetDb: any) {
       email: "omar@dros-math.com",
       passwordHash,
       name: "عمر خالد",
+      guardianPhone: "01098765432",
       role: "student",
       gradeId: (gradeBySlug.get("sec-3") as any)!.id,
     })
@@ -144,6 +146,8 @@ export async function seedDatabase(targetDb: any) {
       email: "parent@dros-math.com",
       passwordHash,
       name: "ولي أمر تجريبي",
+      // نفس رقم ولي الأمر المسجل عند الطالبين — مفتاح بوابة أولياء الأمور
+      phone: "01098765432",
       role: "parent",
     })
     .returning();
@@ -506,6 +510,23 @@ export async function seedDatabase(targetDb: any) {
     answers,
   });
 
+  // attempt for the second child (same guardian) — feeds the parent portal demo
+  const calcQs = bankBySubject.get("calculus")!.slice(0, 5);
+  const calcBank = bankRows.filter((b: any) => calcQs.includes(b.id));
+  const omarAnswers = calcBank.map((q: any, i: number) => ({
+    questionId: q.id,
+    choiceIndex: i === 2 ? 1 : (q as any).correctIndex,
+    correct: i !== 2,
+  }));
+  const omarScore = omarAnswers.filter((a: any) => a.correct).length;
+  await targetDb.insert(examAttempts).values({
+    examId: examIds[1],
+    userId: student2.id,
+    score: omarScore,
+    totalMarks: 5,
+    answers: omarAnswers,
+  });
+
   await targetDb.insert(notifications).values([
     { userId: student.id, title: "أهلًا بك في دروس ماث", body: "منصتك الجديدة لإتقان الرياضيات — ابدأ أول درس الآن.", kind: "system" },
     { userId: student.id, title: "تم تفعيل اشتراكك", body: "أهلًا بك في كورس «الجبر — الصف الأول الثانوي». بالتوفيق!", kind: "billing" },
@@ -543,7 +564,10 @@ export async function seedDatabase(targetDb: any) {
     score: 9,
   });
 
-  await targetDb.insert(parentLinks).values({ parentId: parentUser.id, studentId: student.id });
+  await targetDb.insert(parentLinks).values([
+    { parentId: parentUser.id, studentId: student.id },
+    { parentId: parentUser.id, studentId: student2.id },
+  ]);
 
   await targetDb.insert(auditLogs).values({
     actorId: admin.id,

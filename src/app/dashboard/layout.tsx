@@ -15,6 +15,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/dashboard");
   if (isAdminRole(user.role)) redirect("/admin");
+  if (user.role === "parent") redirect("/parent");
 
   const [unreadRows, recentRows] = await Promise.all([
     db

@@ -41,11 +41,14 @@ export function Topbar({
   unreadCount,
   notifications,
   onToggleMobileMenu,
+  identityHref = "/dashboard/account",
 }: {
   user: ShellUser;
   unreadCount: number;
   notifications: ShellNotification[];
   onToggleMobileMenu?: () => void;
+  /** Where the identity block links to — parent portal overrides it. */
+  identityHref?: string;
 }) {
   const router = useRouter();
   const [bellOpen, setBellOpen] = useState(false);
@@ -100,8 +103,8 @@ export function Topbar({
         <Menu size={18} />
       </button>
 
-      {/* Student identity → account page */}
-      <Link href="/dashboard/account" className="flex min-w-0 flex-1 items-center gap-2.5">
+      {/* User identity → their portal */}
+      <Link href={identityHref} className="flex min-w-0 flex-1 items-center gap-2.5">
         {user.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover ring-1 ring-line" />

@@ -17,6 +17,7 @@ import {
   walletAccounts,
   subscriptions,
   communityPosts,
+  communityReplies,
   academicStages,
   auditLogs,
 } from "@/db/schema";
@@ -114,20 +115,85 @@ export async function getAdminOverview() {
 }
 
 export async function listUsersAdmin() {
-  return db
+  const rows = await db
     .select({
       id: users.id,
       name: users.name,
       email: users.email,
+      phone: users.phone,
       role: users.role,
       isActive: users.isActive,
       createdAt: users.createdAt,
       balanceCents: sql<number>`COALESCE(${walletAccounts.balanceCents}, 0)`,
+      enrolledCourseIds: sql<
+        string[]
+      >`COALESCE(array_agg(${subscriptions.courseId}) FILTER (WHERE ${subscriptions.courseId} IS NOT NULL), '{}')`,
     })
     .from(users)
     .leftJoin(walletAccounts, eq(walletAccounts.userId, users.id))
+    .leftJoin(
+      subscriptions,
+      and(eq(subscriptions.userId, users.id), eq(subscriptions.status, "active")),
+    )
+    .groupBy(users.id, walletAccounts.balanceCents)
     .orderBy(desc(users.createdAt))
-    .limit(200);
+    .limit(500);
+  return rows;
+}
+
+/** Advanced filtered search over users — used by the sidebar "البحث المتقدم" hub. */
+export async function searchUsersAdvanced(filters: {
+  q?: string;
+  role?: string;
+  status?: string;
+  courseId?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}) {
+  const where = [];
+  if (filters.q) {
+    const like = `%${filters.q}%`;
+    where.push(
+      sql`(${users.name} ILIKE ${like} OR ${users.email} ILIKE ${like} OR COALESCE(${users.phone}, '') ILIKE ${like})`,
+    );
+  }
+  if (filters.role && filters.role !== "all") {
+    where.push(sql`${users.role}::text = ${filters.role}`);
+  }
+  if (filters.status === "active") where.push(eq(users.isActive, true));
+  if (filters.status === "frozen") where.push(eq(users.isActive, false));
+  if (filters.createdFrom) where.push(sql`${users.createdAt} >= ${filters.createdFrom}::date`);
+  if (filters.createdTo) where.push(sql`${users.createdAt} < (${filters.createdTo}::date + interval '1 day')`);
+
+  const rows = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      phone: users.phone,
+      role: users.role,
+      isActive: users.isActive,
+      createdAt: users.createdAt,
+      balanceCents: sql<number>`COALESCE(${walletAccounts.balanceCents}, 0)`,
+      enrolledCourseIds: sql<
+        string[]
+      >`COALESCE(array_agg(${subscriptions.courseId}) FILTER (WHERE ${subscriptions.courseId} IS NOT NULL), '{}')`,
+    })
+    .from(users)
+    .leftJoin(walletAccounts, eq(walletAccounts.userId, users.id))
+    .leftJoin(
+      subscriptions,
+      and(eq(subscriptions.userId, users.id), eq(subscriptions.status, "active")),
+    )
+    .where(where.length ? and(...where) : undefined)
+    .groupBy(users.id, walletAccounts.balanceCents)
+    .orderBy(desc(users.createdAt))
+    .limit(400);
+
+  if (filters.courseId && filters.courseId !== "all") {
+    return rows.filter((r) => Array.isArray(r.enrolledCourseIds) && r.enrolledCourseIds.includes(filters.courseId!));
+  }
+  return rows;
 }
 
 export async function setUserRole(actor: SessionUser, userId: string, role: Role) {
@@ -152,6 +218,8 @@ export async function listCoursesAdmin() {
       title: courses.title,
       status: courses.status,
       priceCents: courses.priceCents,
+      coverImageUrl: courses.coverImageUrl,
+      requireSequentialProgress: courses.requireSequentialProgress,
       createdAt: courses.createdAt,
       gradeName: grades.name,
       subjectName: subjects.name,
@@ -179,6 +247,8 @@ export async function createCourse(actor: SessionUser, input: AdminCourseInput) 
       teacherId: actor.id,
       priceCents: Math.round(input.priceEgp * 100),
       status: "draft",
+      coverImageUrl: input.coverUrl ? input.coverUrl : null,
+      requireSequentialProgress: input.requireSequential ?? false,
     })
     .returning({ id: courses.id, slug: courses.slug });
   await audit(actor, "courses.create", "courses", created.id, { slug: created.slug });
@@ -278,6 +348,7 @@ export async function listExamsAdmin() {
       mode: exams.mode,
       durationMin: exams.durationMin,
       isPublished: exams.isPublished,
+      sortOrder: exams.sortOrder,
       courseTitle: courses.title,
       courseSlug: courses.slug,
       createdAt: exams.createdAt,
@@ -286,8 +357,114 @@ export async function listExamsAdmin() {
     })
     .from(exams)
     .innerJoin(courses, eq(exams.courseId, courses.id))
-    .orderBy(desc(exams.createdAt))
+    .orderBy(exams.sortOrder, desc(exams.createdAt))
     .limit(100);
+}
+
+/** Reorders any sortable admin entity to match the given id sequence. */
+export async function reorderEntities(
+  actor: SessionUser,
+  entity: "videos" | "lessons" | "exams",
+  ids: string[],
+) {
+  const table = entity === "videos" ? videos : entity === "lessons" ? lessons : exams;
+  for (let i = 0; i < ids.length; i++) {
+    await db
+      .update(table)
+      .set({ sortOrder: i + 1 })
+      .where(eq(table.id, ids[i]));
+  }
+  await audit(actor, `${entity}.reorder`, entity, null, { count: ids.length });
+  return { entity, count: ids.length };
+}
+
+export async function updateVideoMeta(
+  actor: SessionUser,
+  videoId: string,
+  patch: { maxViews?: number | null; title?: string; youtubeId?: string },
+) {
+  const set: Record<string, unknown> = {};
+  if (patch.maxViews !== undefined) set.maxViews = patch.maxViews;
+  if (patch.title !== undefined) set.title = patch.title;
+  if (patch.youtubeId !== undefined) {
+    set.youtubeVideoId = patch.youtubeId;
+    // keep playlist ref consistent — direct uploads only
+    set.youtubePlaylistId = null;
+  }
+  if (Object.keys(set).length === 0) throw new ServiceError(422, "EMPTY_PATCH", "لا توجد تعديلات");
+  const [updated] = await db
+    .update(videos)
+    .set(set)
+    .where(eq(videos.id, videoId))
+    .returning({ id: videos.id });
+  if (!updated) throw new ServiceError(404, "VIDEO_NOT_FOUND", "الفيديو غير موجود");
+  await audit(actor, "videos.patch", "videos", videoId, set);
+  return updated;
+}
+
+export async function updateLessonTitle(actor: SessionUser, lessonId: string, title: string) {
+  const [updated] = await db
+    .update(lessons)
+    .set({ title })
+    .where(eq(lessons.id, lessonId))
+    .returning({ id: lessons.id });
+  if (!updated) throw new ServiceError(404, "LESSON_NOT_FOUND", "الدرس غير موجود");
+  await audit(actor, "lessons.rename", "lessons", lessonId, { title });
+  return updated;
+}
+
+export async function setPostStatus(actor: SessionUser, postId: string, status: string) {
+  const [updated] = await db
+    .update(communityPosts)
+    .set({ status, reviewedAt: new Date() })
+    .where(eq(communityPosts.id, postId))
+    .returning({ id: communityPosts.id, userId: communityPosts.userId });
+  if (!updated) throw new ServiceError(404, "POST_NOT_FOUND", "المنشور غير موجود");
+  await audit(actor, `community.${status}`, "community_posts", postId);
+  return updated;
+}
+
+export async function listPostRepliesAdmin(postId: string) {
+  return db
+    .select({
+      id: communityReplies.id,
+      body: communityReplies.body,
+      mediaKind: communityReplies.mediaKind,
+      mediaKey: communityReplies.mediaKey,
+      createdAt: communityReplies.createdAt,
+      authorName: users.name,
+      authorRole: users.role,
+    })
+    .from(communityReplies)
+    .innerJoin(users, eq(communityReplies.userId, users.id))
+    .where(eq(communityReplies.postId, postId))
+    .orderBy(communityReplies.createdAt)
+    .limit(50);
+}
+
+export async function createPostReplyAdmin(
+  actor: SessionUser,
+  postId: string,
+  input: { body: string; mediaKind: string; mediaKey?: string | null },
+) {
+  const postRows = await db
+    .select({ id: communityPosts.id })
+    .from(communityPosts)
+    .where(eq(communityPosts.id, postId))
+    .limit(1);
+  if (!postRows[0]) throw new ServiceError(404, "POST_NOT_FOUND", "المنشور غير موجود");
+  const [created] = await db
+    .insert(communityReplies)
+    .values({
+      postId,
+      userId: actor.id,
+      body: input.body,
+      mediaKind: input.mediaKind,
+      mediaKey: input.mediaKey ?? null,
+    })
+    .returning({ id: communityReplies.id });
+  await audit(actor, "community.reply", "community_replies", created.id, { postId, mediaKind: input.mediaKind });
+  return created;
 }
 
 export async function listExamAttemptsAdmin() {
@@ -315,6 +492,8 @@ export async function listVideosAdmin() {
       title: videos.title,
       youtubeVideoId: videos.youtubeVideoId,
       durationSec: videos.durationSec,
+      maxViews: videos.maxViews,
+      lessonId: videos.lessonId,
       lessonTitle: lessons.title,
       courseTitle: courses.title,
       sortOrder: videos.sortOrder,
@@ -322,8 +501,25 @@ export async function listVideosAdmin() {
     .from(videos)
     .innerJoin(lessons, eq(videos.lessonId, lessons.id))
     .innerJoin(courses, eq(lessons.courseId, courses.id))
-    .orderBy(courses.title, videos.sortOrder)
-    .limit(150);
+    .orderBy(courses.title, lessons.sortOrder, videos.sortOrder)
+    .limit(300);
+}
+
+export async function listLessonsAdmin() {
+  return db
+    .select({
+      id: lessons.id,
+      title: lessons.title,
+      sortOrder: lessons.sortOrder,
+      isFreePreview: lessons.isFreePreview,
+      courseId: courses.id,
+      courseTitle: courses.title,
+      videosCount: sql<number>`(SELECT count(*)::int FROM ${videos} WHERE ${videos.lessonId} = ${lessons.id})`,
+    })
+    .from(lessons)
+    .innerJoin(courses, eq(lessons.courseId, courses.id))
+    .orderBy(courses.title, lessons.sortOrder)
+    .limit(300);
 }
 
 export async function listCourseFilesAdmin() {
@@ -402,11 +598,13 @@ export async function listCommunityPostsAdmin() {
     .select({
       id: communityPosts.id,
       body: communityPosts.body,
+      status: communityPosts.status,
       likesCount: communityPosts.likesCount,
       createdAt: communityPosts.createdAt,
       authorName: users.name,
       authorRole: users.role,
       courseTitle: courses.title,
+      repliesCount: sql<number>`(SELECT count(*)::int FROM ${communityReplies} WHERE ${communityReplies.postId} = ${communityPosts.id})`,
     })
     .from(communityPosts)
     .innerJoin(users, eq(communityPosts.userId, users.id))

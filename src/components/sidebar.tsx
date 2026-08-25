@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { BookOpen, ClipboardList, Home, LogOut, UserRound, Wallet } from "lucide-react";
+import { BookOpen, ClipboardList, Home, LogOut, MessagesSquare, UserRound, Wallet } from "lucide-react";
 import { LogoWordmark } from "./logo";
 import type { ShellUser } from "./dashboard-shell";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "الرئيسية", icon: Home, exact: true },
   { href: "/dashboard/courses", label: "كورساتي", icon: BookOpen },
   { href: "/dashboard/exams", label: "الاختبارات", icon: ClipboardList },
+  { href: "/dashboard/community", label: "مجتمع الطلاب", icon: MessagesSquare },
   { href: "/dashboard/wallet", label: "المحفظة", icon: Wallet },
   { href: "/dashboard/account", label: "حسابي", icon: UserRound },
   { href: "/courses", label: "استكشاف الكورسات", icon: BookOpen },

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   courses,
@@ -145,7 +145,7 @@ export async function getNextAction(
     .from(exams)
     .innerJoin(courses, eq(exams.courseId, courses.id))
     .where(and(eq(exams.isPublished, true), inArray(exams.courseId, courseIds)))
-    .orderBy(desc(exams.createdAt))
+    .orderBy(asc(exams.sortOrder), desc(exams.createdAt))
     .limit(1);
   if (examRow[0]) {
     return {
@@ -339,7 +339,7 @@ export async function getStudentDashboard(user: SessionUser) {
             inArray(exams.courseId, enrollments.map((e) => e.courseId)),
           ),
         )
-        .orderBy(desc(exams.createdAt))
+        .orderBy(asc(exams.sortOrder), desc(exams.createdAt))
         .limit(6)
     : [];
 
@@ -429,6 +429,19 @@ export async function getLearningRoom(user: SessionUser, slug: string) {
 
   const progressMap = new Map(progressRows.map((p) => [p.videoId, p]));
 
+  /* Sequential guard: when the course requires it, a video only becomes
+     playable after the previous one (in global order) is completed.
+     View limits: maxViews=null means unlimited, otherwise remaining = max - count. */
+  const flatOrdered = curriculum.lessons.flatMap((l) => l.videos);
+  const seqLockedIds = new Set<string>();
+  if (course.requireSequentialProgress) {
+    let prevCompleted = true;
+    for (const v of flatOrdered) {
+      if (!prevCompleted) seqLockedIds.add(v.id);
+      prevCompleted = progressMap.get(v.id)?.completedAt != null;
+    }
+  }
+
   const lessonsModel = curriculum.lessons.map((l) => {
     const unlocked = enrolled || l.isFreePreview;
     return {
@@ -436,14 +449,31 @@ export async function getLearningRoom(user: SessionUser, slug: string) {
       title: l.title,
       isFreePreview: l.isFreePreview,
       unlocked,
-      videos: l.videos.map((v) => ({
-        id: v.id,
-        title: v.title,
-        youtubeVideoId: unlocked ? v.youtubeVideoId : null,
-        durationSec: v.durationSec,
-        completed: progressMap.get(v.id)?.completedAt != null,
-        watchedSeconds: progressMap.get(v.id)?.watchedSeconds ?? 0,
-      })),
+      videos: l.videos.map((v) => {
+        const progress = progressMap.get(v.id);
+        const viewsLeft =
+          v.maxViews != null ? Math.max(0, v.maxViews - (progress?.viewCount ?? 0)) : null;
+        const sequenceLocked = seqLockedIds.has(v.id);
+        const playable = unlocked && !sequenceLocked && (viewsLeft == null || viewsLeft > 0);
+        const lockReason: string | null = !unlocked
+          ? "enroll"
+          : sequenceLocked
+            ? "sequence"
+            : viewsLeft != null && viewsLeft <= 0
+              ? "views"
+              : null;
+        return {
+          id: v.id,
+          title: v.title,
+          youtubeVideoId: playable ? v.youtubeVideoId : null,
+          durationSec: v.durationSec,
+          completed: progress?.completedAt != null,
+          watchedSeconds: progress?.watchedSeconds ?? 0,
+          viewCount: progress?.viewCount ?? 0,
+          viewsLeft,
+          lockReason,
+        };
+      }),
     };
   });
 
@@ -461,6 +491,7 @@ export async function getLearningRoom(user: SessionUser, slug: string) {
       gradeName: course.gradeName,
       subjectName: course.subjectName,
       teacherName: course.teacherName,
+      requireSequentialProgress: course.requireSequentialProgress,
     },
     enrolled,
     lessons: lessonsModel,
@@ -518,6 +549,60 @@ export async function markVideoProgress(
     });
 
   return { videoId, completed };
+}
+
+/** Counts one view each time the student opens a video, enforcing maxViews. */
+export async function recordVideoView(userId: string, videoId: string) {
+  const videoRows = await db
+    .select({
+      id: videos.id,
+      courseId: lessons.courseId,
+      isFreePreview: lessons.isFreePreview,
+      maxViews: videos.maxViews,
+    })
+    .from(videos)
+    .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+    .where(eq(videos.id, videoId))
+    .limit(1);
+  const video = videoRows[0];
+  if (!video) throw new ServiceError(404, "VIDEO_NOT_FOUND", "الفيديو غير موجود");
+
+  if (!video.isFreePreview) {
+    const enrolled = await hasActiveSubscription(userId, video.courseId);
+    if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "اشترك في الكورس لمتابعة هذا الدرس");
+  }
+
+  const existingRows = await db
+    .select()
+    .from(studentProgress)
+    .where(and(eq(studentProgress.userId, userId), eq(studentProgress.videoId, videoId)))
+    .limit(1);
+  const existing = existingRows[0];
+
+  if (existing && video.maxViews != null && existing.viewCount >= video.maxViews) {
+    throw new ServiceError(403, "VIEW_LIMIT_REACHED", "انتهت عدد المشاهدات المتاحة لهذا الفيديو");
+  }
+
+  await db
+    .insert(studentProgress)
+    .values({
+      userId,
+      courseId: video.courseId,
+      videoId,
+      viewCount: 1,
+      lastViewedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [studentProgress.userId, studentProgress.videoId],
+      set: {
+        viewCount: sql`${studentProgress.viewCount} + 1`,
+        lastViewedAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+  return { videoId, viewsLeft: video.maxViews != null ? video.maxViews - ((existing?.viewCount ?? 0) + 1) : null };
 }
 
 export async function markAllNotificationsRead(userId: string) {

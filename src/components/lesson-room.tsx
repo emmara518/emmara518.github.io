@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CircleCheckBig as CircleOkIcon,
   CirclePlay,
   ClipboardList,
+  EyeOff,
   FileText,
+  Link2,
   LoaderCircle as Loader2,
   Lock,
 } from "lucide-react";
@@ -21,6 +23,11 @@ type RoomVideo = {
   youtubeVideoId: string | null;
   durationSec: number;
   completed: boolean;
+  viewCount: number;
+  /** Remaining allowed opens — null = unlimited. */
+  viewsLeft: number | null;
+  /** enroll | sequence | views — why this video is locked. */
+  lockReason: string | null;
 };
 type RoomLesson = {
   id: string;
@@ -30,7 +37,15 @@ type RoomLesson = {
   videos: RoomVideo[];
 };
 export type LearningRoomData = {
-  course: { id: string; slug: string; title: string; gradeName: string; subjectName: string; teacherName: string };
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    gradeName: string;
+    subjectName: string;
+    teacherName: string;
+    requireSequentialProgress: boolean;
+  };
   enrolled: boolean;
   lessons: RoomLesson[];
   exams: { id: string; title: string; durationMin: number; mode: string; questionsCount: number }[];
@@ -45,14 +60,47 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
     () => new Set(room.lessons.flatMap((l) => l.videos.filter((v) => v.completed).map((v) => v.id))),
   );
   const [busy, setBusy] = useState(false);
+  const [viewNotice, setViewNotice] = useState<string | null>(null);
 
   const flat: RoomVideo[] = room.lessons.flatMap((l) => l.videos);
   const current = flat.find((v) => v.id === currentId) ?? null;
   const unlockedFlat = flat.filter((v) => v.youtubeVideoId);
 
+  /* Count one view each time a video is opened; refresh if the limit is hit. */
+  useEffect(() => {
+    if (!current?.youtubeVideoId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/videos/${current.id}/view`, { method: "POST" });
+        const json = await res.json().catch(() => null);
+        if (cancelled) return;
+        if (!json?.ok) {
+          setViewNotice(json?.error?.message ?? "تعذّر تسجيل المشاهدة");
+          if (json?.error?.code === "VIEW_LIMIT_REACHED") router.refresh();
+        } else {
+          setViewNotice(null);
+          if (typeof json.data?.viewsLeft === "number") router.refresh();
+        }
+      } catch {
+        if (!cancelled) setViewNotice("مشكلة في الاتصال بالسيرفر");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentId]);
+
   const doneCount = completedIds.size;
   const total = room.stats.totalVideos;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  function lockLabel(v: RoomVideo): string {
+    if (v.lockReason === "sequence") return "أكمل الفيديو السابق أولاً";
+    if (v.lockReason === "views") return "انتهت عدد المشاهدات";
+    return "يتطلب اشتراكاً";
+  }
 
   async function markComplete() {
     if (!current) return;
@@ -132,6 +180,11 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                     <p className="mt-0.5 font-mono text-xs text-muted">
                       {formatDuration(current.durationSec)} · بث خارجي عبر YouTube
                     </p>
+                    {room.course.requireSequentialProgress && (
+                      <p className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
+                        <Link2 size={11} /> كورس متسلسل — الفيديو التالي يُفتح بعد إكمال هذا
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {completedIds.has(current.id) ? (
@@ -149,6 +202,19 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                     </button>
                   </div>
                 </div>
+                {viewNotice && (
+                  <p className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2.5 text-xs font-semibold text-danger">
+                    <EyeOff size={14} /> {viewNotice}
+                  </p>
+                )}
+                {current.viewsLeft != null && (
+                  <p className="text-[11px] font-semibold tabular-nums text-muted">
+                    المشاهدات المتبقية لهذا الفيديو:{" "}
+                    <span className={cn("font-bold", current.viewsLeft <= 1 ? "text-danger" : "text-brand")}>
+                      {current.viewsLeft}
+                    </span>
+                  </p>
+                )}
               </>
             ) : (
               <Card className="grid place-items-center p-14 text-muted">اختر درسًا من القائمة</Card>
@@ -211,11 +277,13 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                     const isCurrent = v.id === currentId;
                     const done = completedIds.has(v.id);
                     const playable = Boolean(v.youtubeVideoId);
+                    const isSequenceLocked = v.lockReason === "sequence";
                     return (
                       <button
                         key={v.id}
                         disabled={!playable}
                         onClick={() => setCurrentId(v.id)}
+                        title={!playable ? lockLabel(v) : v.title}
                         className={cn(
                           "flex w-full items-center gap-3 px-4 py-3 text-start transition-colors",
                           isCurrent ? "bg-[var(--brand-soft)]" : "hover:bg-surface2/60",
@@ -229,8 +297,17 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                         ) : (
                           <Lock size={13} className="shrink-0 text-muted" />
                         )}
-                        <span className={cn("flex-1 text-xs leading-5", isCurrent && "font-bold text-brand")}>{v.title}</span>
-                        <span className="font-mono text-[10px] text-muted">{formatDuration(v.durationSec)}</span>
+                        <span className={cn("flex-1 text-xs leading-5", isCurrent && "font-bold text-brand")}>
+                          {v.title}
+                          {!playable && (
+                            <span className="mt-0.5 block text-[10px] font-medium normal-case text-muted">
+                              {lockLabel(v)}
+                            </span>
+                          )}
+                        </span>
+                        {isSequenceLocked ? null : (
+                          <span className="font-mono text-[10px] text-muted">{formatDuration(v.durationSec)}</span>
+                        )}
                       </button>
                     );
                   })}

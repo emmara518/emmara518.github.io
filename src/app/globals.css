@@ -881,6 +881,26 @@ body {
   border-radius: 999px;
   border: none;
 }
+
+/* ── Admin console: smooth feature-switch entrance ── */
+@keyframes view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.view-enter {
+  animation: view-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .view-enter {
+    animation: none;
+  }
+}
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--brand);
 }

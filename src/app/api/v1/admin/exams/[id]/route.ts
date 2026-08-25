@@ -1,4 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
+﻿import { requireApiUser } from "@/lib/auth";
 import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { toEnvelope } from "@/lib/errors";
 const patchExamSchema = z.object({
   isPublished: z.boolean().optional(),
   durationMin: z.number().int().min(5).max(300).optional(),
+  title: z.string().trim().min(3).max(160).optional(),
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -25,6 +26,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updateData: Record<string, unknown> = {};
     if (parsed.data.isPublished !== undefined) updateData.isPublished = parsed.data.isPublished;
     if (parsed.data.durationMin !== undefined) updateData.durationMin = parsed.data.durationMin;
+    if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
+
+    if (Object.keys(updateData).length === 0) {
+      return err(400, "BAD_REQUEST", "لا توجد تعديلات محددة");
+    }
 
     await db.update(exams).set(updateData).where(eq(exams.id, id));
 

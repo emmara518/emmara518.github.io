@@ -15,6 +15,8 @@ export type CourseRow = {
   title: string;
   status: "draft" | "published" | "archived";
   priceCents: number;
+  coverImageUrl: string | null;
+  requireSequentialProgress: boolean;
   createdAt: string;
   gradeName: string;
   subjectName: string;
@@ -25,10 +27,12 @@ export type UserRow = {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   role: Role;
   isActive: boolean;
   createdAt: string;
   balanceCents: number;
+  enrolledCourseIds: string[];
 };
 
 export type CouponRow = {
@@ -59,6 +63,7 @@ export type ExamRow = {
   mode: string;
   durationMin: number;
   isPublished: boolean;
+  sortOrder: number;
   courseTitle: string;
   courseSlug: string;
   createdAt: string;
@@ -81,9 +86,21 @@ export type VideoRow = {
   title: string;
   youtubeVideoId: string;
   durationSec: number;
+  maxViews: number | null;
+  lessonId: string;
   lessonTitle: string;
   courseTitle: string;
   sortOrder: number;
+};
+
+export type LessonRow = {
+  id: string;
+  title: string;
+  sortOrder: number;
+  isFreePreview: boolean;
+  courseId: string;
+  courseTitle: string;
+  videosCount: number;
 };
 
 export type CourseFileRow = {
@@ -132,11 +149,13 @@ export type InvoiceRow = {
 export type PostRow = {
   id: string;
   body: string;
+  status: string;
   likesCount: number;
   createdAt: string;
   authorName: string;
   authorRole: string;
   courseTitle: string | null;
+  repliesCount: number;
 };
 
 export type StageRow = {

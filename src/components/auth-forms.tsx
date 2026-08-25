@@ -38,7 +38,8 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         return;
       }
       const role = json.data.user.role as Role;
-      const target = redirectPath ?? next ?? (isAdminRole(role) ? "/admin" : "/dashboard");
+      const target =
+        redirectPath ?? next ?? (isAdminRole(role) ? "/admin" : role === "parent" ? "/parent" : "/dashboard");
       router.push(target);
       router.refresh();
     } catch {
@@ -71,7 +72,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         </div>
       )}
 
-      <Field label="البريد الإلكتروني أو اسم المستخدم">
+      <Field label="البريد الإلكتروني / رقم موبايل ولي الأمر">
         <Input
           dir="ltr"
           required
@@ -125,6 +126,10 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         <Link href="/register" className="font-bold text-brand hover:underline">
           أنشئ حسابك مجانًا
         </Link>
+        <span className="mx-1.5 text-line">|</span>
+        <Link href="/register-parent" className="font-bold text-gold hover:underline">
+          ولي أمر؟ سجّل برقم موبايلك
+        </Link>
       </p>
     </form>
   );
@@ -135,6 +140,7 @@ export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [guardianPhone, setGuardianPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,7 +153,7 @@ export function RegisterForm() {
       const res = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({ name, email, phone, guardianPhone, password }),
       });
       const json = await res.json();
       if (!json.ok) {
@@ -189,6 +195,22 @@ export function RegisterForm() {
           autoComplete="tel"
         />
       </Field>
+      <Field
+        label="رقم موبايل ولي الأمر"
+        hint="يُستخدم لربط حساب ولي الأمر بنتائجك — سيتمكن من متابعة نتائجك واختباراتك به"
+      >
+        <Input
+          dir="ltr"
+          inputMode="numeric"
+          required
+          pattern="01[0-9]{9}"
+          title="11 رقمًا يبدأ بـ 01"
+          value={guardianPhone}
+          onChange={(e) => setGuardianPhone(e.target.value)}
+          placeholder="01xxxxxxxxx"
+          autoComplete="tel"
+        />
+      </Field>
       <Field label="كلمة المرور" hint="8 أحرف على الأقل">
         <Input
           type="password"
@@ -210,6 +232,86 @@ export function RegisterForm() {
         لديك حساب بالفعل؟{" "}
         <Link href="/login" className="font-bold text-brand hover:underline">
           تسجيل الدخول
+        </Link>
+      </p>
+    </form>
+  );
+}
+
+export function ParentRegisterForm() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/auth/register-parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, password }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        setError(json.error?.message ?? "تعذر إنشاء الحساب");
+        return;
+      }
+      router.push("/parent");
+      router.refresh();
+    } catch {
+      setError("مشكلة في الاتصال — حاول مرة أخرى");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-[13px] font-semibold leading-6 text-gold">
+        أدخل رقم الموبايل الذي أدخله ابنك في خانة «رقم موبايل ولي الأمر» وقت إنشاء حسابه — سنربط حسابك بكل أبنائه المشتركين تلقائيًا.
+      </div>
+      <Field label="اسم ولي الأمر">
+        <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم بالكامل" autoComplete="name" />
+      </Field>
+      <Field label="رقم موبايل ولي الأمر" hint="نفس الرقم الذي سجّله ابنك — 11 رقمًا يبدأ بـ 01">
+        <Input
+          dir="ltr"
+          inputMode="numeric"
+          required
+          pattern="01[0-9]{9}"
+          title="11 رقمًا يبدأ بـ 01"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="01xxxxxxxxx"
+          autoComplete="tel"
+        />
+      </Field>
+      <Field label="كلمة المرور" hint="8 أحرف على الأقل — ستدخل بها لاحقًا برقم موبايلك">
+        <Input
+          type="password"
+          dir="ltr"
+          required
+          minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="new-password"
+        />
+      </Field>
+      <ErrorNote message={error} />
+      <Button type="submit" disabled={loading} size="lg" variant="gold" className="w-full">
+        {loading ? <Loader2 size={17} className="animate-spin" /> : <UserPlus size={17} />}
+        إنشاء حساب ولي الأمر
+      </Button>
+      <p className="pt-2 text-center text-sm text-muted">
+        لديك حساب بالفعل؟{" "}
+        <Link href="/login" className="font-bold text-brand hover:underline">
+          سجّل الدخول برقم موبايلك
         </Link>
       </p>
     </form>

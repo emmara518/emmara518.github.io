@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"password_hash" text NOT NULL,
 	"name" text NOT NULL,
 	"phone" text,
+	"guardian_phone" text,
 	"role" "user_role" DEFAULT 'student' NOT NULL,
 	"grade_id" uuid REFERENCES "grades"("id") ON DELETE set null,
 	"avatar_url" text,
@@ -93,6 +94,10 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
+
+-- Upgrades for databases created before this column existed.
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "guardian_phone" text;
+CREATE INDEX IF NOT EXISTS "users_guardian_phone_idx" ON "users" ("guardian_phone");
 
 CREATE TABLE IF NOT EXISTS "sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -361,4 +366,27 @@ CREATE TABLE IF NOT EXISTS "audit_logs" (
 	"meta" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+/* ── v2 additive migration: admin advanced controls ── */
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "cover_image_url" text;
+ALTER TABLE "courses" ADD COLUMN IF NOT EXISTS "require_sequential_progress" boolean DEFAULT false NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "sort_order" integer DEFAULT 0 NOT NULL;
+ALTER TABLE "videos" ADD COLUMN IF NOT EXISTS "max_views" integer;
+ALTER TABLE "student_progress" ADD COLUMN IF NOT EXISTS "view_count" integer DEFAULT 0 NOT NULL;
+ALTER TABLE "student_progress" ADD COLUMN IF NOT EXISTS "last_viewed_at" timestamp with time zone;
+ALTER TABLE "community_posts" ADD COLUMN IF NOT EXISTS "status" text DEFAULT 'pending' NOT NULL;
+ALTER TABLE "community_posts" ADD COLUMN IF NOT EXISTS "reviewed_at" timestamp with time zone;
+CREATE INDEX IF NOT EXISTS "posts_status_idx" ON "community_posts" ("status");
+
+CREATE TABLE IF NOT EXISTS "community_replies" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"post_id" uuid NOT NULL REFERENCES "community_posts"("id") ON DELETE cascade,
+	"user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE cascade,
+	"body" text DEFAULT '' NOT NULL,
+	"media_kind" text DEFAULT 'none' NOT NULL,
+	"media_key" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "replies_post_idx" ON "community_replies" ("post_id");
 `;

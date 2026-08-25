@@ -67,13 +67,15 @@ export const users = pgTable(
     passwordHash: text("password_hash").notNull(),
     name: text("name").notNull(),
     phone: text("phone"),
+    /** Guardian mobile captured at student registration — the parent portal identity key. */
+    guardianPhone: text("guardian_phone"),
     role: userRoleEnum("role").notNull().default("student"),
     gradeId: uuid("grade_id").references(() => grades.id, { onDelete: "set null" }),
     avatarUrl: text("avatar_url"),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("users_role_idx").on(t.role)],
+  (t) => [index("users_role_idx").on(t.role), index("users_guardian_phone_idx").on(t.guardianPhone)],
 );
 
 export const sessions = pgTable(
@@ -110,6 +112,10 @@ export const courses = pgTable(
       .references(() => users.id),
     priceCents: integer("price_cents").notNull().default(0),
     status: courseStatusEnum("status").notNull().default("draft"),
+    /** Custom card cover — falls back to the keyword heuristic when null. */
+    coverImageUrl: text("cover_image_url"),
+    /** Sequential learning guard: next video unlocks only after completing the previous one. */
+    requireSequentialProgress: boolean("require_sequential_progress").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("courses_grade_idx").on(t.gradeId), index("courses_status_idx").on(t.status)],
@@ -144,6 +150,8 @@ export const videos = pgTable(
     title: text("title").notNull(),
     durationSec: integer("duration_sec").notNull().default(0),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Max allowed views per student — null = unlimited. */
+    maxViews: integer("max_views"),
   },
   (t) => [index("videos_lesson_idx").on(t.lessonId)],
 );
@@ -196,6 +204,7 @@ export const exams = pgTable(
     mode: examModeEnum("mode").notNull().default("graded"),
     durationMin: integer("duration_min").notNull().default(20),
     isPublished: boolean("is_published").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("exams_course_idx").on(t.courseId)],
@@ -436,6 +445,9 @@ export const studentProgress = pgTable(
       .notNull()
       .references(() => videos.id, { onDelete: "cascade" }),
     watchedSeconds: integer("watched_seconds").notNull().default(0),
+    /** Times the student opened this video (enforces videos.maxViews). */
+    viewCount: integer("view_count").notNull().default(0),
+    lastViewedAt: timestamp("last_viewed_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -471,9 +483,33 @@ export const communityPosts = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     body: text("body").notNull(),
     likesCount: integer("likes_count").notNull().default(0),
+    /** pending | approved | rejected — posts go live after moderator review. */
+    status: text("status").notNull().default("pending"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("posts_course_idx").on(t.courseId)],
+  (t) => [index("posts_course_idx").on(t.courseId), index("posts_status_idx").on(t.status)],
+);
+
+/** Moderator/assistant answers under a student post — text plus optional media (video/image/file). */
+export const communityReplies = pgTable(
+  "community_replies",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => communityPosts.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    body: text("body").notNull().default(""),
+    /** none | image | video | file */
+    mediaKind: text("media_kind").notNull().default("none"),
+    /** Storage key under /uploads/replies/ — served through the gated media route. */
+    mediaKey: text("media_key"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("replies_post_idx").on(t.postId)],
 );
 
 /* ── parent portal ── */

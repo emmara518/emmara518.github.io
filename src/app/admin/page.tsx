@@ -14,6 +14,7 @@ import {
   listExamsAdmin,
   listExamAttemptsAdmin,
   listVideosAdmin,
+  listLessonsAdmin,
   listCourseFilesAdmin,
   listQuestionBankAdmin,
   listSubscriptionsAdmin,
@@ -27,7 +28,7 @@ import { AdminConsole } from "@/components/admin-console";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export const metadata: Metadata = { title: "Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©" };
+export const metadata: Metadata = { title: "لوحة الإدارة" };
 
 export default async function AdminPage() {
   await ensureDbReady();
@@ -53,7 +54,7 @@ export default async function AdminPage() {
     } else {
       sessionUser = {
         id: "teacher-default",
-        name: "Ù…Ø³ØªØ± Ù…Ø­Ù…Ø¯ Ø³Ø¹ÙŠØ¯",
+        name: "مستر محمد سعيد",
         email: "mohamed.saeed@drosmath.com",
         role: "teacher" as const,
         avatarUrl: "/images/assets/teacher.webp",
@@ -79,6 +80,7 @@ export default async function AdminPage() {
     invoiceRows,
     postRows,
     stageRows,
+    lessonRows,
   ] = await Promise.all([
     getAdminOverview().catch(() => ({ stats: { students: 0, publishedCourses: 0, revenueCents: 0, activeSubscriptions: 0 }, revenueByMonth: [], recentOrders: [], recentAudit: [] })),
     listCoursesAdmin().catch(() => []),
@@ -96,6 +98,7 @@ export default async function AdminPage() {
     listInvoicesAdmin().catch(() => []),
     listCommunityPostsAdmin().catch(() => []),
     listStagesAdmin().catch(() => []),
+    listLessonsAdmin().catch(() => []),
   ]);
 
   return (
@@ -116,7 +119,8 @@ export default async function AdminPage() {
       subjects={(subjectRows || []).map((s) => ({ id: s.id, name: s.name }))}
       exams={(examRows || []).map((e) => ({ ...e, createdAt: new Date(e.createdAt).toISOString() }))}
       attempts={(attemptRows || []).map((a) => ({ ...a, submittedAt: new Date(a.submittedAt).toISOString() }))}
-      videos={(videoRows || []).map((v) => ({ ...v }))}
+        videos={(videoRows || []).map((v) => ({ ...v }))}
+        lessons={(lessonRows || []).map((l) => ({ ...l }))}
       courseFiles={(fileRows || []).map((f) => ({ ...f, createdAt: new Date(f.createdAt).toISOString() }))}
       questions={(questionRows || []).map((q) => ({ ...q }))}
       subscriptions={(subRows || []).map((s) => ({ ...s, startsAt: new Date(s.startsAt).toISOString(), endsAt: s.endsAt ? new Date(s.endsAt).toISOString() : null }))}

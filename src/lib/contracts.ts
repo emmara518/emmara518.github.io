@@ -8,6 +8,13 @@ import { ROLES } from "./rbac";
 
 export const uuid = z.uuid();
 
+export const EGYPT_PHONE_REGEX = /^01[0-9]{9}$/;
+
+const guardianPhoneSchema = z
+  .string()
+  .trim()
+  .regex(EGYPT_PHONE_REGEX, "رقم موبايل ولي الأمر المصري غير صالح");
+
 export const registerSchema = z.object({
   name: z.string().trim().min(2, "الاسم قصير جدًا").max(80),
   email: z.email("البريد الإلكتروني غير صالح").max(190),
@@ -18,6 +25,15 @@ export const registerSchema = z.object({
     .regex(/^01[0-9]{9}$/, "رقم الموبايل المصري غير صالح")
     .optional()
     .or(z.literal("")),
+  /** رقم موبايل ولي الأمر — مفتاح ربط حساب ولي الأمر بنتائج الطالب لاحقًا */
+  guardianPhone: guardianPhoneSchema.optional().or(z.literal("")),
+});
+
+/** تسجيل ولي أمر برقم الموبايل الذي أدخله ابنه وقت إنشاء حسابه */
+export const parentRegisterSchema = z.object({
+  name: z.string().trim().min(2, "الاسم قصير جدًا").max(80),
+  phone: guardianPhoneSchema,
+  password: z.string().min(8, "كلمة المرور 8 أحرف على الأقل").max(72),
 });
 
 export const loginSchema = z.object({
@@ -66,6 +82,42 @@ export const adminCourseSchema = z.object({
   gradeId: uuid,
   subjectId: uuid,
   priceEgp: z.number().min(0).max(100000),
+  /** Card cover image URL — empty string clears it back to the auto cover. */
+  coverUrl: z.union([z.url().max(600), z.literal("")]).optional(),
+  requireSequential: z.boolean().optional(),
+});
+
+export const adminCoursePatchSchema = z.object({
+  status: z.enum(["draft", "published", "archived"]).optional(),
+  title: z.string().trim().min(3).max(140).optional(),
+  priceEgp: z.number().min(0).max(100000).optional(),
+  coverUrl: z.union([z.url().max(600), z.literal("")]).optional(),
+  requireSequential: z.boolean().optional(),
+});
+
+export const adminVideoPatchSchema = z.object({
+  maxViews: z.number().int().min(1).max(999).nullable().optional(),
+  title: z.string().trim().min(2, "العنوان قصير جداً").max(160).optional(),
+  youtubeId: z
+    .string()
+    .trim()
+    .min(8, "معرف يوتيوب غير صالح")
+    .max(24)
+    .regex(/^[A-Za-z0-9_-]+$/, "معرف يوتيوب بحروف لاتينية وأرقام فقط")
+    .optional(),
+});
+
+export const adminLessonPatchSchema = z.object({
+  title: z.string().trim().min(2, "العنوان قصير جداً").max(160),
+});
+
+export const adminReorderSchema = z.object({
+  entity: z.enum(["videos", "lessons", "exams"]),
+  ids: z.array(uuid).min(1).max(500),
+});
+
+export const adminPostStatusSchema = z.object({
+  status: z.enum(["pending", "approved", "rejected"]),
 });
 
 export const adminCourseStatusSchema = z.object({

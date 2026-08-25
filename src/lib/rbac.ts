@@ -24,6 +24,7 @@ export type Permission =
   | "exam:attempt"
   | "progress:write"
   | "wallet:use"
+  | "children:read"
   | "admin:read"
   | "admin:write"
   | "users:manage"
@@ -31,7 +32,7 @@ export type Permission =
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   student: ["catalog:read", "course:enroll", "course:learn", "exam:attempt", "progress:write", "wallet:use"],
-  parent: ["catalog:read"],
+  parent: ["catalog:read", "children:read"],
   center: ["catalog:read", "admin:read"],
   teacher: ["catalog:read", "admin:read", "admin:write", "audit:read"],
   admin: [

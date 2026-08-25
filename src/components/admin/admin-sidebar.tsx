@@ -37,8 +37,13 @@ export function AdminSidebar({
   onCloseMobile,
 }: AdminSidebarProps) {
   const router = useRouter();
-  const { category: activeCategory, subFeature: activeSubFeature, setCategory, setSubFeature } =
-    useAdminNav();
+  const {
+    category: activeCategory,
+    subFeature: activeSubFeature,
+    setCategory,
+    setSubFeature,
+    badges,
+  } = useAdminNav();
 
   const [collapsed, setCollapsed] = useState(false);
   /* Explicit open/closed overrides; hubs without an entry follow the active one. */
@@ -71,6 +76,18 @@ export function AdminSidebar({
       return next;
     });
   }
+
+  /* Ctrl+B toggles the rail — a world-class panel shortcut. */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        toggleCollapse();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   async function logout() {
     onCloseMobile?.();
@@ -220,6 +237,7 @@ export function AdminSidebar({
                     {cat.subFeatures.map((sub) => {
                       const SubIcon = sub.icon;
                       const isActiveSub = isActiveCat && sub.id === activeSubFeature;
+                      const badgeCount = badges[sub.id] ?? 0;
                       return (
                         <li key={sub.id}>
                           <button
@@ -247,7 +265,15 @@ export function AdminSidebar({
                               strokeWidth={isActiveSub ? 2.4 : 2}
                               className="shrink-0"
                             />
-                            <span className="truncate">{sub.label}</span>
+                            <span className="min-w-0 flex-1 truncate text-start">{sub.label}</span>
+                            {badgeCount > 0 && (
+                              <span
+                                className="grid min-w-5 shrink-0 place-items-center rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white"
+                                title={`${badgeCount} بانتظار المراجعة`}
+                              >
+                                {badgeCount > 99 ? "99+" : badgeCount}
+                              </span>
+                            )}
                           </button>
                         </li>
                       );

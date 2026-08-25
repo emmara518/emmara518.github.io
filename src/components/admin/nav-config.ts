@@ -25,9 +25,11 @@ import {
   Send,
   ShieldCheck,
   ShoppingCart,
+  SlidersHorizontal,
   Sparkles,
   Trophy,
   UserPlus,
+  UserSearch,
   Users,
   Wallet,
 } from "lucide-react";
@@ -40,7 +42,8 @@ export type CategoryId =
   | "exams"
   | "users"
   | "billing_codes"
-  | "communications";
+  | "communications"
+  | "advanced_search";
 
 export interface SubFeatureDef {
   id: string;
@@ -130,6 +133,15 @@ export const CATEGORIES: CategoryDef[] = [
     subFeatures: [
       { id: "sms_messages", label: "إرسال تنبيه جماعي", icon: Send },
       { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب", icon: MessagesSquare },
+    ],
+  },
+  {
+    id: "advanced_search",
+    label: "البحث المتقدم والفلاتر",
+    icon: SlidersHorizontal,
+    description: "بحث دقيق في الطلاب والمشتركين حسب الكورس والحالة وتاريخ التسجيل وأكثر",
+    subFeatures: [
+      { id: "users_advanced", label: "بحث الطلاب المتقدم", icon: UserSearch },
     ],
   },
 ];

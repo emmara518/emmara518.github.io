@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -22,6 +23,9 @@ interface AdminNavValue {
   setCategory: (category: CategoryId) => void;
   /** Switches to any sub-feature, resolving its owning hub automatically. */
   setSubFeature: (subFeatureId: string) => void;
+  /** Live per-sub-feature counters rendered as sidebar badges. */
+  badges: Record<string, number>;
+  setBadges: (next: Record<string, number>) => void;
 }
 
 const AdminNavContext = createContext<AdminNavValue | null>(null);
@@ -36,25 +40,29 @@ function resolveView(subFeatureId: string | null): { category: CategoryId; subFe
 export function AdminNavProvider({ children }: { children: ReactNode }) {
   const [category, setCategoryState] = useState<CategoryId>(DEFAULT_CATEGORY);
   const [subFeature, setSubFeatureState] = useState<string>(DEFAULT_SUB_FEATURE);
+  const [badges, setBadgesState] = useState<Record<string, number>>({});
+  /* Blocks the URL-mirror effect until the initial view has been restored,
+     otherwise the default view would overwrite a deep-link like ?s=videos_manage. */
+  const restoredRef = useRef(false);
 
   /* Restore deep-link (?c=..&s=..) or last-visited view once after mount.
-     Deferred so SSR always renders the default view (hydration stays
-     consistent) and the lint rule against sync setState-in-effect holds. */
+     Params are captured synchronously; state is applied deferred so SSR
+     output stays consistent (no hydration mismatch). */
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    let saved: string | null = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(LAST_VIEW_KEY) ?? "null");
+    } catch {
+      saved = null;
+    }
+    const target = resolveView(params.get("s")) ?? resolveView(saved);
     const t = window.setTimeout(() => {
-      const params = new URLSearchParams(window.location.search);
-      const fromUrl = resolveView(params.get("s"));
-      let saved: string | null = null;
-      try {
-        saved = JSON.parse(localStorage.getItem(LAST_VIEW_KEY) ?? "null");
-      } catch {
-        saved = null;
-      }
-      const target = fromUrl ?? resolveView(saved);
       if (target) {
         setCategoryState(target.category);
         setSubFeatureState(target.subFeature);
       }
+      restoredRef.current = true;
     }, 0);
     return () => window.clearTimeout(t);
   }, []);
@@ -62,6 +70,7 @@ export function AdminNavProvider({ children }: { children: ReactNode }) {
   /* Mirror the active view into the URL + storage so features are
      bookmarkable and survive reloads — without triggering server work. */
   useEffect(() => {
+    if (!restoredRef.current) return;
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("c", category);
@@ -86,9 +95,13 @@ export function AdminNavProvider({ children }: { children: ReactNode }) {
     setSubFeatureState(resolved.subFeature);
   }, []);
 
+  const setBadges = useCallback((next: Record<string, number>) => {
+    setBadgesState(next);
+  }, []);
+
   const value = useMemo<AdminNavValue>(
-    () => ({ category, subFeature, setCategory, setSubFeature }),
-    [category, subFeature, setCategory, setSubFeature]
+    () => ({ category, subFeature, setCategory, setSubFeature, badges, setBadges }),
+    [category, subFeature, setCategory, setSubFeature, badges, setBadges]
   );
 
   return <AdminNavContext.Provider value={value}>{children}</AdminNavContext.Provider>;

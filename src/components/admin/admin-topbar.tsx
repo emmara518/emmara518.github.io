@@ -11,7 +11,7 @@ interface AdminTopbarProps {
 }
 
 export function AdminTopbar({ onToggleMobileMenu }: AdminTopbarProps) {
-  const { category, subFeature } = useAdminNav();
+  const { category, subFeature, setCategory } = useAdminNav();
 
   const cat = findCategory(category);
   const sub = findSubFeature(subFeature);
@@ -30,14 +30,25 @@ export function AdminTopbar({ onToggleMobileMenu }: AdminTopbarProps) {
 
       {/* Breadcrumb */}
       <nav aria-label="مسار التنقل" className="flex min-w-0 items-center gap-1.5 text-xs font-semibold">
-        <span className="hidden items-center gap-1.5 rounded-lg bg-brand/10 px-2.5 py-1.5 text-brand sm:inline-flex">
+        <button
+          type="button"
+          onClick={() => setCategory("overview")}
+          title="العودة للرئيسية"
+          className="hidden cursor-pointer items-center gap-1.5 rounded-lg bg-brand/10 px-2.5 py-1.5 text-brand transition-colors hover:bg-brand/20 sm:inline-flex"
+        >
           <Gauge size={13} />
           لوحة الإدارة
-        </span>
+        </button>
         <ChevronLeft size={13} className="hidden text-muted sm:block" aria-hidden />
-        <span className="truncate text-muted">{cat?.label ?? ""}</span>
+        <button
+          type="button"
+          onClick={() => cat && setCategory(cat.id)}
+          className="cursor-pointer truncate rounded-lg px-2 py-1.5 text-muted transition-colors hover:bg-surface2 hover:text-ink"
+        >
+          {cat?.label ?? ""}
+        </button>
         <ChevronLeft size={13} className="text-muted" aria-hidden />
-        <span className="truncate text-brand">{sub?.sub.label ?? ""}</span>
+        <span className="truncate rounded-lg px-2 py-1.5 text-brand">{sub?.sub.label ?? ""}</span>
       </nav>
 
       <div className="ms-auto flex items-center gap-2">
