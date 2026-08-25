@@ -73,12 +73,10 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-surface border border-line text-[11px] font-mono tracking-tag text-neon-lime shadow-sm">
             <Zap size={13} className="text-neon-lime animate-pulse" />
             <span>3D INTERACTIVE CURRICULUM</span>
-            <span className="text-line-strong">/</span>
-            <span className="text-muted">المقررات الحصرية</span>
           </div>
-          <h2 className="type-h2 text-ink">المناهج والمقررات الدراسية التفاعلية</h2>
+          <h2 className="type-h2 text-ink">الكورسات</h2>
           <p className="type-small font-ui text-muted max-w-xl font-normal">
-            قف على أي مقرر دراسي لتفعيل مسرح التركيز ثلاثي الأبعاد والاطلاع على تفاصيل المنهج مع مستر محمد سعيد.
+            ابدأ من مستواك.
           </p>
         </div>
 
@@ -258,13 +256,13 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
       <div className="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4 font-ui">
         <div className="flex items-center gap-2 text-xs text-muted">
           <CheckCircle2 size={15} className="text-neon-lime" />
-          <span>جميع المحاضرات تشمل شيتات واجب، امتحانات تدريبية، ودعم فني مستمر.</span>
+          <span>كل كورس يشمل شيتات وامتحانات تدريبية.</span>
         </div>
         <Link
           href="/courses"
           className="inline-flex items-center gap-2 text-xs font-bold text-neon-lime hover:text-ink bg-surface hover:bg-surface2 px-5 py-2.5 rounded-xl border border-line hover:border-neon-lime transition-all duration-300 shadow-sm"
         >
-          <span>تصفح الفهرس الكامل لجميع المراحل</span>
+          <span>جميع الكورسات</span>
           <ArrowLeft size={15} />
         </Link>
       </div>

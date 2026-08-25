@@ -1,145 +1,189 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { Search, Bell, Flame, Trophy, Calendar, Menu, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Bell, CheckCheck, LogOut, Menu } from "lucide-react";
 import { ThemeToggle } from "./theme";
-import { isAdminRole, type Role } from "@/lib/rbac";
+import type { ShellNotification, ShellUser } from "./dashboard-shell";
+import { timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-interface TopbarProps {
-  user?: { name: string; role: Role } | null;
-  onToggleMobileMenu?: () => void;
+const ROLE_LABELS: Record<string, string> = {
+  student: "طالب",
+  parent: "ولي أمر",
+  center: "سنتر",
+  teacher: "مدرس",
+};
+
+function Initials({ name, className }: { name: string; className?: string }) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
+  return (
+    <span
+      className={cn(
+        "grid place-items-center rounded-full bg-surface2 font-bold text-muted ring-1 ring-line",
+        className,
+      )}
+      aria-hidden
+    >
+      {initials}
+    </span>
+  );
 }
 
-export function Topbar({ user, onToggleMobileMenu }: TopbarProps) {
+export function Topbar({
+  user,
+  unreadCount,
+  notifications,
+  onToggleMobileMenu,
+}: {
+  user: ShellUser;
+  unreadCount: number;
+  notifications: ShellNotification[];
+  onToggleMobileMenu?: () => void;
+}) {
+  const router = useRouter();
+  const [bellOpen, setBellOpen] = useState(false);
+  const [unread, setUnread] = useState(unreadCount);
+  const [marking, setMarking] = useState(false);
+  const [syncedCount, setSyncedCount] = useState(unreadCount);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  if (syncedCount !== unreadCount) {
+    setSyncedCount(unreadCount);
+    setUnread(unreadCount);
+  }
+
+  useEffect(() => {
+    if (!bellOpen) return;
+    function onClick(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [bellOpen]);
+
+  async function markAllRead() {
+    setMarking(true);
+    try {
+      const res = await fetch("/api/v1/me/notifications", { method: "PATCH" });
+      if (res.ok) {
+        setUnread(0);
+        router.refresh();
+      }
+    } finally {
+      setMarking(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/v1/auth/logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  }
+
+  const roleLabel = ROLE_LABELS[user.role] ?? "طالب";
+
   return (
-    <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b border-line/80 bg-surface/80 px-4 sm:px-8 backdrop-blur-xl transition-all">
-      {/* Search Input */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
-        <button
-          onClick={onToggleMobileMenu}
-          className="grid size-11 place-items-center rounded-2xl border border-line bg-surface2 text-ink lg:hidden hover:border-brand transition-colors"
-          aria-label="فتح القائمة"
-        >
-          <Menu size={20} />
-        </button>
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 sm:px-6">
+      {/* Mobile menu */}
+      <button
+        onClick={onToggleMobileMenu}
+        className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink lg:hidden"
+        aria-label="فتح القائمة"
+      >
+        <Menu size={18} />
+      </button>
 
-        <div className="relative w-full">
-          <Search className="absolute inset-y-0 right-4 my-auto size-4 text-muted pointer-events-none" />
-          <input
-            type="text"
-            placeholder="ابحث عن درس، كورس، أو مفهوم رياضي..."
-            className="w-full rounded-2xl border border-line/80 bg-surface2/60 pr-11 pl-4 py-2.5 text-xs font-semibold text-ink placeholder:text-muted/70 focus:border-neon-lime focus:bg-surface focus:outline-none focus:ring-2 focus:ring-neon-lime/20 transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Stats & Gamification Badges (Exact match to Mockup 1 & 2) */}
-      <div className="hidden xl:flex items-center gap-4">
-        {/* Golden Level Badge */}
-        <div className="flex items-center gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/30 glow-gold">
-            <Flame size={18} />
-          </span>
-          <div className="text-start">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-muted">مستواك الحالي</span>
-              <span className="rounded-full bg-amber-400/20 px-2 py-0.2 text-[10px] font-black text-amber-600 dark:text-amber-400">
-                المستوى الذهبي
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface3">
-                <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: "87%" }} />
-              </div>
-              <span className="font-mono text-[11px] font-black text-amber-500">87%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* XP Points Badge */}
-        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 glow-lime">
-            <Trophy size={18} />
-          </span>
-          <div className="text-start">
-            <span className="block text-[11px] font-bold text-muted">إجمالي النقاط</span>
-            <span className="font-mono text-sm font-black text-emerald-600 dark:text-emerald-400">
-              12,540 <span className="text-[10px] font-sans font-bold text-muted">XP</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Learning Streak Badge */}
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-4 py-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-cyan-500/10 text-cyan-500 border border-cyan-500/30 glow-cyan">
-            <Calendar size={18} />
-          </span>
-          <div className="text-start">
-            <span className="block text-[11px] font-bold text-muted">أيام التعلم المتتالية</span>
-            <span className="font-mono text-sm font-black text-cyan-600 dark:text-cyan-400">
-              18 <span className="text-[10px] font-sans font-bold text-muted">يوم </span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right User & Actions */}
-      <div className="flex items-center gap-3">
-        {/* Notification Bell */}
-        <button
-          className="relative grid size-11 place-items-center rounded-2xl border border-line bg-surface2/80 text-muted transition-colors hover:text-ink hover:border-neon-lime"
-          aria-label="الإشعارات"
-        >
-          <Bell size={18} />
-          <span className="absolute top-2.5 right-2.5 grid size-4 place-items-center rounded-full bg-rose-500 font-mono text-[9px] font-bold text-white ring-2 ring-surface">
-            3
-          </span>
-        </button>
-
-        {/* Theme Switcher */}
-        <ThemeToggle className="size-11 rounded-2xl border border-line bg-surface2/80" />
-
-        {/* User Account Pill */}
-        {user ? (
-          <div className="flex items-center gap-3 pl-1">
-            <Link
-              href={isAdminRole(user.role) ? "/admin" : "/dashboard"}
-              className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-3 py-1.5 transition-all hover:border-neon-lime hover:shadow-md"
-            >
-              <div className="relative size-8 overflow-hidden rounded-xl bg-slate-900 border border-neon-lime/40">
-                <Image
-                  src="/images/assets/teacher.webp"
-                  alt={user.name}
-                  fill
-                  className="object-cover object-top"
-                />
-              </div>
-              <div className="hidden sm:block text-start">
-                <span className="block text-xs font-black truncate max-w-28 text-ink">{user.name}</span>
-                <span className="block text-[10px] font-bold text-neon-lime">
-                  {isAdminRole(user.role) ? "مسؤول المنصة" : "طالب ممتاز"}
-                </span>
-              </div>
-            </Link>
-          </div>
+      {/* Student identity → account page */}
+      <Link href="/dashboard/account" className="flex min-w-0 flex-1 items-center gap-2.5">
+        {user.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover ring-1 ring-line" />
         ) : (
-          <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="rounded-2xl px-4 py-2 text-xs font-bold text-ink hover:bg-surface2 transition-colors"
-            >
-              دخول
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-2xl bg-neon-lime px-4 py-2 text-xs font-black text-slate-950 shadow-md hover:bg-lime-400 transition-colors"
-            >
-              إنشاء حساب
-            </Link>
-          </div>
+          <Initials name={user.name} className="size-8 shrink-0 text-xs" />
         )}
+        <div className="min-w-0 leading-tight">
+          <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
+          <p className="text-[10px] font-semibold text-muted">{roleLabel}</p>
+        </div>
+      </Link>
+
+      {/* Actions */}
+      <div className="flex shrink-0 items-center gap-1.5">
+        {/* Notifications */}
+        <div className="relative" ref={bellRef}>
+          <button
+            onClick={() => setBellOpen((v) => !v)}
+            className="relative grid size-9 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-brand hover:text-ink"
+            aria-label={`الإشعارات${unread > 0 ? ` (${unread} غير مقروءة)` : ""}`}
+            aria-expanded={bellOpen}
+          >
+            <Bell size={17} />
+            {unread > 0 && (
+              <span className="absolute -top-1 -end-1 grid size-4 place-items-center rounded-full bg-danger font-mono text-[9px] font-bold text-white">
+                {unread > 9 ? "+9" : unread}
+              </span>
+            )}
+          </button>
+
+          {bellOpen && (
+            <div className="absolute end-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-lift">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+                <span className="text-xs font-extrabold text-ink">الإشعارات</span>
+                {unread > 0 && (
+                  <button
+                    onClick={markAllRead}
+                    disabled={marking}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:underline disabled:opacity-50"
+                  >
+                    <CheckCheck size={13} />
+                    تعليم الكل كمقروء
+                  </button>
+                )}
+              </div>
+              <ul className="max-h-80 divide-y divide-line overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <li className="px-4 py-6 text-center text-xs font-semibold text-muted">لا إشعارات بعد.</li>
+                ) : (
+                  notifications.map((n) => (
+                    <li key={n.id} className={cn("px-4 py-3", !n.read && "bg-neon-lime-soft/40")}>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs font-bold text-ink">{n.title}</p>
+                        {!n.read && <span className="mt-1 size-1.5 shrink-0 rounded-full bg-brand" aria-hidden />}
+                      </div>
+                      {n.body ? <p className="mt-0.5 line-clamp-2 text-[11px] leading-5 text-muted">{n.body}</p> : null}
+                      <p className="mt-1 font-mono text-[10px] text-muted/70">{timeAgo(n.createdAt)}</p>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <ThemeToggle className="size-9 rounded-xl" />
+
+        <button
+          onClick={logout}
+          className="grid size-9 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-danger hover:text-danger"
+          aria-label="تسجيل الخروج"
+          title="تسجيل الخروج"
+        >
+          <LogOut size={16} className="-scale-x-100" />
+        </button>
+
+        <Link
+          href="/"
+          className="hidden rounded-xl px-3 py-2 text-xs font-bold text-muted hover:text-ink sm:block"
+        >
+          الرئيسية العامة
+        </Link>
       </div>
     </header>
   );

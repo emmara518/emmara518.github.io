@@ -39,6 +39,9 @@ import {
  */
 
 const DEMO_PASSWORD = "12345678";
+/** The single master admin account — username «admin» / password «admin». */
+const MASTER_ADMIN_EMAIL = "admin";
+const MASTER_ADMIN_PASSWORD = "admin";
 const YT_PLACEHOLDER = "M7lc1UVf-VE";
 const YT_PLAYLIST = "PL_DROSMATH_DEMO";
 
@@ -54,6 +57,7 @@ export async function seedDatabase(targetDb: any) {
   }
 
   const passwordHash = bcrypt.hashSync(DEMO_PASSWORD, 10);
+  const masterAdminHash = bcrypt.hashSync(MASTER_ADMIN_PASSWORD, 10);
 
   /* ── academic structure ── */
   const [prep, secondary] = await targetDb
@@ -104,9 +108,9 @@ export async function seedDatabase(targetDb: any) {
   const [admin] = await targetDb
     .insert(users)
     .values({
-      email: "admin@dros-math.com",
-      passwordHash,
-      name: "إدارة المنصة",
+      email: MASTER_ADMIN_EMAIL,
+      passwordHash: masterAdminHash,
+      name: "مدير المنصة",
       role: "admin",
     })
     .returning();

@@ -41,3 +41,6 @@ test-results/
 # ── Gemini / AI tooling ──
 .agents/
 .gemini/
+
+# runtime uploads (payment proofs, files)
+public/uploads/

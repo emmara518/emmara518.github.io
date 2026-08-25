@@ -197,13 +197,50 @@ export async function listCouponsAdmin() {
 
 export async function createCoupon(actor: SessionUser, input: CouponInput) {
   const code = input.code.toUpperCase();
+  const kind = input.kind ?? "course_percent";
+  const amountCents = input.amountEgp != null ? Math.round(input.amountEgp * 100) : null;
+
+  if (kind === "wallet_balance" && (!amountCents || amountCents <= 0)) {
+    throw new ServiceError(422, "AMOUNT_REQUIRED", "كود الرصيد يحتاج قيمة مبلغ بالجنيه");
+  }
+  if (kind === "course_percent" && input.amountEgp != null) {
+    throw new ServiceError(422, "AMOUNT_NOT_ALLOWED", "كوبونات الكورسات تستخدم نسبة خصم فقط");
+  }
+  if (kind === "course_access") {
+    if (!input.courseId) {
+      throw new ServiceError(422, "COURSE_REQUIRED", "كود الاكسس يحتاج تحديد الكورس");
+    }
+    const courseRows = await db
+      .select({ id: courses.id, status: courses.status, title: courses.title })
+      .from(courses)
+      .where(eq(courses.id, input.courseId))
+      .limit(1);
+    if (!courseRows[0]) throw new ServiceError(404, "COURSE_NOT_FOUND", "الكورس غير موجود");
+  }
+
   const existing = await db.select({ id: coupons.id }).from(coupons).where(eq(coupons.code, code)).limit(1);
   if (existing[0]) throw new ServiceError(409, "COUPON_EXISTS", "كود الكوبون مستخدم بالفعل");
   const [created] = await db
     .insert(coupons)
-    .values({ code, percentOff: input.percentOff, maxUses: input.maxUses })
+    .values({
+      code,
+      kind,
+      percentOff: kind === "course_percent" ? input.percentOff : 0,
+      amountCents: kind === "wallet_balance" ? amountCents : null,
+      courseId: kind === "course_access" ? (input.courseId ?? null) : null,
+      maxUses: input.maxUses,
+    })
     .returning({ id: coupons.id });
-  await audit(actor, "coupons.create", "coupons", created.id, { code });
+  await audit(actor, "coupons.create", "coupons", created.id, {
+    code,
+    kind,
+    value:
+      kind === "wallet_balance"
+        ? amountCents
+        : kind === "course_access"
+          ? input.courseId
+          : `${input.percentOff}%`,
+  });
   return created;
 }
 

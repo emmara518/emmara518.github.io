@@ -20,7 +20,236 @@ import type { SessionUser } from "../auth";
 
 /** Student dashboard & learning room read models. */
 
-export async function getStudentDashboard(user: SessionUser) {
+/** The single most useful thing the student should do next — computed, never mocked. */
+export type NextAction =
+  | {
+      kind: "lesson";
+      courseSlug: string;
+      courseTitle: string;
+      lessonTitle: string;
+      videoTitle: string | null;
+      /** 1-based lesson position for deep-linking the learning room (?lesson=N). */
+      lessonIndex: number;
+      href: string;
+    }
+  | {
+      kind: "exam";
+      examId: string;
+      examTitle: string;
+      courseTitle: string;
+      href: string;
+    };
+
+export type DashboardActivity = {
+  id: string;
+  kind: "lesson" | "exam" | "enrolled" | "notification";
+  title: string;
+  meta: string | null;
+  at: Date;
+};
+
+export async function getNextAction(
+  user: SessionUser,
+  enrollments: { courseId: string; slug: string; title: string }[],
+): Promise<NextAction | null> {
+  if (enrollments.length === 0) return null;
+  const courseIds = enrollments.map((e) => e.courseId);
+
+  const [videoRows, progressRows] = await Promise.all([
+    db
+      .select({
+        id: videos.id,
+        title: videos.title,
+        lessonId: lessons.id,
+        lessonTitle: lessons.title,
+        courseSlug: courses.slug,
+        courseTitle: courses.title,
+      })
+      .from(videos)
+      .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+      .innerJoin(courses, eq(lessons.courseId, courses.id))
+      .where(inArray(lessons.courseId, courseIds))
+      .orderBy(asc(lessons.sortOrder), asc(videos.sortOrder)),
+    db
+      .select({
+        videoId: studentProgress.videoId,
+        completedAt: studentProgress.completedAt,
+        updatedAt: studentProgress.updatedAt,
+      })
+      .from(studentProgress)
+      .where(and(eq(studentProgress.userId, user.id), inArray(studentProgress.courseId, courseIds))),
+  ]);
+
+  const progressByVideo = new Map(progressRows.map((p) => [p.videoId, p]));
+
+  // Group curriculum rows per course, order-stable, with 1-based lesson positions.
+  const slugToCourseId = new Map(enrollments.map((e) => [e.slug, e.courseId]));
+  const perCourse = new Map<string, { rows: typeof videoRows; lessonPositions: Map<string, number> }>();
+  for (const cid of courseIds) perCourse.set(cid, { rows: [], lessonPositions: new Map() });
+  for (const v of videoRows) {
+    const cid = slugToCourseId.get(v.courseSlug);
+    const bucket = cid ? perCourse.get(cid) : undefined;
+    if (!bucket) continue;
+    if (!bucket.lessonPositions.has(v.lessonId)) {
+      bucket.lessonPositions.set(v.lessonId, bucket.lessonPositions.size + 1);
+    }
+    bucket.rows.push(v);
+  }
+
+  type IncompleteHit = {
+    video: (typeof videoRows)[number];
+    lessonIndex: number;
+    updatedAt: Date | null;
+  };
+  const firstIncompleteByCourse = new Map<string, IncompleteHit>();
+  let resume: IncompleteHit | null = null;
+
+  for (const cid of courseIds) {
+    const bucket = perCourse.get(cid);
+    if (!bucket) continue;
+    for (const v of bucket.rows) {
+      const p = progressByVideo.get(v.id);
+      if (p?.completedAt) continue;
+      const hit: IncompleteHit = {
+        video: v,
+        lessonIndex: bucket.lessonPositions.get(v.lessonId) ?? 1,
+        updatedAt: p?.updatedAt ?? null,
+      };
+      firstIncompleteByCourse.set(cid, hit); // first incomplete wins per course
+      // Resume point = watched-but-unfinished video touched most recently.
+      if (p && (!resume || (hit.updatedAt !== null && resume.updatedAt !== null && hit.updatedAt > resume.updatedAt))) {
+        resume = hit;
+      }
+      break;
+    }
+  }
+
+  const chosen =
+    resume ??
+    enrollments.map((e) => firstIncompleteByCourse.get(e.courseId)).find((h): h is IncompleteHit => Boolean(h));
+  if (chosen) {
+    return {
+      kind: "lesson",
+      courseSlug: chosen.video.courseSlug,
+      courseTitle: chosen.video.courseTitle,
+      lessonTitle: chosen.video.lessonTitle,
+      videoTitle: chosen.video.title,
+      lessonIndex: chosen.lessonIndex,
+      href: `/dashboard/courses/${chosen.video.courseSlug}?lesson=${chosen.lessonIndex}`,
+    };
+  }
+
+  // All lessons complete → point to an available exam of the enrolled courses.
+  const examRow = await db
+    .select({ id: exams.id, title: exams.title, courseTitle: courses.title })
+    .from(exams)
+    .innerJoin(courses, eq(exams.courseId, courses.id))
+    .where(and(eq(exams.isPublished, true), inArray(exams.courseId, courseIds)))
+    .orderBy(desc(exams.createdAt))
+    .limit(1);
+  if (examRow[0]) {
+    return {
+      kind: "exam",
+      examId: examRow[0].id,
+      examTitle: examRow[0].title,
+      courseTitle: examRow[0].courseTitle,
+      href: `/dashboard/exams/${examRow[0].id}`,
+    };
+  }
+  return null;
+}
+
+async function buildRecentActivity(
+  user: SessionUser,
+  enrollments: { id: string; title: string; startsAt: Date }[],
+  limit = 5,
+) {
+  const [doneVideos, attemptRows, notifRows] = await Promise.all([
+    db
+      .select({
+        id: studentProgress.id,
+        at: studentProgress.completedAt,
+        videoTitle: videos.title,
+        lessonTitle: lessons.title,
+        courseTitle: courses.title,
+      })
+      .from(studentProgress)
+      .innerJoin(videos, eq(studentProgress.videoId, videos.id))
+      .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+      .innerJoin(courses, eq(studentProgress.courseId, courses.id))
+      .where(and(eq(studentProgress.userId, user.id), isNotNull(studentProgress.completedAt)))
+      .orderBy(desc(studentProgress.completedAt))
+      .limit(8),
+    db
+      .select({
+        id: examAttempts.id,
+        at: examAttempts.submittedAt,
+        score: examAttempts.score,
+        totalMarks: examAttempts.totalMarks,
+        examTitle: exams.title,
+      })
+      .from(examAttempts)
+      .innerJoin(exams, eq(examAttempts.examId, exams.id))
+      .where(eq(examAttempts.userId, user.id))
+      .orderBy(desc(examAttempts.submittedAt))
+      .limit(5),
+    db
+      .select({
+        id: notifications.id,
+        at: notifications.createdAt,
+        title: notifications.title,
+        body: notifications.body,
+        kind: notifications.kind,
+      })
+      .from(notifications)
+      .where(eq(notifications.userId, user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(6),
+  ]);
+
+  type Item = DashboardActivity;
+  const items: Item[] = [
+    ...doneVideos
+      .filter((v): v is typeof v & { at: Date } => v.at !== null)
+      .map((v) => {
+        // Avoid "Lesson X — Lesson X (part 1)" duplication when titles match.
+        const title =
+          v.videoTitle === v.lessonTitle || v.videoTitle.startsWith(v.lessonTitle)
+            ? v.videoTitle
+            : `${v.lessonTitle} — ${v.videoTitle}`;
+        return {
+          id: v.id,
+          kind: "lesson" as const,
+          title,
+          meta: v.courseTitle,
+          at: v.at,
+        };
+      }),
+    ...attemptRows.map((a) => ({
+      id: a.id,
+      kind: "exam" as const,
+      title: a.examTitle,
+      meta: `النتيجة ${a.score}/${a.totalMarks}`,
+      at: a.at,
+    })),
+    ...enrollments.map((e) => ({
+      id: e.id,
+      kind: "enrolled" as const,
+      title: `الاشتراك في «${e.title}»`,
+      meta: null,
+      at: e.startsAt,
+    })),
+    // Exam-result notifications duplicate attempt entries above — skip them.
+    ...notifRows
+      .filter((n) => n.kind !== "exam")
+      .map((n) => ({ id: n.id, kind: "notification" as const, title: n.title, meta: n.body || null, at: n.at })),
+  ];
+
+  return items.sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, limit);
+}
+
+/** Active enrollments with per-course video progress — shared by dashboard + sub-pages. */
+export async function listMyEnrollments(user: SessionUser) {
   const enrollments = await db
     .select({
       id: subscriptions.id,
@@ -60,6 +289,27 @@ export async function getStudentDashboard(user: SessionUser) {
     progressByCourse.set(e.courseId, { total: total.length, completed: done.length });
   }
 
+  return enrollments.map((e) => ({
+    ...e,
+    progress: progressByCourse.get(e.courseId) ?? { total: 0, completed: 0 },
+  }));
+}
+
+export async function getRecentActivity(user: SessionUser, limit = 5) {
+  const enrollments = await listMyEnrollments(user);
+  return buildRecentActivity(
+    user,
+    enrollments.map((e) => ({ id: e.id, title: e.title, startsAt: e.startsAt })),
+    limit,
+  );
+}
+
+export async function getStudentDashboard(user: SessionUser) {
+  const enrollments = await listMyEnrollments(user);
+
+  const progressByCourse = new Map<string, { total: number; completed: number }>();
+  for (const e of enrollments) progressByCourse.set(e.courseId, e.progress);
+
   const [wallet, invoiceRows, attempts, notifs] = await Promise.all([
     getWalletSummary(user.id),
     listInvoices(user.id, 6),
@@ -89,8 +339,50 @@ export async function getStudentDashboard(user: SessionUser) {
             inArray(exams.courseId, enrollments.map((e) => e.courseId)),
           ),
         )
+        .orderBy(desc(exams.createdAt))
         .limit(6)
     : [];
+
+  // Real attempt status per listed exam (few rows per student — aggregate in JS).
+  const examAttemptsByExam = new Map<string, { attemptsCount: number; bestScore: number; bestTotal: number }>();
+  if (upcomingExams.length) {
+    const attemptRows = await db
+      .select({
+        examId: examAttempts.examId,
+        score: examAttempts.score,
+        totalMarks: examAttempts.totalMarks,
+      })
+      .from(examAttempts)
+      .where(
+        and(
+          eq(examAttempts.userId, user.id),
+          inArray(
+            examAttempts.examId,
+            upcomingExams.map((x) => x.id),
+          ),
+        ),
+      );
+    for (const a of attemptRows) {
+      const cur = examAttemptsByExam.get(a.examId);
+      if (!cur) {
+        examAttemptsByExam.set(a.examId, { attemptsCount: 1, bestScore: a.score, bestTotal: a.totalMarks });
+      } else {
+        cur.attemptsCount += 1;
+        if (a.score > cur.bestScore) {
+          cur.bestScore = a.score;
+          cur.bestTotal = a.totalMarks;
+        }
+      }
+    }
+  }
+
+  const [nextAction, recentActivity] = await Promise.all([
+    getNextAction(user, enrollments.map((e) => ({ courseId: e.courseId, slug: e.slug, title: e.title }))),
+    buildRecentActivity(
+      user,
+      enrollments.map((e) => ({ id: e.id, title: e.title, startsAt: e.startsAt })),
+    ),
+  ]);
 
   const totals = Array.from(progressByCourse.values()).reduce(
     (acc, p) => ({ total: acc.total + p.total, completed: acc.completed + p.completed }),
@@ -106,7 +398,12 @@ export async function getStudentDashboard(user: SessionUser) {
     invoices: invoiceRows,
     attempts,
     notifications: notifs,
-    upcomingExams,
+    upcomingExams: upcomingExams.map((x) => ({
+      ...x,
+      status: examAttemptsByExam.get(x.id) ?? null,
+    })),
+    nextAction,
+    recentActivity,
     stats: {
       coursesCount: enrollments.length,
       videosCompleted: totals.completed,

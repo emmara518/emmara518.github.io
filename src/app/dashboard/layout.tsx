@@ -1,56 +1,50 @@
-"use client";
+import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
+import { and, desc, eq, isNull } from "drizzle-orm";
+import { db } from "@/db";
+import { notifications } from "@/db/schema";
+import { getSessionUser } from "@/lib/auth";
+import { isAdminRole } from "@/lib/rbac";
+import { DashboardShell } from "@/components/dashboard-shell";
 
-import { useState } from "react";
-import { SidebarNav } from "@/components/sidebar";
-import { Topbar } from "@/components/topbar";
-import { X } from "lucide-react";
+/**
+ * Student workspace shell — one compact topbar, one sidebar.
+ * Identity, notification counts and the notification list are REAL session data.
+ */
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  const user = await getSessionUser();
+  if (!user) redirect("/login?next=/dashboard");
+  if (isAdminRole(user.role)) redirect("/admin");
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadRows, recentRows] = await Promise.all([
+    db
+      .select({ id: notifications.id })
+      .from(notifications)
+      .where(and(eq(notifications.userId, user.id), isNull(notifications.readAt))),
+    db
+      .select({
+        id: notifications.id,
+        title: notifications.title,
+        body: notifications.body,
+        kind: notifications.kind,
+        readAt: notifications.readAt,
+        createdAt: notifications.createdAt,
+      })
+      .from(notifications)
+      .where(eq(notifications.userId, user.id))
+      .orderBy(desc(notifications.createdAt))
+      .limit(6),
+  ]);
 
-  // Mock user session representation for layout render
-  const user = { name: "محمد سعيد", role: "student" as const };
+  const sessionUser = { name: user.name, role: user.role, avatarUrl: user.avatarUrl };
 
   return (
-    <div className="flex min-h-screen bg-bg text-ink font-sans transition-colors duration-300">
-      {/* Desktop Sidebar (Persistent LTR/RTL depending on dir) */}
-      <div className="hidden lg:block shrink-0">
-        <SidebarNav user={user} className="sticky top-0 h-screen" />
-      </div>
-
-      {/* Mobile Drawer Backdrop */}
-      {mobileMenuOpen && (
-        <div
-          onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm lg:hidden transition-opacity"
-        />
-      )}
-
-      {/* Mobile Drawer Sidebar */}
-      <div
-        className={`fixed inset-y-0 right-0 z-50 w-72 transform bg-surface transition-transform duration-300 ease-in-out lg:hidden ${
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="relative h-full">
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="إغلاق القائمة"
-            className="absolute top-4 left-4 grid size-9 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink"
-          >
-            <X size={18} />
-          </button>
-          <SidebarNav user={user} onCloseMobile={() => setMobileMenuOpen(false)} />
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        <Topbar user={user} onToggleMobileMenu={() => setMobileMenuOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 max-w-7xl mx-auto w-full">
-          {children}
-        </main>
-      </div>
-    </div>
+    <DashboardShell
+      user={sessionUser}
+      unreadCount={unreadRows.length}
+      notifications={recentRows.map((n) => ({ ...n, read: n.readAt !== null }))}
+    >
+      {children}
+    </DashboardShell>
   );
 }

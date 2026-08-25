@@ -866,3 +866,47 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ── Slim horizontal scrollbars for data tables & pill rails ── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: none;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--brand);
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Isolated printing (center voucher cards) ──
+   Everything hidden except .print-area; .no-print elements removed. */
+@media print {
+  body.printing-voucher * {
+    visibility: hidden !important;
+  }
+  body.printing-voucher .print-area,
+  body.printing-voucher .print-area * {
+    visibility: visible !important;
+  }
+  body.printing-voucher .print-area {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+  body.printing-voucher .no-print {
+    display: none !important;
+  }
+}

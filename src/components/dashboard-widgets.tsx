@@ -1,366 +1,346 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Play,
-  Download,
-  Flame,
-  Clock,
-  Sparkles,
+  ArrowLeft,
+  Bell,
   BookOpen,
-  Users,
-  Video,
-  Award,
-  Target,
-  ArrowUpLeft,
   CheckCircle2,
-  HelpCircle,
-  TrendingUp,
+  ClipboardList,
+  Clock,
+  Play,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import type { NextAction, DashboardActivity } from "@/lib/services/dashboard.service";
+import { Badge, Card, buttonStyles } from "@/components/ui";
 
-/**
- * DROS MATH UNIVERSE Hero Banner
- * Features Mr. Mohamed Saeed's portrait, glowing neon geometry, and math formulas.
- */
-export function DashboardHeroBanner({ user }: { user?: { name: string } | null }) {
+/** Student workspace widgets — real data only, quiet visual language. */
+
+type Enrollment = {
+  id: string;
+  slug: string;
+  title: string;
+  gradeName: string;
+  subjectName: string;
+  progress: { total: number; completed: number };
+};
+
+type ExamItem = {
+  id: string;
+  title: string;
+  durationMin: number;
+  courseTitle: string;
+  status: { attemptsCount: number; bestScore: number; bestTotal: number } | null;
+};
+
+type Stats = {
+  coursesCount: number;
+  videosCompleted: number;
+  avgProgress: number;
+  examsCount: number;
+};
+
+export function ProgressBar({ value }: { value: number }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-surface text-ink p-6 sm:p-10 border border-line shadow-card">
-      {/* Background Math Grid & Engineered Orbit lines */}
-      <div className="absolute inset-0 math-grid-pattern opacity-20 pointer-events-none" />
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface2">
+      <div
+        className="h-full rounded-full bg-brand transition-all duration-500"
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      />
+    </div>
+  );
+}
 
-      {/* Floating Math Formulas */}
-      <div className="absolute top-6 left-1/3 hidden md:block font-mono text-sm font-bold text-muted/40 select-none">
-        f(x) = x² - 4x + 3
-      </div>
-      <div className="absolute bottom-10 left-1/4 hidden md:block font-mono text-xs font-bold text-neon-lime/40 select-none">
-        x = (-b ± √(b² - 4ac)) / 2a
-      </div>
+/* ── 1. NEXT ACTION ─────────────────────────────────────────────────────── */
 
-      <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-        {/* Text & Action Column */}
-        <div className="space-y-6 text-start">
-          <div className="inline-flex items-center gap-2 rounded-md border border-line bg-surface2 px-3.5 py-1 text-xs font-bold text-muted">
-            <span className="size-1.5 rounded-full bg-neon-lime" />
-            <span>منصة دروس ماث — مستر محمد سعيد</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-ink">
-            تعلم الرياضيات <br />
-            <span className="text-neon-lime">بمنطق واستنتاج هندسي</span>
-          </h1>
-
-          <p className="max-w-xl text-sm sm:text-base font-medium leading-relaxed text-muted">
-            تعلم بذكاء، تدرب باحتراف، وتفوق بثقة مع <span className="font-extrabold text-ink">مستر محمد سعيد</span>.
-            منهج كامل، اختبارات بتصحيح فوري، ومتابعة لحظية لتقدمك.
+export function NextActionCard({
+  action,
+  progressPct,
+}: {
+  action: NextAction | null;
+  progressPct?: number;
+}) {
+  return (
+    <Card className="p-5 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1.5">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
+            ماذا أفعل الآن؟
           </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link
-              href="/courses"
-              className="inline-flex items-center gap-2 rounded-xl bg-neon-lime px-6 py-3.5 text-sm font-black text-black hover:bg-lime-400 transition-all shadow-sm"
-            >
-              <Play size={16} fill="currentColor" />
-              <span>ابدأ التعلم الآن</span>
-            </Link>
-
-            <Link
-              href="/courses"
-              className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface2 px-5 py-3.5 text-sm font-bold text-ink hover:border-neon-lime transition-colors"
-            >
-              <span>استعراض المقررات</span>
-            </Link>
-          </div>
-
-          {/* Quick Nav Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-4 border-t border-line">
-            {[
-              { label: "المقررات", icon: BookOpen },
-              { label: "المجتمع", icon: Users },
-              { label: "الدروس", icon: Video },
-              { label: "الاختبارات", icon: Award },
-              { label: "أهدافك", icon: Target },
-            ].map((tab) => (
-              <button
-                key={tab.label}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-surface2 px-3 py-2 text-xs font-bold text-muted border border-line hover:border-neon-lime/60 hover:text-ink transition-all cursor-pointer"
-              >
-                <tab.icon size={13} className="text-neon-lime" />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+          {action?.kind === "lesson" ? (
+            <>
+              <h2 className="text-lg font-black text-ink">كمل درسك</h2>
+              <p className="truncate text-xs font-semibold text-muted">
+                {action.courseTitle} — {action.lessonTitle}
+              </p>
+              <div className="flex items-center gap-2 pt-1.5">
+                {action.videoTitle && action.videoTitle !== action.lessonTitle ? (
+                  <Badge tone="muted">{action.videoTitle}</Badge>
+                ) : null}
+                {typeof progressPct === "number" && (
+                  <span className="font-mono text-[11px] font-bold text-brand">{progressPct}%</span>
+                )}
+              </div>
+            </>
+          ) : action?.kind === "exam" ? (
+            <>
+              <h2 className="text-lg font-black text-ink">ابدأ الاختبار</h2>
+              <p className="truncate text-xs font-semibold text-muted">
+                {action.courseTitle} — {action.examTitle}
+              </p>
+              <div className="pt-1.5">
+                <Badge tone="outline">اختبار متاح</Badge>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-black text-ink">ابدأ أول درس.</h2>
+              <p className="text-xs font-semibold text-muted">اشترك في كورس وابدأ التعلم.</p>
+            </>
+          )}
         </div>
 
-        {/* Teacher Portrait & 3D Math Universe Container (Mr. Mohamed Saeed) */}
-        <div className="relative flex justify-center lg:justify-end items-center">
-          {/* Ambient Glows */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-lime-500/10 via-emerald-500/10 to-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Floating 3D Math Symbols around Teacher */}
-          <div className="absolute -top-4 -right-4 z-20 size-16 pointer-events-none drop-shadow-[0_0_15px_rgba(184,255,0,0.5)] animate-bounce" style={{ animationDuration: '4s' }}>
-            <Image
-              src="/images/assets/pi.png"
-              alt="π 3D"
-              width={64}
-              height={64}
-              className="object-contain"
-            />
-          </div>
-
-          <div className="absolute top-1/2 -left-6 z-20 size-14 pointer-events-none drop-shadow-[0_0_12px_rgba(184,255,0,0.4)] animate-pulse" style={{ animationDuration: '3s' }}>
-            <Image
-              src="/images/assets/sigma.png"
-              alt="Σ 3D"
-              width={56}
-              height={56}
-              className="object-contain"
-            />
-          </div>
-
-          <div className="absolute -bottom-4 left-4 z-20 size-14 pointer-events-none drop-shadow-[0_0_14px_rgba(184,255,0,0.45)] animate-bounce" style={{ animationDuration: '5s' }}>
-            <Image
-              src="/images/assets/integral.png"
-              alt="∫ 3D"
-              width={56}
-              height={56}
-              className="object-contain"
-            />
-          </div>
-
-          <div className="absolute top-8 -left-2 z-20 size-12 pointer-events-none drop-shadow-[0_0_10px_rgba(184,255,0,0.35)]">
-            <Image
-              src="/images/assets/sqrt.png"
-              alt="√ 3D"
-              width={48}
-              height={48}
-              className="object-contain"
-            />
-          </div>
-
-          <div className="relative size-72 sm:size-80 lg:size-96 rounded-2xl p-1.5 bg-surface2 border border-line shadow-2xl">
-            <div className="relative size-full overflow-hidden rounded-xl bg-surface">
-              <Image
-                src="/images/assets/teacher.webp"
-                alt="مستر محمد سعيد — Dros Math"
-                fill
-                priority
-                className="object-cover object-top hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            {/* Glowing Signature Badge */}
-            <div className="absolute bottom-4 right-4 rounded-2xl bg-surface/90 dark:bg-slate-900/90 border border-lime-400/40 px-4 py-2 text-center backdrop-blur-md shadow-xl">
-              <span className="block text-[10px] font-mono font-bold text-neon-lime">LECTURER</span>
-              <span className="block text-xs font-black text-ink">أ/ محمد سعيد</span>
-            </div>
-          </div>
+        <div className="shrink-0">
+          {action ? (
+            <Link href={action.href} className={buttonStyles("primary", "md")}>
+              <Play size={15} fill="currentColor" />
+              متابعة
+            </Link>
+          ) : (
+            <Link href="/courses" className={buttonStyles("primary", "md")}>
+              تصفح الكورسات
+            </Link>
+          )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
-/**
- * Current Mission Card (مهمتك الحالية)
- */
-export function CurrentMissionWidget() {
+/* ── 2. MY LEARNING ─────────────────────────────────────────────────────── */
+
+function LearningCard({ e }: { e: Enrollment }) {
+  const pct = e.progress.total > 0 ? Math.round((e.progress.completed / e.progress.total) * 100) : 0;
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-line bg-surface p-6 shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span className="grid size-8 place-items-center rounded-xl bg-neon-lime/20 text-lime-600 dark:text-lime-400 font-bold">
-            <Target size={16} />
-          </span>
-          <div>
-            <span className="text-[10px] font-mono font-bold text-muted uppercase">MISSION 09</span>
-            <h3 className="text-sm font-black text-ink">مهمتك الحالية</h3>
+    <Card hover className="flex flex-col gap-3 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-extrabold text-ink">{e.title}</p>
+          <div className="mt-1.5 flex gap-1.5">
+            <Badge tone="brand">{e.subjectName}</Badge>
+            <Badge tone="muted">{e.gradeName}</Badge>
           </div>
         </div>
-        <span className="rounded-full bg-lime-500/10 px-3 py-1 font-mono text-xs font-extrabold text-lime-600 dark:text-lime-400 border border-lime-500/20">
-          68% مكتمل
-        </span>
+        <span className="shrink-0 font-mono text-sm font-black text-brand">{pct}%</span>
       </div>
-
-      <div className="grid gap-4 sm:grid-cols-[1.2fr_0.8fr] items-center">
-        <div className="space-y-3 text-start">
-          <h4 className="text-lg font-black text-ink">التفاضل والتكامل</h4>
-          <p className="font-mono text-xs text-muted">CALCULUS — Limits & Derivatives</p>
-
-          <div className="flex items-center gap-4 text-xs font-bold text-muted pt-1">
-            <span>26 فيديو</span>
-            <span>•</span>
-            <span>18 اختبار</span>
-            <span>•</span>
-            <span>07 تحديات</span>
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <Link
-              href="/courses/calculus"
-              className="inline-flex items-center gap-2 rounded-xl bg-neon-lime px-4 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
-            >
-              <Play size={14} fill="currentColor" />
-              <span>متابعة المهمة</span>
-            </Link>
-            <button className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface2 px-3 py-2 text-xs font-bold text-muted hover:text-ink transition-colors">
-              <Download size={14} />
-              <span>تحميل الملخص</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 3D Wave Graph SVG (Matching Mockup 2) */}
-        <div className="relative h-28 w-full overflow-hidden rounded-2xl bg-slate-950 p-2 border border-slate-800 flex items-center justify-center">
-          <svg viewBox="0 0 200 100" className="w-full h-full stroke-lime-400" fill="none" strokeWidth="2">
-            <path d="M 10 50 Q 50 10, 100 50 T 190 50" />
-            <path d="M 10 70 Q 60 30, 110 70 T 190 30" stroke="#22d3ee" strokeOpacity="0.6" strokeDasharray="4 2" />
-          </svg>
-          <span className="absolute bottom-2 right-3 font-mono text-[10px] font-bold text-lime-400">
-            dy/dx
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Mastery Gauge Widget (تقدمك في التعلم)
- */
-export function MasteryGaugeWidget() {
-  return (
-    <div className="rounded-3xl border border-line bg-surface p-6 shadow-sm space-y-4">
+      <ProgressBar value={pct} />
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-black text-ink">تقدمك في التعلم</h3>
-        <Link href="/dashboard/stats" className="text-xs font-bold text-neon-lime hover:underline">
-          تقرير تفصيلي
+        <span className="font-mono text-[11px] font-semibold text-muted">
+          {e.progress.completed}/{e.progress.total} فيديو
+        </span>
+        <Link
+          href={`/dashboard/courses/${e.slug}`}
+          className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
+        >
+          كمل
+          <ArrowLeft size={13} />
         </Link>
       </div>
+    </Card>
+  );
+}
 
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        {/* Doughnut Progress */}
-        <div className="relative size-28 shrink-0 flex items-center justify-center">
-          <svg className="size-full transform -rotate-90" viewBox="0 0 36 36">
-            <path
-              className="text-surface2"
-              strokeWidth="4"
-              stroke="currentColor"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-            <path
-              className="text-neon-lime"
-              strokeDasharray="82, 100"
-              strokeWidth="4"
-              strokeLinecap="round"
-              stroke="currentColor"
-              fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            />
-          </svg>
-          <div className="absolute text-center">
-            <span className="font-mono text-xl font-black text-ink">82%</span>
-            <span className="block text-[9px] font-bold text-muted">مستوى الإتقان</span>
-          </div>
-        </div>
+export function MyLearningList({
+  enrollments,
+  viewAll,
+}: {
+  enrollments: Enrollment[];
+  viewAll?: boolean;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-black text-ink">
+          كورساتي{" "}
+          {enrollments.length > 0 && (
+            <span className="font-mono text-xs font-bold text-muted">({enrollments.length})</span>
+          )}
+        </h2>
+        {viewAll && enrollments.length > 0 ? (
+          <Link href="/dashboard/courses" className="text-xs font-bold text-brand hover:underline">
+            عرض الكل ←
+          </Link>
+        ) : (
+          <Link href="/courses" className="text-xs font-bold text-brand hover:underline">
+            + كورس جديد
+          </Link>
+        )}
+      </div>
 
-        {/* Subject Breakdown */}
-        <div className="w-full space-y-2 text-xs font-bold">
-          {[
-            { name: "الجبر", val: 90, color: "bg-lime-500" },
-            { name: "الدوال", val: 85, color: "bg-cyan-500" },
-            { name: "الهندسة", val: 75, color: "bg-amber-500" },
-            { name: "التكامل", val: 65, color: "bg-emerald-500" },
-          ].map((s) => (
-            <div key={s.name} className="space-y-1">
-              <div className="flex justify-between">
-                <span className="text-muted">{s.name}</span>
-                <span className="font-mono text-ink">{s.val}%</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface2">
-                <div className={cn("h-full rounded-full", s.color)} style={{ width: `${s.val}%` }} />
-              </div>
-            </div>
+      {enrollments.length === 0 ? (
+        <Card className="flex flex-col items-center gap-2 px-6 py-8 text-center" ticks>
+          <BookOpen size={20} className="text-muted" />
+          <p className="text-sm font-bold text-ink">لسه مفيش كورسات.</p>
+          <Link href="/courses" className={buttonStyles("primary", "sm")}>
+            تصفح الكورسات
+          </Link>
+        </Card>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
+          {enrollments.map((e) => (
+            <LearningCard key={e.id} e={e} />
           ))}
         </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
 
-/**
- * Quick Math Tip Widget (معلومة سريعة)
- */
-export function QuickMathTipWidget() {
-  return (
-    <div className="rounded-3xl border border-line bg-surface p-6 shadow-sm space-y-3">
-      <div className="flex items-center gap-2 text-amber-500">
-        <Sparkles size={18} />
-        <h3 className="text-xs font-black uppercase tracking-wider text-muted">معلومة سريعة</h3>
-      </div>
-      <p className="text-sm font-bold leading-relaxed text-ink">
-        مشتقة الدالة الثابتة تساوي صفر دائماً.
-      </p>
-      <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-3 text-center font-mono text-base font-black text-amber-600 dark:text-amber-400">
-        (c)&apos; = 0
-      </div>
-    </div>
-  );
-}
+/* ── 3. MY PROGRESS ─────────────────────────────────────────────────────── */
 
-/**
- * Upcoming Exam Widget (الاختبار القادم)
- */
-export function UpcomingExamWidget() {
-  return (
-    <div className="rounded-3xl border border-line bg-surface p-6 shadow-sm space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-black text-ink">الاختبار القادم</h3>
-        <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold text-rose-500 border border-rose-500/20">
-          هام
-        </span>
-      </div>
-
-      <div className="space-y-1">
-        <h4 className="text-base font-black text-ink">الجبر الخطي والمصفوفات</h4>
-        <p className="font-mono text-xs text-muted">2 يوم 14 ساعة متبقية</p>
-      </div>
-
-      <Link
-        href="/dashboard/exams/algebra-101"
-        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-neon-lime px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
-      >
-        <span>ابدأ الاختبار الان</span>
-      </Link>
-    </div>
-  );
-}
-
-/**
- * Platform Metrics Banner (120K Students, 2500 Hours)
- */
-export function PlatformMetricsRow() {
-  const metrics = [
-    { value: "+120K", label: "طالب وطالبة معنا" },
-    { value: "+2,500", label: "ساعة محتوى تعليمي" },
-    { value: "+8,000", label: "امتحان تم حله" },
-    { value: "98%", label: "نسبة رضا الطلاب" },
-    { value: "4.9/5", label: "تقييم المنصة" },
+export function ProgressStrip({ stats }: { stats: Stats }) {
+  const cells = [
+    { label: "متوسط التقدم", value: `${stats.avgProgress}%` },
+    { label: "دروس مكتملة", value: stats.videosCompleted },
+    { label: "كورسات نشطة", value: stats.coursesCount },
+    ...(stats.examsCount > 0 ? [{ label: "اختبارات مُختبرة", value: stats.examsCount }] : []),
   ];
 
+  if (stats.coursesCount === 0) return null;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {metrics.map((m) => (
-        <div
-          key={m.label}
-          className="rounded-2xl border border-line/60 bg-surface/80 p-4 text-center shadow-sm backdrop-blur-xl"
-        >
-          <span className="block font-mono text-xl font-black text-neon-lime">{m.value}</span>
-          <span className="block text-[11px] font-bold text-muted mt-1">{m.label}</span>
-        </div>
-      ))}
-    </div>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-black text-ink">تقدمي</h2>
+        <Link href="/dashboard/progress" className="text-xs font-bold text-brand hover:underline">
+          التفاصيل ←
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
+        {cells.map((c) => (
+          <Card key={c.label} className="px-4 py-3.5">
+            <span className="block font-mono text-xl font-black text-ink">{c.value}</span>
+            <span className="mt-0.5 block text-[11px] font-bold text-muted">{c.label}</span>
+          </Card>
+        ))}
+      </div>
+    </section>
   );
 }
+
+/* ── 4. MY EXAMS ────────────────────────────────────────────────────────── */
+
+export function ExamsCard({ exams }: { exams: ExamItem[] }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-black text-ink">اختباراتي</h2>
+        {exams.length > 0 && (
+          <Link href="/dashboard/exams" className="text-xs font-bold text-brand hover:underline">
+            الكل ←
+          </Link>
+        )}
+      </div>
+
+      <Card className="divide-y divide-line">
+        {exams.length === 0 ? (
+          <p className="px-4 py-6 text-center text-xs font-semibold text-muted">لا توجد اختبارات قريبة.</p>
+        ) : (
+          exams.slice(0, 3).map((exam) => {
+            const attempted = exam.status !== null;
+            return (
+              <div key={exam.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-extrabold text-ink">{exam.title}</p>
+                  <p className="mt-0.5 truncate text-[11px] font-semibold text-muted">
+                    {exam.courseTitle}
+                    <span className="mx-1.5 text-line-strong">·</span>
+                    <Clock size={10} className="inline align-[-1px]" /> {exam.durationMin} د
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2.5">
+                  {attempted ? (
+                    <span className="font-mono text-[11px] font-bold text-success">
+                      {exam.status!.bestScore}/{exam.status!.bestTotal}
+                    </span>
+                  ) : (
+                    <Badge tone="outline">متاح</Badge>
+                  )}
+                  <Link
+                    href={`/dashboard/exams/${exam.id}`}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
+                  >
+                    {attempted ? "إعادة" : "ابدأ"}
+                    <ArrowLeft size={12} />
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </Card>
+    </section>
+  );
+}
+
+/* ── 5. RECENT ACTIVITY ─────────────────────────────────────────────────── */
+
+const ACTIVITY_ICONS = {
+  lesson: CheckCircle2,
+  exam: ClipboardList,
+  enrolled: BookOpen,
+  notification: Bell,
+} as const;
+
+export function ActivityCard({ items }: { items: DashboardActivity[] }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-black text-ink">آخر نشاط</h2>
+        {items.length > 0 ? (
+          <Link href="/dashboard/activity" className="text-xs font-bold text-brand hover:underline">
+            عرض الكل ←
+          </Link>
+        ) : null}
+      </div>
+      <Card className="divide-y divide-line">
+        {items.length === 0 ? (
+          <p className="px-4 py-6 text-center text-xs font-semibold text-muted">لا يوجد نشاط بعد.</p>
+        ) : (
+          items.slice(0, 3).map((item) => {
+            const Icon = ACTIVITY_ICONS[item.kind];
+            return (
+              <div key={`${item.kind}-${item.id}`} className="flex items-start gap-2.5 px-4 py-3">
+                <Icon
+                  size={14}
+                  className={item.kind === "lesson" ? "mt-0.5 shrink-0 text-success" : "mt-0.5 shrink-0 text-muted"}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold text-ink">{item.title}</p>
+                  {item.meta ? <p className="truncate text-[11px] text-muted">{item.meta}</p> : null}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </Card>
+    </section>
+  );
+}
+
+/* ── MENTOR IDENTITY (light) ────────────────────────────────────────────── */
+
+export function MentorChip() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1">
+      <Image
+        src="/images/assets/teacher.webp"
+        alt=""
+        width={16}
+        height={16}
+        className="size-4 rounded-full object-cover object-top"
+      />
+      <span className="text-[11px] font-bold text-muted">مع مستر محمد سعيد</span>
+    </span>
+  );
+}
+
+export type { Enrollment as DashboardEnrollment, ExamItem as DashboardExam, Stats as DashboardStats };

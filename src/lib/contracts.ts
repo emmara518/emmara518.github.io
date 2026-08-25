@@ -21,7 +21,8 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.email("البريد الإلكتروني غير صالح"),
+  // Accepts a full email OR a short username (e.g. «admin»)
+  email: z.string().trim().min(3, "البريد الإلكتروني أو اسم المستخدم قصير").max(200),
   password: z.string().min(1, "كلمة المرور مطلوبة"),
 });
 
@@ -78,8 +79,22 @@ export const couponSchema = z.object({
     .min(3)
     .max(32)
     .regex(/^[A-Z0-9-]+$/i, "كود بحروف لاتينية وأرقام فقط"),
-  percentOff: z.number().int().min(1, "النسبة من 1 إلى 90").max(90),
+  kind: z.enum(["course_percent", "wallet_balance", "course_access"]).default("course_percent"),
+  percentOff: z.number().int().min(1, "النسبة من 1 إلى 90").max(90).default(10),
+  /** Required when kind = wallet_balance — value in EGP (e.g. 250). */
+  amountEgp: z.number().min(5).max(100000).optional(),
+  /** Required when kind = course_access — the course this code unlocks. */
+  courseId: z.string().uuid().optional(),
   maxUses: z.number().int().min(1).max(100000).default(100),
+});
+
+export const redeemCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(3)
+    .max(32)
+    .regex(/^[A-Z0-9-]+$/i, "كود بحروف لاتينية وأرقام فقط"),
 });
 
 export const userRoleSchema = z.object({

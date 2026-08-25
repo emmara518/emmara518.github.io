@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: "تسجيل الدخول" };
 export default function LoginPage() {
   return (
     <AuthShell
-      title="أهلًا بعودتك"
-      sub="سجّل دخولك لمتابعة دروسك واختباراتك من حيث توقفت."
+      title="تسجيل الدخول"
+      sub="ادخل إلى حسابك لمتابعة رحلتك التعليمية على منصة دروس ماث."
     >
       <Suspense fallback={null}>
         <LoginForm />

@@ -14,7 +14,7 @@ function ErrorNote({ message }: { message: string | null }) {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) {
   const router = useRouter();
   const search = useSearchParams();
   const next = search.get("next");
@@ -53,40 +53,32 @@ export function LoginForm() {
     await performLogin(email, password);
   }
 
-  const quickLogin = (who: "student" | "admin" | "teacher") => async () => {
+  const IS_DEV = process.env.NODE_ENV === "development";
+
+  const quickLogin = (who: "student" | "teacher") => async () => {
+    if (!IS_DEV) return;
     const targetEmail = `${who}@dros-math.com`;
     setEmail(targetEmail);
     setPassword("12345678");
-    await performLogin(targetEmail, "12345678", who === "admin" ? "/admin" : undefined);
+    await performLogin(targetEmail, "12345678");
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {/* Quick Admin Bypass Button */}
-      <button
-        type="button"
-        disabled={loading}
-        onClick={quickLogin("admin")}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-neon-lime text-black font-extrabold px-4 py-3 text-sm shadow-sm hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer border border-neon-lime"
-      >
-        {loading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-        ⚡ دخول فوري مباشر كمسؤول (Admin One-Click)
-      </button>
+      {authDisabled && (
+        <div className="rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-[13px] font-medium leading-relaxed text-brand">
+          وضع التطوير: المصادقة معطّلة مؤقتاً — جميع صفحات المنصة تُفتح تلقائياً بصلاحيات مدير النظام.
+        </div>
+      )}
 
-      <div className="relative flex items-center justify-center">
-        <div className="border-t border-line w-full" />
-        <span className="bg-surface px-3 text-xs text-muted font-medium shrink-0">أو تسجيل الدخول العادي</span>
-      </div>
-
-      <Field label="البريد الإلكتروني">
+      <Field label="البريد الإلكتروني أو اسم المستخدم">
         <Input
-          type="email"
           dir="ltr"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          autoComplete="email"
+          autoComplete="username"
         />
       </Field>
       <Field label="كلمة المرور">
@@ -106,26 +98,27 @@ export function LoginForm() {
         تسجيل الدخول
       </Button>
 
-      <div className="space-y-2 pt-2">
-        <p className="text-center font-mono text-[11px] text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
-        <div className="grid grid-cols-3 gap-2">
-          {([
-            ["student", "طالب"],
-            ["teacher", "مدرّس"],
-            ["admin", "إدارة"],
-          ] as const).map(([who, label]) => (
-            <button
-              key={who}
-              type="button"
-              disabled={loading}
-              onClick={quickLogin(who)}
-              className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
-            >
-              {label}
-            </button>
-          ))}
+      {IS_DEV && (
+        <div className="space-y-2 pt-2">
+          <p className="text-center font-mono text-[11px] text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              ["student", "طالب"],
+              ["teacher", "مدرّس"],
+            ] as const).map(([who, label]) => (
+              <button
+                key={who}
+                type="button"
+                disabled={loading}
+                onClick={quickLogin(who)}
+                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <p className="pt-2 text-center text-sm text-muted">
         ليس لديك حساب؟{" "}

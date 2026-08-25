@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CosmicFluidBackground } from "@/components/cosmic-fluid-background";
+import { DashboardChromeGate } from "@/components/chrome-gate";
 
 const graphikArabic = localFont({
   src: [
@@ -96,10 +97,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-bg text-ink`}>
-        <CosmicFluidBackground />
-        <SiteHeader user={headerUser} />
+        <DashboardChromeGate>
+          <CosmicFluidBackground />
+        </DashboardChromeGate>
+        <DashboardChromeGate>
+          <SiteHeader user={headerUser} />
+        </DashboardChromeGate>
         <div className="relative z-10 min-h-screen">{children}</div>
-        <SiteFooter />
+        <DashboardChromeGate>
+          <SiteFooter />
+        </DashboardChromeGate>
       </body>
     </html>
   );

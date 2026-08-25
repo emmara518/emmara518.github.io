@@ -8,7 +8,6 @@ import {
   User,
   ArrowLeft,
   ChevronLeft,
-  BookOpen,
   Target,
   Brain,
   Layers,
@@ -17,7 +16,6 @@ import {
   FileCheck,
   Award,
   BarChart2,
-  ShieldCheck,
 } from "lucide-react";
 import { LogoWordmark } from "./logo";
 import { MATH_SYMBOLS_3D, MathSymbolData } from "@/lib/data/math-symbols";
@@ -31,7 +29,7 @@ export function DrosUniverseShowcase() {
     title: string;
     engTitle: string;
     desc: string;
-    count: string;
+    caption: string;
     image: string;
     grades: string[];
     branches: string[];
@@ -72,10 +70,10 @@ export function DrosUniverseShowcase() {
   const academicStages = [
     { 
       id: "prep", 
-      title: "المرحلة الإعدادية (Prep)", 
+      title: "المرحلة الإعدادية", 
       engTitle: "Middle School Mathematics — Prep 1, 2 & 3",
-      desc: "تأسيس المفاهيم الهندسية والجبرية وحل المعادلات المتقدمة مع الاستنتاج الرياضي وبناء التفكير المنطقي لطلاب اللغات.", 
-      count: "Prep 1 · Prep 2 · Prep 3",
+      desc: "مسار متكامل يبني أساس الجبر والهندسة بلغة إنجليزية واضحة، مع تدريب مستمر على الامتحانات.",
+      caption: "تأسيس قوي في الجبر والهندسة",
       image: "/images/stages/prep.jpg",
       grades: ["Prep 1 (First & Second Term)", "Prep 2 (Algebra & Geometry)", "Prep 3 (Cert Prep & Advanced Trig)"],
       branches: ["Algebra & Number Theory", "Euclidean Geometry", "Trigonometry Basics", "Analytical Geometry", "Statistics & Probability"],
@@ -93,10 +91,10 @@ export function DrosUniverseShowcase() {
     },
     { 
       id: "sec1_2", 
-      title: "الصف الأول والثاني الثانوي (Sec 1 & 2)", 
+      title: "الصف الأول والثاني الثانوي", 
       engTitle: "Secondary School — Sec 1 & Sec 2 (Pure & Applied)",
-      desc: "الدوال الحقيقية، حساب المثلثات، الهندسة التحليلية، مبادئ التفاضل والتكامل، والرياضيات التطبيقية (استاتيكا وهندسة فراغية).", 
-      count: "Sec 1 · Sec 2 (Pure & Applied)",
+      desc: "مسار متكامل يبني أساس التفاضل والتكامل والرياضيات التطبيقية، مع مراجعات شهرية شاملة.",
+      caption: "بناء أساس التفاضل والتكامل",
       image: "/images/stages/sec1_2.jpg",
       grades: ["Sec 1 (Trigonometry & Analytical Geometry)", "Sec 2 (Pure Mathematics)", "Sec 2 (Applied Mathematics)"],
       branches: ["Real Functions & Inverses", "Calculus & Limits", "Trigonometric Identities", "Statics & Forces Equilibrium", "3D Space Geometry"],
@@ -114,10 +112,10 @@ export function DrosUniverseShowcase() {
     },
     { 
       id: "sec3", 
-      title: "الصف الثالث الثانوي (Sec 3 Math)", 
+      title: "الصف الثالث الثانوي", 
       engTitle: "Thanaweya Amma — Sec 3 English Math Specialist",
-      desc: "التفاضل والتكامل، الجبر والهندسة الفراغية، الاستاتيكا والديناميكا وأسرار حصد الدرجة النهائية والتميز في الثانوية العامة.", 
-      count: "Calculus · Algebra · Dynamics · Statics",
+      desc: "مسار متكامل يغطي التفاضل والتكامل والجبر والاستاتيكا والديناميكا، بتدريب مكثف على نماذج الثانوية.",
+      caption: "تأهيل كامل للثانوية العامة",
       image: "/images/stages/sec3.png",
       grades: ["Pure Math (Calculus & Integration)", "Pure Math (Algebra & Solid Geometry)", "Applied Math (Statics)", "Applied Math (Dynamics)"],
       branches: ["Calculus & Integration Techniques", "Algebra (Matrices, Binomial, Complex Numbers)", "Solid & Vector Geometry", "Statics (Moments & Friction)", "Dynamics (Newton's Laws & Impulse)"],
@@ -193,15 +191,6 @@ export function DrosUniverseShowcase() {
             <ThemeToggle className="size-9 rounded-xl border border-line bg-surface shadow-sm" />
 
             <Link
-              href="/api/v1/auth/admin-bypass?next=/admin"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-neon-lime/40 bg-neon-lime/10 px-3.5 py-2 text-xs font-bold font-ui text-neon-lime hover:bg-neon-lime hover:text-black transition-all shadow-sm"
-              title="الدخول المباشر للوحة الإدارة بدون تسجيل دخول"
-            >
-              <ShieldCheck size={13} />
-              <span>لوحة الإدارة</span>
-            </Link>
-
-            <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-xs font-semibold font-ui text-ink hover:border-neon-lime hover:text-neon-lime transition-all shadow-sm"
             >
@@ -259,7 +248,7 @@ export function DrosUniverseShowcase() {
               
               <div className="relative p-5 sm:p-6 rounded-2xl bg-surface border-r-2 border-r-neon-lime border-y border-l border-line shadow-card max-w-xl">
                 <p className="type-body font-ui text-ink-secondary font-normal">
-                  منصة <span className="text-ink font-semibold bg-surface2 px-2 py-0.5 rounded-md border border-line"><bdi className="bidi-term">Dros Math</bdi></span> مع <span className="text-neon-lime font-semibold">مستر محمد سعيد</span> — رحلة احترافية لطلاب اللغات لتبسيط المفاهيم المعقدة، وبناء التفكير الرياضي والتحليلي وصولاً لأعلى درجات التميز والدرجات النهائية.
+                  منصة <span className="text-ink font-semibold bg-surface2 px-2 py-0.5 rounded-md border border-line"><bdi className="bidi-term">English Math</bdi></span> مع <span className="text-neon-lime font-semibold">مستر محمد سعيد</span>.
                 </p>
               </div>
             </div>
@@ -272,13 +261,6 @@ export function DrosUniverseShowcase() {
               >
                 <span>ابدأ رحلتك</span>
                 <ArrowLeft size={16} />
-              </Link>
-
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-6 py-3.5 text-sm font-medium text-ink hover:border-neon-lime hover:text-neon-lime transition-all cursor-pointer active:scale-[0.98] shadow-sm"
-              >
-                <span>تعرف على مستر محمد سعيد</span>
               </Link>
             </div>
 
@@ -619,90 +601,52 @@ export function DrosUniverseShowcase() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-7 border-b border-line">
           <div className="space-y-2.5">
             <span className="type-eyebrow text-neon-lime">ACADEMIC STAGES &amp; CURRICULUM</span>
-            <h2 className="type-h2 text-ink">المراحل الدراسية ومسارات التعلم</h2>
+            <h2 className="type-h2 text-ink">المراحل الدراسية</h2>
           </div>
           <p className="type-small font-ui text-muted max-w-md">
-            هيكلة تعليمية متكاملة لمدارس اللغات (<bdi className="bidi-term">English Math</bdi>) تغطي كامل متطلبات الفهم التأسيسي والتطبيقي.
+            اختار مرحلتك وابدأ.
           </p>
         </div>
 
-        {/* Academic Stages Grid with 3D Interactive Hover & Zoom */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 [perspective:1000px]">
+        {/* Academic Stages Grid — Full-Image Cards with Bottom Caption */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {academicStages.map((stage) => (
-            <div
+            <button
               key={stage.id}
-              className="relative overflow-hidden rounded-2xl bg-surface border border-line hover:border-neon-lime transition-all duration-500 ease-out group shadow-card hover:shadow-[0_20px_50px_rgba(184,255,0,0.18)] flex flex-col justify-between hover:scale-[1.04] sm:hover:scale-[1.05] hover:-translate-y-2.5 hover:rotate-[0.5deg] z-10 hover:z-20 transform-gpu cursor-pointer"
+              type="button"
+              onClick={() => setSelectedStage(stage)}
+              aria-label={`عرض تفاصيل ${stage.title}`}
+              className="group relative block w-full overflow-hidden rounded-2xl bg-surface2 border border-line hover:border-neon-lime/70 shadow-card hover:shadow-[0_20px_50px_rgba(184,255,0,0.16)] transition-all duration-500 ease-out hover:-translate-y-1.5 transform-gpu cursor-pointer text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-lime"
             >
-              {/* Subtle 3D Top Highlight Flare */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-neon-lime/0 group-hover:via-neon-lime to-transparent transition-all duration-500 z-30" />
-
-              {/* Top Dedicated Visual Showcase Frame of Mr. Mohamed Saeed */}
-              <div className="relative w-full h-52 sm:h-56 overflow-hidden bg-surface2">
+              {/* Full-Bleed Stage Image */}
+              <div className="relative w-full aspect-[4/3] overflow-hidden">
                 <Image
                   src={stage.image}
                   alt={stage.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
+                  className="object-cover object-center group-hover:scale-[1.06] transition-transform duration-700 ease-out"
                   referrerPolicy="no-referrer"
                 />
-                
-                {/* Subtle Vignette Gradient for Depth and Clean Contrast */}
-                <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-black/40" />
 
-                {/* Grade Count Pill */}
-                <div className="absolute bottom-3 right-3 z-10">
-                  <span className="text-[11px] font-medium font-ui tracking-normal text-ink bg-surface/90 dark:bg-black/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-line group-hover:border-neon-lime/60 shadow-md transition-colors">
-                    {stage.count}
-                  </span>
-                </div>
-              </div>
+                {/* Bottom Gradient for Text Readability */}
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+                {/* Subtle Top Vignette */}
+                <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/30 to-transparent" />
+                {/* Hover Lime Edge Glow */}
+                <div className="absolute inset-x-0 bottom-0 h-[3px] scale-x-0 group-hover:scale-x-100 origin-right bg-neon-lime transition-transform duration-500 ease-out" />
 
-              {/* Card Body Content */}
-              <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between bg-surface group-hover:bg-surface2/60 transition-colors duration-500">
-                <div className="space-y-2.5">
-                  <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.45] text-ink group-hover:text-neon-lime transition-colors [text-wrap:balance]">
+                {/* Texts Anchored at the Bottom */}
+                <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5 space-y-1">
+                  <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.4] text-white [text-wrap:balance]">
                     {stage.title}
                   </h3>
-                  <p className="text-[13px] font-ui text-muted group-hover:text-ink leading-[1.75] line-clamp-2 transition-colors font-normal">
-                    {stage.desc}
+                  <p className="text-xs sm:text-[13px] font-ui font-normal leading-[1.6] text-white/70 group-hover:text-white/90 transition-colors">
+                    {stage.caption}
                   </p>
-
-                  {/* Branches Chips */}
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {stage.branches.slice(0, 3).map((branch, bIdx) => (
-                      <span key={bIdx} className="text-[11px] font-mono font-medium text-ink bg-surface2 group-hover:bg-surface px-2 py-1 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
-                        {branch}
-                      </span>
-                    ))}
-                    {stage.branches.length > 3 && (
-                      <span className="text-[11px] font-mono font-medium text-neon-lime bg-surface2 px-1.5 py-1 rounded border border-line group-hover:border-neon-lime/40 transition-colors">
-                        +{stage.branches.length - 3}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions: View Details Button & Explore Courses */}
-                <div className="pt-4 border-t border-line group-hover:border-line-strong flex items-center justify-between gap-2 mt-auto transition-colors font-ui">
-                  <button
-                    onClick={() => setSelectedStage(stage)}
-                    className="flex-1 py-2.5 px-3.5 rounded-xl bg-surface2 hover:bg-neon-lime group-hover:bg-surface2 group-hover:hover:bg-neon-lime text-ink hover:text-black group-hover:hover:text-black text-[13px] font-medium transition-all duration-300 flex items-center justify-center gap-2 border border-line group-hover:border-neon-lime/50 hover:border-neon-lime shadow-sm group/btn"
-                  >
-                    <BookOpen size={14} className="text-muted group-hover/btn:text-black transition-colors" />
-                    <span>عرض تفاصيل المرحلة</span>
-                  </button>
-
-                  <Link
-                    href="/courses"
-                    className="p-2.5 rounded-xl bg-surface2 hover:bg-neon-lime hover:text-black text-muted group-hover:text-ink group-hover:hover:text-black border border-line hover:border-neon-lime transition-all duration-300 flex items-center justify-center shrink-0 shadow-sm"
-                    title="استعراض المقررات"
-                  >
-                    <ChevronLeft size={16} />
-                  </Link>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -717,9 +661,9 @@ export function DrosUniverseShowcase() {
               <span className="type-eyebrow text-neon-lime flex items-center gap-2">
                 <span className="size-2 rounded-full bg-neon-lime animate-pulse" />
                 THE LEARNING PIPELINE
-                <span className="font-ui tracking-normal text-[11px] font-semibold normal-case">· مسار التميز</span>
+                <span className="font-ui tracking-normal text-[11px] font-semibold normal-case">· افهم، حل، اتدرب، واختبر.</span>
               </span>
-              <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.4] text-ink">منهجية الفهم والاستنتاج في Dros Math</h3>
+              <h3 className="font-brand font-semibold text-lg sm:text-xl leading-[1.4] text-ink">مسار التعلم</h3>
             </div>
             <span className="text-[11px] font-ui font-medium text-muted bg-surface2 px-3 py-1.5 rounded-full border border-line self-start sm:self-auto">
               تتحرك تلقائياً · مرر الماوس للتوقف
@@ -734,16 +678,16 @@ export function DrosUniverseShowcase() {
 
             <div className="pipeline-marquee-track items-stretch gap-4">
               {[
-                { num: "01", title: "تأسيس المفاهيم", eng: "Foundation", desc: "استنتاج القوانين وفهم أصل كل نظرية رياضية بلا حفظ أعمى." },
-                { num: "02", title: "حل النماذج المعقدة", eng: "Mastery", desc: "تفكيك مسائل امتحانات اللغات المتقدمة بالخطوات الدقيقة." },
-                { num: "03", title: "تدريب مستمر", eng: "Practice", desc: "تمارين تطبيقية متدرجة الصعوبة لترسيخ سرعة وبديهة الحل." },
-                { num: "04", title: "اختبارات قياسية", eng: "Standardized Exams", desc: "امتحانات إلكترونية دورية مطابقة لمواصفات الورقة الامتحانية." },
-                { num: "05", title: "متابعة دقيقة", eng: "Evaluation", desc: "تقارير واضحة لمستوى الطالب ونقاط القوة والمواضيع التي تحتاج مراجعة." },
-                { num: "01", title: "تأسيس المفاهيم", eng: "Foundation", desc: "استنتاج القوانين وفهم أصل كل نظرية رياضية بلا حفظ أعمى." },
-                { num: "02", title: "حل النماذج المعقدة", eng: "Mastery", desc: "تفكيك مسائل امتحانات اللغات المتقدمة بالخطوات الدقيقة." },
-                { num: "03", title: "تدريب مستمر", eng: "Practice", desc: "تمارين تطبيقية متدرجة الصعوبة لترسيخ سرعة وبديهة الحل." },
-                { num: "04", title: "اختبارات قياسية", eng: "Standardized Exams", desc: "امتحانات إلكترونية دورية مطابقة لمواصفات الورقة الامتحانية." },
-                { num: "05", title: "متابعة دقيقة", eng: "Evaluation", desc: "تقارير واضحة لمستوى الطالب ونقاط القوة والمواضيع التي تحتاج مراجعة." },
+                { num: "01", title: "تأسيس المفاهيم", eng: "Foundation", desc: "افهم الأساس." },
+                { num: "02", title: "حل النماذج", eng: "Mastery", desc: "طبّق على المسائل." },
+                { num: "03", title: "تدريب مستمر", eng: "Practice", desc: "ثبّت فهمك." },
+                { num: "04", title: "اختبارات قياسية", eng: "Standardized Exams", desc: "اختبر مستواك." },
+                { num: "05", title: "متابعة دقيقة", eng: "Evaluation", desc: "اعرف تقدمك." },
+                { num: "01", title: "تأسيس المفاهيم", eng: "Foundation", desc: "افهم الأساس." },
+                { num: "02", title: "حل النماذج", eng: "Mastery", desc: "طبّق على المسائل." },
+                { num: "03", title: "تدريب مستمر", eng: "Practice", desc: "ثبّت فهمك." },
+                { num: "04", title: "اختبارات قياسية", eng: "Standardized Exams", desc: "اختبر مستواك." },
+                { num: "05", title: "متابعة دقيقة", eng: "Evaluation", desc: "اعرف تقدمك." },
               ].map((pillar, pIndex) => (
                 <div 
                   key={pIndex} 

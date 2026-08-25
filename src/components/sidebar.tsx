@@ -1,176 +1,117 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  Home,
-  BookOpen,
-  ClipboardList,
-  Users,
-  Trophy,
-  Library,
-  Calendar,
-  Bell,
-  Pi,
-  Settings,
-  Flame,
-  ChevronLeft,
-  ShieldCheck,
-} from "lucide-react";
+import { BookOpen, ClipboardList, Home, LogOut, UserRound, Wallet } from "lucide-react";
 import { LogoWordmark } from "./logo";
+import type { ShellUser } from "./dashboard-shell";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
-  user?: { name: string; role: string; avatarUrl?: string } | null;
+  user?: ShellUser | null;
   className?: string;
   onCloseMobile?: () => void;
 }
 
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "الرئيسية", icon: Home, exact: true },
+  { href: "/dashboard/courses", label: "كورساتي", icon: BookOpen },
+  { href: "/dashboard/exams", label: "الاختبارات", icon: ClipboardList },
+  { href: "/dashboard/wallet", label: "المحفظة", icon: Wallet },
+  { href: "/dashboard/account", label: "حسابي", icon: UserRound },
+  { href: "/courses", label: "استكشاف الكورسات", icon: BookOpen },
+] as const;
+
 export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const navItems = [
-    { href: "/dashboard", label: "الرئيسية", english: "Home", icon: Home },
-    { href: "/admin", label: "لوحة الإدارة", english: "Admin Panel", icon: ShieldCheck, badge: "إدارة" },
-    { href: "/courses", label: "المقررات", english: "Courses", icon: BookOpen },
-    { href: "/dashboard/exams", label: "الاختبارات", english: "Quizzes", icon: ClipboardList },
-    { href: "/dashboard/community", label: "المجتمع", english: "Community", icon: Users },
-    { href: "/dashboard/achievements", label: "إنجازاتي", english: "Achievements", icon: Trophy, badge: "جديد" },
-    { href: "/dashboard/library", label: "المكتبة", english: "Library", icon: Library },
-    { href: "/dashboard/schedule", label: "الجدول", english: "Schedule", icon: Calendar },
-    { href: "/dashboard/notifications", label: "الإشعارات", english: "Notifications", icon: Bell, count: 3 },
-    { href: "/dashboard/formulas", label: "القوانين", english: "Formulas", icon: Pi },
-    { href: "/dashboard/settings", label: "الإعدادات", english: "Settings", icon: Settings },
-  ];
+  async function logout() {
+    await fetch("/api/v1/auth/logout", { method: "POST" });
+    onCloseMobile?.();
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <aside
       className={cn(
-        "flex h-full w-72 flex-col justify-between border-l border-line/80 bg-surface/90 backdrop-blur-xl p-5 select-none transition-all duration-300",
-        className
+        "flex h-full w-72 flex-col border-e border-line bg-surface p-4 select-none",
+        className,
       )}
     >
-      <div className="space-y-6">
-        {/* Logo Header */}
-        <div className="flex items-center justify-between px-2 pt-1 pb-3 border-b border-line/60">
-          <Link href="/" className="group" onClick={onCloseMobile}>
-            <LogoWordmark />
-          </Link>
+      {/* Brand */}
+      <div className="border-b border-line px-2 pb-4 pt-1">
+        <Link href="/" onClick={onCloseMobile} aria-label="دروس ماث">
+          <LogoWordmark />
+        </Link>
+        {/* Light mentor identity */}
+        <div className="mt-3 flex items-center gap-2">
+          <Image
+            src="/images/assets/teacher.webp"
+            alt=""
+            width={24}
+            height={24}
+            className="size-6 rounded-full object-cover object-top ring-1 ring-line"
+          />
+          <span className="text-[11px] font-bold text-muted">مع مستر محمد سعيد</span>
         </div>
-
-        {/* Primary Navigation Menu */}
-        <nav className="space-y-1.5" aria-label="شريط التنقل الرئيسي">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onCloseMobile}
-                className={cn(
-                  "group relative flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-200",
-                  isActive
-                    ? "bg-neon-lime text-slate-950 shadow-md shadow-lime-500/20 font-extrabold"
-                    : "text-muted hover:bg-surface2 hover:text-ink"
-                )}
-              >
-                <div className="flex items-center gap-3.5">
-                  <span
-                    className={cn(
-                      "grid size-9 place-items-center rounded-xl transition-all duration-200",
-                      isActive
-                        ? "bg-slate-950 text-neon-lime"
-                        : "bg-surface2/80 text-muted group-hover:text-neon-lime group-hover:bg-slate-900"
-                    )}
-                  >
-                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                  </span>
-                  <div className="flex flex-col text-start">
-                    <span>{item.label}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-mono leading-none tracking-wider",
-                        isActive ? "text-slate-900/70" : "text-muted/60"
-                      )}
-                    >
-                      {item.english}
-                    </span>
-                  </div>
-                </div>
-
-                {item.count ? (
-                  <span className="grid size-5 place-items-center rounded-full bg-rose-500 text-[11px] font-mono font-bold text-white shadow-sm">
-                    {item.count}
-                  </span>
-                ) : null}
-
-                {item.badge ? (
-                  <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold text-amber-500 border border-amber-400/30">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Bottom Promo & Profile Section */}
-      <div className="space-y-4 pt-4 border-t border-line/60">
-        {/* Trophy Arena Card (Exact Match to Mockup 1 & 2) */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-emerald-950 p-4 text-white shadow-lg border border-emerald-500/30 group">
-          <div className="absolute -right-6 -bottom-6 size-24 rounded-full bg-emerald-500/20 blur-xl group-hover:bg-emerald-500/30 transition-all duration-500" />
-          
-          <div className="relative z-10 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="grid size-8 place-items-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                <Trophy size={18} />
-              </span>
-              <span className="font-bold text-xs text-emerald-400 tracking-wider font-mono">
-                THE ARENA
-              </span>
-            </div>
-            
-            <p className="text-xs font-bold leading-relaxed text-slate-200">
-              جاهز لتحدي نفسك؟ ادخل ساحة الرياضيات الآن
-            </p>
-
+      {/* Navigation — existing routes only */}
+      <nav className="mt-4 space-y-1" aria-label="تنقل مساحة الطالب">
+        {NAV_ITEMS.map((item) => {
+          const isActive = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
             <Link
-              href="/dashboard/arena"
+              key={item.href}
+              href={item.href}
               onClick={onCloseMobile}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-neon-lime px-3 py-2 text-xs font-black text-slate-950 shadow-md hover:bg-lime-400 transition-all duration-200"
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors",
+                isActive
+                  ? "bg-neon-lime-soft text-brand"
+                  : "text-muted hover:bg-surface2 hover:text-ink",
+              )}
             >
-              <span>ابدأ التحدي الان</span>
-              <ChevronLeft size={14} />
+              {isActive && (
+                <span className="absolute inset-y-2 start-0 w-0.5 rounded-full bg-brand" aria-hidden />
+              )}
+              <Icon size={17} strokeWidth={isActive ? 2.4 : 2} />
+              <span>{item.label}</span>
             </Link>
-          </div>
-        </div>
+          );
+        })}
+      </nav>
 
-        {/* User Card at Bottom */}
+      {/* Student identity + logout */}
+      <div className="mt-auto space-y-2 border-t border-line pt-4">
         {user ? (
-          <div className="flex items-center justify-between rounded-2xl bg-surface2/60 p-3 border border-line/50">
-            <div className="flex items-center gap-3 truncate">
-              <div className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-slate-900 border border-neon-lime/40">
-                <Image
-                  src="/images/assets/teacher.webp"
-                  alt={user.name}
-                  fill
-                  className="object-cover object-top"
-                />
-              </div>
-              <div className="truncate">
-                <p className="text-xs font-extrabold truncate text-ink">{user.name}</p>
-                <p className="text-[10px] font-bold text-neon-lime flex items-center gap-1">
-                  <Flame size={12} />
-                  طالب مميز
-                </p>
-              </div>
+          <div className="flex items-center gap-3 rounded-xl bg-surface2/60 px-3 py-2.5">
+            {user.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatarUrl} alt="" className="size-9 shrink-0 rounded-full object-cover ring-1 ring-line" />
+            ) : (
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-xs font-bold text-muted ring-1 ring-line">
+                {user.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}
+              </span>
+            )}
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
+              <p className="text-[10px] font-semibold text-muted">حسابي</p>
             </div>
           </div>
         ) : null}
+        <button
+          onClick={logout}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-xs font-bold text-muted transition-colors hover:border-danger hover:text-danger"
+        >
+          <LogOut size={14} className="-scale-x-100" />
+          تسجيل الخروج
+        </button>
       </div>
     </aside>
   );

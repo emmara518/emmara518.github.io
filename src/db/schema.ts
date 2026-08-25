@@ -332,16 +332,69 @@ export const invoices = pgTable("invoices", {
   issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const couponKindEnum = pgEnum("coupon_kind", ["course_percent", "wallet_balance", "course_access"]);
+
 export const coupons = pgTable("coupons", {
   id: uuid("id").defaultRandom().primaryKey(),
   code: text("code").notNull().unique(),
-  percentOff: integer("percent_off").notNull(),
+  /** course_percent → percent_off on purchase · wallet_balance → amount_cents to wallet · course_access → unlocks courseId subscription. */
+  kind: couponKindEnum("kind").notNull().default("course_percent"),
+  percentOff: integer("percent_off").notNull().default(0),
+  /** Absolute balance value in EGP cents — required when kind = wallet_balance. */
+  amountCents: integer("amount_cents"),
+  /** Target course — required when kind = course_access (center-paid full course access). */
+  courseId: uuid("course_id").references(() => courses.id, { onDelete: "cascade" }),
   maxUses: integer("max_uses").notNull().default(100),
   usedCount: integer("used_count").notNull().default(0),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** One redemption per student per code (enforced by unique pair). */
+export const couponRedemptions = pgTable(
+  "coupon_redemptions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    couponId: uuid("coupon_id")
+      .notNull()
+      .references(() => coupons.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("coupon_redemptions_unique").on(t.couponId, t.userId)],
+);
+
+/**
+ * Wallet top-up requests paid externally (InstaPay / digital wallets).
+ * Student submits transfer screenshot → admin reviews → issues a
+ * wallet_balance or course_access code, delivered via notifications.
+ */
+export const paymentRequests = pgTable(
+  "payment_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    amountEgp: integer("amount_egp").notNull(),
+    /** instapay | vodafone_cash | etisalat_cash | orange_cash */
+    method: text("method").notNull(),
+    senderName: text("sender_name").notNull().default(""),
+    /** Storage key under /uploads/proofs/ — served to admins only. */
+    screenshotKey: text("screenshot_key").notNull(),
+    /** pending | approved | rejected */
+    status: text("status").notNull().default("pending"),
+    adminNote: text("admin_note").notNull().default(""),
+    issuedCode: text("issued_code"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    reviewedBy: uuid("reviewed_by").references(() => users.id, { onDelete: "set null" }),
+  },
+  (t) => [index("payment_requests_user_idx").on(t.userId), index("payment_requests_status_idx").on(t.status)],
+);
 
 /* ── wallet (append-only ledger) ── */
 export const walletAccounts = pgTable("wallet_accounts", {

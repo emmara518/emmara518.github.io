@@ -10,7 +10,11 @@ import type { Role } from "./rbac";
  * Authentication — server-side sessions only.
  * Passwords: bcrypt(12). Sessions: opaque 256-bit token in httpOnly cookie,
  * hashed-metadata row in DB with expiry. No third-party auth dependency.
+ * Single-active-session policy: a new login revokes the user's previous sessions.
  */
+
+/** The single master admin account (see db/seed.ts). */
+export const MASTER_ADMIN_EMAIL = "admin";
 
 export const SESSION_COOKIE = "dros_session";
 const SESSION_TTL_DAYS = 30;
@@ -32,6 +36,9 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 export async function createSession(userId: string): Promise<void> {
+  // Single-active-session policy: opening the account on any device revokes
+  // all previous sessions — protects teacher content from account sharing.
+  await db.delete(sessions).where(eq(sessions.userId, userId));
   const token = crypto.randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
   await db.insert(sessions).values({ token, userId, expiresAt });

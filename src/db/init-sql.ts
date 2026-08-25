@@ -1,54 +1,10 @@
 export const SCHEMA_SQL = `
 DO $$ BEGIN
-    CREATE TYPE "public"."course_status" AS ENUM('draft', 'published', 'archived');
+	CREATE TYPE "public"."coupon_kind" AS ENUM('course_percent', 'wallet_balance', 'course_access');
 EXCEPTION
-    WHEN duplicate_object THEN null;
+	WHEN duplicate_object THEN null;
 END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."exam_mode" AS ENUM('practice', 'graded');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."file_kind" AS ENUM('book', 'worksheet', 'exam_paper', 'attachment');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'failed', 'refunded');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."payment_provider" AS ENUM('wallet', 'manual', 'card');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."payment_status" AS ENUM('pending', 'succeeded', 'failed');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."question_kind" AS ENUM('mcq', 'true_false');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."subscription_status" AS ENUM('active', 'expired', 'cancelled');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."user_role" AS ENUM('student', 'parent', 'center', 'teacher', 'admin');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
-DO $$ BEGIN
-    CREATE TYPE "public"."wallet_txn_kind" AS ENUM('topup', 'purchase', 'refund', 'grant');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+
 
 CREATE TABLE IF NOT EXISTS "academic_stages" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -207,7 +163,9 @@ CREATE TABLE IF NOT EXISTS "assignment_submissions" (
 CREATE TABLE IF NOT EXISTS "coupons" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"code" text NOT NULL,
-	"percent_off" integer NOT NULL,
+	"kind" "coupon_kind" DEFAULT 'course_percent' NOT NULL,
+	"percent_off" integer DEFAULT 0 NOT NULL,
+	"amount_cents" integer,
 	"max_uses" integer DEFAULT 100 NOT NULL,
 	"used_count" integer DEFAULT 0 NOT NULL,
 	"expires_at" timestamp with time zone,
@@ -215,6 +173,40 @@ CREATE TABLE IF NOT EXISTS "coupons" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "coupons_code_unique" UNIQUE("code")
 );
+
+-- Additive migration for pre-existing databases (safe to run repeatedly).
+ALTER TABLE "coupons" ADD COLUMN IF NOT EXISTS "kind" "coupon_kind" DEFAULT 'course_percent' NOT NULL;
+ALTER TABLE "coupons" ADD COLUMN IF NOT EXISTS "amount_cents" integer;
+ALTER TABLE "coupons" ADD COLUMN IF NOT EXISTS "course_id" uuid REFERENCES "courses"("id") ON DELETE cascade;
+ALTER TABLE "coupons" ALTER COLUMN "percent_off" SET DEFAULT 0;
+DO $$ BEGIN
+	ALTER TYPE "public"."coupon_kind" ADD VALUE IF NOT EXISTS 'course_access';
+EXCEPTION WHEN undefined_object THEN NULL; END $$;
+
+CREATE TABLE IF NOT EXISTS "coupon_redemptions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"coupon_id" uuid NOT NULL REFERENCES "coupons"("id") ON DELETE cascade,
+	"user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE cascade,
+	"redeemed_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "coupon_redemptions_unique" UNIQUE("coupon_id","user_id")
+);
+
+CREATE TABLE IF NOT EXISTS "payment_requests" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE cascade,
+	"amount_egp" integer NOT NULL,
+	"method" text NOT NULL,
+	"sender_name" text DEFAULT '' NOT NULL,
+	"screenshot_key" text NOT NULL,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"admin_note" text DEFAULT '' NOT NULL,
+	"issued_code" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"reviewed_at" timestamp with time zone,
+	"reviewed_by" uuid REFERENCES "users"("id") ON DELETE set null
+);
+CREATE INDEX IF NOT EXISTS "payment_requests_user_idx" ON "payment_requests" ("user_id");
+CREATE INDEX IF NOT EXISTS "payment_requests_status_idx" ON "payment_requests" ("status");
 
 CREATE TABLE IF NOT EXISTS "orders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

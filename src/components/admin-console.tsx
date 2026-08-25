@@ -1,203 +1,88 @@
 "use client";
 
-import { useState, useMemo, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Home,
+  Activity,
+  ArrowLeft,
   BarChart3,
   BookOpen,
-  GraduationCap,
-  Users,
-  KeyRound,
-  MessageSquare,
-  Receipt,
-  Search,
-  Plus,
-  Sparkles,
+  Check,
   CheckCircle2,
-  AlertCircle,
+  Clock,
+  Command,
+  Copy,
+  CreditCard,
+  Download,
+  ExternalLink,
+  Eye,
   Film,
   FileText,
+  GraduationCap,
   HelpCircle,
-  PlusCircle,
-  CreditCard,
-  UserPlus,
-  UserCheck,
-  ShieldCheck,
-  FolderTree,
-  Repeat,
-  ArrowRightLeft,
-  Award,
-  FileSpreadsheet,
-  LogIn,
-  LogOut,
-  Send,
-  Loader2,
-  Trash2,
-  Edit,
-  ExternalLink,
+  Image as ImageIcon,
+  KeyRound,
   Layers,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  Download,
-  Copy,
-  Activity,
-  PieChart,
-  UserX,
-  Bell,
-  Clock,
-  Flame,
-  Check,
+  ListChecks,
+  Loader2,
+  MessageSquare,
+  Pencil,
+  Plus,
+  PlusCircle,
   Printer,
-  Wallet,
-  CheckSquare,
-  XSquare,
+  Receipt,
   RefreshCw,
-  Eye,
-  SlidersHorizontal,
-  QrCode,
+  Search,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Timer,
+  Trash2,
+  UserCheck,
+  UserCircle,
+  UserPlus,
+  Users,
+  Wallet,
   X,
-  FileCheck,
+  Zap,
 } from "lucide-react";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { formatDate, formatEGP } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-/* ── DTOs ── */
-export type Overview = {
-  stats: { students: number; publishedCourses: number; revenueCents: number; activeSubscriptions: number };
-  revenueByMonth: { month: string; total: number }[];
-  recentOrders: { id: string; totalCents: number; status: string; createdAt: string; studentName: string; courseTitle: string }[];
-  recentAudit: { id: string; action: string; entity: string; createdAt: string; actorName: string | null }[];
-};
-
-export type CourseRow = {
-  id: string;
-  slug: string;
-  title: string;
-  status: "draft" | "published" | "archived";
-  priceCents: number;
-  createdAt: string;
-  gradeName: string;
-  subjectName: string;
-  lessonsCount: number;
-};
-export type UserRow = {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  isActive: boolean;
-  createdAt: string;
-  balanceCents: number;
-};
-export type CouponRow = {
-  id: string;
-  code: string;
-  percentOff: number;
-  maxUses: number;
-  usedCount: number;
-  isActive: boolean;
-  createdAt: string;
-  expiresAt: string | null;
-};
-export type OrderRow = {
-  id: string;
-  totalCents: number;
-  discountCents: number;
-  status: string;
-  createdAt: string;
-  studentName: string;
-  studentEmail: string;
-  courseTitle: string;
-};
-export type ExamRow = {
-  id: string;
-  title: string;
-  mode: string;
-  durationMin: number;
-  isPublished: boolean;
-  courseTitle: string;
-  courseSlug: string;
-  createdAt: string;
-  attemptsCount: number;
-  avgScore: number;
-};
-export type AttemptRow = {
-  id: string;
-  examTitle: string;
-  studentName: string;
-  studentEmail: string;
-  score: number;
-  totalMarks: number;
-  submittedAt: string;
-};
-export type VideoRow = {
-  id: string;
-  title: string;
-  youtubeVideoId: string;
-  durationSec: number;
-  lessonTitle: string;
-  courseTitle: string;
-  sortOrder: number;
-};
-export type CourseFileRow = {
-  id: string;
-  title: string;
-  kind: string;
-  sizeBytes: number;
-  storageKey: string;
-  isFreePreview: boolean;
-  courseTitle: string;
-  createdAt: string;
-};
-export type QuestionRow = {
-  id: string;
-  topic: string;
-  kind: string;
-  prompt: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-  difficulty: number;
-  marks: number;
-  subjectName: string;
-};
-export type SubscriptionRow = {
-  id: string;
-  status: string;
-  startsAt: string;
-  endsAt: string | null;
-  studentName: string;
-  studentEmail: string;
-  courseTitle: string;
-  priceCents: number;
-};
-export type InvoiceRow = {
-  id: string;
-  number: string;
-  totalCents: number;
-  issuedAt: string;
-  orderId: string;
-};
-export type PostRow = {
-  id: string;
-  body: string;
-  likesCount: number;
-  createdAt: string;
-  authorName: string;
-  authorRole: string;
-  courseTitle: string | null;
-};
-export type StageRow = {
-  id: string;
-  name: string;
-  slug: string;
-  sortOrder: number;
-};
+import { AdminTable, TablePrefsProvider, type Column, type Density } from "./admin/data-table";
+import { ToastViewport, useToasts } from "./admin/toast";
+import { ConfirmDialog, type ConfirmRequest } from "./admin/confirm-dialog";
+import { CommandPalette, useCommandPalette, type PaletteCommand } from "./admin/command-palette";
+import { StudentProfileModal } from "./admin/student-profile";
+import {
+  ExpiryBadge,
+  Highlight,
+  KpiCard,
+  SectionHeader,
+  actionLabel,
+  expiryState,
+  relativeTime,
+  statusLabel,
+  statusTone,
+} from "./admin/primitives";
+import type {
+  AttemptRow,
+  CouponRow,
+  CourseFileRow,
+  CourseRow,
+  ExamRow,
+  InvoiceRow,
+  OrderRow,
+  Overview,
+  PostRow,
+  QuestionRow,
+  StageRow,
+  SubscriptionRow,
+  UserRow,
+  VideoRow,
+} from "./admin/types";
 
 /* ── Primary Functional Hubs ── */
 export type CategoryId =
@@ -211,14 +96,12 @@ export type CategoryId =
 interface SubFeatureDef {
   id: string;
   label: string;
-  badge?: string;
-  icon?: typeof Home;
 }
 
 interface CategoryDef {
   id: CategoryId;
   label: string;
-  icon: typeof Home;
+  icon: typeof BarChart3;
   description: string;
   subFeatures: SubFeatureDef[];
 }
@@ -239,7 +122,7 @@ const CATEGORIES: CategoryDef[] = [
     id: "academic",
     label: "المناهج والمقررات",
     icon: BookOpen,
-    description: "الكورسات، الفيديوهات، المذكرات، والمجموعات الدراسية",
+    description: "الكورسات، الفيديوهات، المذكرات، والمراحل الدراسية",
     subFeatures: [
       { id: "courses_table", label: "جدول الكورسات" },
       { id: "courses_manage", label: "إضافة مقرر جديد" },
@@ -270,7 +153,9 @@ const CATEGORIES: CategoryDef[] = [
     subFeatures: [
       { id: "create_codes", label: "إنشاء وتوليد أكواد" },
       { id: "codes_table", label: "جدول الأكواد النشطة" },
+      { id: "payment_requests", label: "طلبات شحن الرصيد" },
       { id: "manual_payment", label: "الدفع اليدوي (سنتر/كاش)" },
+      { id: "orders_table", label: "جدول الطلبات" },
       { id: "subscriptions_table", label: "جداول الاشتراكات" },
       { id: "invoices_table", label: "جداول الفواتير" },
     ],
@@ -289,30 +174,17 @@ const CATEGORIES: CategoryDef[] = [
   },
   {
     id: "communications",
-    label: "المنتدى ورسائل SMS",
+    label: "التنبيهات والمجتمع",
     icon: MessageSquare,
-    description: "حملات SMS النصية، وإشراف ومتابعة موضوعات المجتمع",
+    description: "تنبيهات جماعية للطلاب، وإشراف ومتابعة منشورات المجتمع",
     subFeatures: [
-      { id: "sms_messages", label: "إرسال رسائل SMS" },
+      { id: "sms_messages", label: "إرسال تنبيه جماعي" },
       { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب" },
     ],
   },
 ];
 
-const STATUS_LABEL: Record<string, { label: string; tone: "brand" | "gold" | "success" | "muted" | "danger" }> = {
-  draft: { label: "مسودة", tone: "muted" },
-  published: { label: "منشور", tone: "success" },
-  archived: { label: "مؤرشف", tone: "danger" },
-  paid: { label: "مدفوع", tone: "success" },
-  pending: { label: "معلق", tone: "gold" },
-  failed: { label: "فاشل", tone: "danger" },
-  refunded: { label: "مسترد", tone: "muted" },
-  active: { label: "نشط", tone: "success" },
-  expired: { label: "منتهي", tone: "muted" },
-  cancelled: { label: "ملغي", tone: "danger" },
-};
-
-/** Arabic UTF-8 CSV exporter utility */
+/* ── Arabic UTF-8 CSV exporter utility ── */
 function downloadCSV(filename: string, rows: Record<string, unknown>[], headers: { key: string; label: string }[]) {
   if (!rows || rows.length === 0) return;
   const headerLine = headers.map((h) => `"${h.label.replace(/"/g, '""')}"`).join(",");
@@ -334,6 +206,192 @@ function downloadCSV(filename: string, rows: Record<string, unknown>[], headers:
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+const yesNo = (b: boolean) => (b ? "نعم" : "لا");
+
+/* ── Quick filter chips with live counts ── */
+function FilterChips({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: { value: string; label: string; count?: number }[];
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={label}>
+      {options.map((opt) => {
+        const active = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+              active
+                ? "border-brand bg-brand/10 text-brand"
+                : "border-line bg-surface text-muted hover:border-brand/40 hover:text-ink"
+            )}
+          >
+            {opt.label}
+            {typeof opt.count === "number" && (
+              <span className={cn("ms-1.5 tabular-nums", active ? "text-brand" : "opacity-60")}>({opt.count})</span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Date range inputs (from / to) ── */
+function DateRangeInputs({
+  from,
+  to,
+  onChange,
+}: {
+  from: string;
+  to: string;
+  onChange: (range: { from: string; to: string }) => void;
+}) {
+  const hasValue = Boolean(from || to);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input
+        type="date"
+        value={from}
+        onChange={(e) => onChange({ from: e.target.value, to })}
+        aria-label="من تاريخ"
+        className="h-9 cursor-pointer rounded-xl border border-line bg-surface px-2.5 text-xs tabular-nums text-ink outline-none transition-colors focus:border-brand"
+      />
+      <span className="text-xs text-muted">→</span>
+      <input
+        type="date"
+        value={to}
+        onChange={(e) => onChange({ from, to: e.target.value })}
+        aria-label="إلى تاريخ"
+        className="h-9 cursor-pointer rounded-xl border border-line bg-surface px-2.5 text-xs tabular-nums text-ink outline-none transition-colors focus:border-brand"
+      />
+      {hasValue && (
+        <button
+          type="button"
+          onClick={() => onChange({ from: "", to: "" })}
+          className="cursor-pointer rounded-lg border border-line px-2 py-1.5 text-[11px] text-muted transition-colors hover:text-ink"
+        >
+          مسح
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Local state that re-syncs from server props whenever the server sends
+ * fresh data (after router.refresh()) — using the official
+ * "adjust state during render" pattern instead of an effect. */
+function useSyncedState<T>(incoming: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [value, setValue] = useState(incoming);
+  const [prevIncoming, setPrevIncoming] = useState(incoming);
+  if (prevIncoming !== incoming) {
+    setPrevIncoming(incoming);
+    setValue(incoming);
+  }
+  return [value, setValue];
+}
+
+/* ── Bulk questions text parser ──
+   Expected block format:
+     1. نص السؤال
+     خيار أول
+     خيار ثانٍ
+     الإجابة: 2
+*/
+export function parseBulkQuestions(text: string): {
+  questions: { prompt: string; options: string[]; correctIndex: number }[];
+  errors: string[];
+} {
+  const blocks = text
+    .split(/\n\s*\n/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  const questions: { prompt: string; options: string[]; correctIndex: number }[] = [];
+  const errors: string[] = [];
+
+  blocks.forEach((block, i) => {
+    const lines = block
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lines.length < 3) {
+      errors.push(`السؤال ${i + 1}: أسطر غير كافية — يلزم سؤال + خيارين على الأقل + سطر الإجابة`);
+      return;
+    }
+    const prompt = lines[0].replace(/^\d+\s*[.)\-،]\s*/, "").trim();
+    let correctIndex = -1;
+    const options: string[] = [];
+    for (let j = 1; j < lines.length; j++) {
+      const answerMatch = lines[j].match(/^(?:الإجابة|الاجابة|الإجابه|answer)\s*[:\-]?\s*(\d+)\s*$/i);
+      if (answerMatch) {
+        correctIndex = parseInt(answerMatch[1], 10) - 1;
+        continue;
+      }
+      options.push(lines[j].replace(/^[-•*]\s*/, ""));
+    }
+    if (correctIndex < 0) {
+      errors.push(`السؤال ${i + 1}: لم يُعثر على سطر «الإجابة: رقم»`);
+      return;
+    }
+    if (options.length < 2) {
+      errors.push(`السؤال ${i + 1}: عدد الخيارات أقل من اثنين`);
+      return;
+    }
+    if (correctIndex >= options.length) {
+      errors.push(`السؤال ${i + 1}: رقم الإجابة (${correctIndex + 1}) أكبر من عدد الخيارات`);
+      return;
+    }
+    questions.push({ prompt, options, correctIndex });
+  });
+
+  return { questions, errors };
+}
+
+/* ── Monthly revenue chart (pure CSS bars, RTL-native) ── */
+function RevenueChart({ data }: { data: { month: string; total: number }[] }) {
+  const max = Math.max(...data.map((d) => d.total), 1);
+  if (data.length === 0) {
+    return <p className="py-8 text-center text-sm text-muted">لا توجد بيانات إيرادات بعد.</p>;
+  }
+  return (
+    <div className="space-y-3">
+      {data.map((d) => (
+        <div key={d.month} className="flex items-center gap-3">
+          <span className="w-16 shrink-0 text-xs font-medium text-muted" dir="ltr">
+            {d.month}
+          </span>
+          <div className="h-7 flex-1 overflow-hidden rounded-lg bg-surface2">
+            <div
+              className="h-full rounded-lg bg-[linear-gradient(270deg,var(--brand),var(--brand-strong))]"
+              style={{ width: `${Math.max(4, (d.total / max) * 100)}%` }}
+              role="meter"
+              aria-valuenow={d.total}
+              aria-valuemin={0}
+              aria-valuemax={max}
+              aria-label={`إيرادات ${d.month}`}
+            />
+          </div>
+          <span className="w-24 shrink-0 text-end text-xs font-semibold tabular-nums text-ink">
+            {formatEGP(d.total)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function AdminConsole({
@@ -376,35 +434,121 @@ export function AdminConsole({
   stages: StageRow[];
 }) {
   const router = useRouter();
+  const { toasts, push: pushToast, dismiss: dismissToast } = useToasts();
 
-  // Local Reactive State for Optimistic / Immediate UI updates
-  const [localCourses, setLocalCourses] = useState<CourseRow[]>(courses);
-  const [localUsers, setLocalUsers] = useState<UserRow[]>(users);
-  const [localExams, setLocalExams] = useState<ExamRow[]>(exams);
-  const [localCoupons, setLocalCoupons] = useState<CouponRow[]>(coupons);
-  const [localSubscriptions, setLocalSubscriptions] = useState<SubscriptionRow[]>(subscriptions);
+  /* Server data mirrored locally for optimistic updates; re-synced whenever
+     the server responds with fresh props after router.refresh(). */
+  const [localCourses, setLocalCourses] = useSyncedState(courses);
+  const [localUsers, setLocalUsers] = useSyncedState(users);
+  const [localExams, setLocalExams] = useSyncedState(exams);
+  const [localCoupons, setLocalCoupons] = useSyncedState(coupons);
+  const [localSubscriptions, setLocalSubscriptions] = useSyncedState(subscriptions);
+  const [localStages, setLocalStages] = useSyncedState(stages);
 
-  // Navigation State
+  /* Navigation */
   const [activeCategory, setActiveCategory] = useState<CategoryId>("overview");
   const [activeSubFeature, setActiveSubFeature] = useState<string>("home");
   const [globalSearch, setGlobalSearch] = useState("");
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [confirmReq, setConfirmReq] = useState<ConfirmRequest | null>(null);
 
-  // Filter States
-  const [userRoleFilter, setUserRoleFilter] = useState<string>("all");
-  const [userStatusFilter, setUserStatusFilter] = useState<string>("all");
-  const [courseStatusFilter, setCourseStatusFilter] = useState<string>("all");
-  const [examModeFilter, setExamModeFilter] = useState<string>("all");
-  const [questionTopicFilter, setQuestionTopicFilter] = useState<string>("all");
+  /* Filters */
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [userStatusFilter, setUserStatusFilter] = useState("all");
+  const [courseStatusFilter, setCourseStatusFilter] = useState("all");
+  const [examModeFilter, setExamModeFilter] = useState("all");
+  const [questionTopicFilter, setQuestionTopicFilter] = useState("all");
+  const [orderStatusChip, setOrderStatusChip] = useState("all");
+  const [couponChip, setCouponChip] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-  // Modals & Overlays
+  /* ── Feature: persisted table preferences (density + page size) ── */
+  const [density, setDensity] = useState<Density>("comfortable");
+  const [pageSize, setPageSize] = useState(25);
+
+  /* ── Feature: auto-refresh + last-updated indicator ── */
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(() => new Date());
+
+  /* ── Feature: bulk user selection ── */
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+
+  /* ── Feature: student 360° profile ── */
+  const [profileUser, setProfileUser] = useState<UserRow | null>(null);
+
+  /* ── Feature: inline course price edit ── */
+  const [editingPrice, setEditingPrice] = useState<{ id: string; value: string } | null>(null);
+
+  /* Load persisted preferences after mount (avoids SSR hydration mismatch) */
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        const savedDensity = localStorage.getItem("admin-density");
+        if (savedDensity === "compact" || savedDensity === "comfortable") setDensity(savedDensity);
+        const savedSize = Number(localStorage.getItem("admin-page-size"));
+        if ([25, 50, 100].includes(savedSize)) setPageSize(savedSize);
+        setAutoRefresh(localStorage.getItem("admin-auto-refresh") === "1");
+      } catch {
+        /* storage unavailable */
+      }
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  function changeDensity(next: Density) {
+    setDensity(next);
+    try { localStorage.setItem("admin-density", next); } catch {}
+  }
+  function changePageSize(next: number) {
+    setPageSize(next);
+    try { localStorage.setItem("admin-page-size", String(next)); } catch {}
+  }
+  function toggleAutoRefresh() {
+    setAutoRefresh((prev) => {
+      const next = !prev;
+      try { localStorage.setItem("admin-auto-refresh", next ? "1" : "0"); } catch {}
+      return next;
+    });
+  }
+
+  /* Auto-refresh loop (live monitoring) */
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const id = window.setInterval(() => {
+      router.refresh();
+      setLastRefreshed(new Date());
+    }, 30000);
+    return () => window.clearInterval(id);
+  }, [autoRefresh, router]);
+
+  function refreshNow() {
+    router.refresh();
+    setLastRefreshed(new Date());
+    pushToast("info", "تم تحديث البيانات من السيرفر.");
+  }
+
+  /* ── Feature: search helpers ── */
+  function copyText(text: string, label = "تم النسخ إلى الحافظة") {
+    navigator.clipboard.writeText(text);
+    pushToast("info", label);
+  }
+  const hl = (text: string) => <Highlight text={text} query={globalSearch} />;
+
+  function inDateRange(iso: string): boolean {
+    if (dateFrom && new Date(iso) < new Date(`${dateFrom}T00:00:00`)) return false;
+    if (dateTo && new Date(iso) > new Date(`${dateTo}T23:59:59`)) return false;
+    return true;
+  }
+
+  /* Modals */
   const [walletModalUser, setWalletModalUser] = useState<UserRow | null>(null);
   const [walletAdjustAmount, setWalletAdjustAmount] = useState("50");
   const [walletAdjustReason, setWalletAdjustReason] = useState("مكافأة تميز في الامتحان");
   const [printVouchersModal, setPrintVouchersModal] = useState<string[] | null>(null);
 
-  // Form States: Code Generator
+  /* Code generator */
   const [codePrefix, setCodePrefix] = useState("MATH");
   const [codeCount, setCodeCount] = useState("10");
   const [codePercent, setCodePercent] = useState("100");
@@ -413,13 +557,39 @@ export function AdminConsole({
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  // Form States: Manual Payment
+  /* Payment requests review (transfer screenshots → issue code) */
+  type PaymentRequestRow = {
+    id: string;
+    amountEgp: number;
+    method: string;
+    senderName: string;
+    screenshotKey: string;
+    status: string;
+    adminNote: string;
+    issuedCode: string | null;
+    createdAt: string;
+    studentName: string;
+    studentPhone: string | null;
+    studentEmail: string;
+  };
+  const [paymentRequests, setPaymentRequests] = useState<PaymentRequestRow[]>([]);
+  const [prLoaded, setPrLoaded] = useState(false);
+  const [prFilter, setPrFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
+  const [prBusyId, setPrBusyId] = useState<string | null>(null);
+  const [prIssueKind, setPrIssueKind] = useState<Record<string, "wallet_balance" | "course_access">>({});
+  const [prIssueAmount, setPrIssueAmount] = useState<Record<string, string>>({});
+  const [prIssueCourse, setPrIssueCourse] = useState<Record<string, string>>({});
+  const [prCopiedId, setPrCopiedId] = useState<string | null>(null);
+  const [prRejectOpen, setPrRejectOpen] = useState<string | null>(null);
+  const [prRejectNote, setPrRejectNote] = useState("");
+
+  /* Manual payment */
   const [mpStudentEmail, setMpStudentEmail] = useState("");
   const [mpCourseId, setMpCourseId] = useState(courses[0]?.id || "");
   const [mpAmount, setMpAmount] = useState(courses[0] ? String(courses[0].priceCents / 100) : "200");
   const [mpMethod, setMpMethod] = useState<"vodafone_cash" | "instapay" | "center_cash">("center_cash");
 
-  // Form States: Course Creation
+  /* Course creation */
   const [cTitle, setCTitle] = useState("");
   const [cSlug, setCSlug] = useState("");
   const [cGrade, setCGrade] = useState(grades[0]?.id || "");
@@ -427,7 +597,7 @@ export function AdminConsole({
   const [cPrice, setCPrice] = useState("250");
   const [cSummary, setCSummary] = useState("");
 
-  // Form States: Question Creator
+  /* Question creator */
   const [qSubjectId, setQSubjectId] = useState(subjects[0]?.id || "");
   const [qTopic, setQTopic] = useState("الهندسة والتحليل");
   const [qPrompt, setQPrompt] = useState("");
@@ -438,32 +608,52 @@ export function AdminConsole({
   const [qCorrectIdx, setQCorrectIdx] = useState("0");
   const [qExplanation, setQExplanation] = useState("");
 
-  // Form States: Bulk Questions
-  const [bulkText, setBulkText] = useState(
-    `1. ما هو ميل المستقيم 2x + 3y = 6؟\n-2/3\n3/2\n2/3\n-3/2\nالإجابة: 1\n\n2. إذا كان جا(س) = 0.5 فإن س = ؟\n30\n45\n60\n90\nالإجابة: 1`
-  );
+  /* Bulk questions */
+  const [bulkText, setBulkText] = useState("");
+  const [bulkSubjectId, setBulkSubjectId] = useState(subjects[0]?.id || "");
+  const [bulkTopic, setBulkTopic] = useState("عام");
+  const [bulkResult, setBulkResult] = useState<{ added: number; total: number; errors: string[] } | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
-  // Form States: Add Student
+  /* Add student */
   const [newStudentName, setNewStudentName] = useState("");
   const [newStudentEmail, setNewStudentEmail] = useState("");
   const [newStudentPhone, setNewStudentPhone] = useState("");
   const [newStudentPass, setNewStudentPass] = useState("12345678");
 
-  // Form States: SMS Broadcast
-  const [smsTarget, setSmsTarget] = useState("all");
+  /* Broadcast */
+  const [smsTarget, setSmsTarget] = useState("students");
+  const [smsTitle, setSmsTitle] = useState("");
   const [smsText, setSmsText] = useState("");
 
-  // Form States: Exam Creator
+  /* Exam creator */
   const [examTitle, setExamTitle] = useState("");
   const [examCourseId, setExamCourseId] = useState(courses[0]?.id || "");
   const [examDuration, setExamDuration] = useState("60");
   const [examMode, setExamMode] = useState<"practice" | "graded">("graded");
   const [examIsPublished, setExamIsPublished] = useState(true);
 
-  // Helper API caller
-  async function api(path: string, init?: RequestInit): Promise<boolean> {
+  /* New stage form */
+  const [stageName, setStageName] = useState("");
+  const [stageSlug, setStageSlug] = useState("");
+  const [stageOrder, setStageOrder] = useState("0");
+
+  /* ── Helpers ── */
+  function markPending(key: string) {
+    setPendingIds((prev) => new Set(prev).add(key));
+  }
+  function unmarkPending(key: string) {
+    setPendingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  }
+
+  /** API caller: returns response data on success (and re-syncs from server),
+   * or null on failure (error toast already shown unless silent). */
+  async function api(path: string, init?: RequestInit, opts?: { silent?: boolean; noRefresh?: boolean }): Promise<any | null> {
     setBusy(true);
-    setNote(null);
     try {
       const res = await fetch(path, {
         headers: { "Content-Type": "application/json" },
@@ -471,46 +661,117 @@ export function AdminConsole({
       });
       const json = await res.json();
       if (!json.ok) {
-        setNote({ kind: "err", text: json.error?.message ?? "فشلت العملية" });
-        return false;
+        if (!opts?.silent) pushToast("err", json.error?.message ?? "فشلت العملية");
+        return null;
       }
-      router.refresh();
-      return true;
+      if (!opts?.noRefresh) router.refresh();
+      return json.data ?? true;
     } catch {
-      setNote({ kind: "err", text: "مشكلة في الاتصال بالسيرفر" });
-      return false;
+      if (!opts?.silent) pushToast("err", "مشكلة في الاتصال بالسيرفر");
+      return null;
     } finally {
       setBusy(false);
     }
   }
 
-  // Generate & Save Real DB Batch Codes
+  function selectSubFeature(catId: CategoryId, subId: string) {
+    setActiveCategory(catId);
+    setActiveSubFeature(subId);
+  }
+
+  /* ── Payment requests review ── */
+  const loadPaymentRequests = useCallback(async () => {
+    try {
+      const data = await api("/api/v1/admin/payment-requests", {}, { silent: true, noRefresh: true });
+      if (data && data.requests) setPaymentRequests(data.requests);
+    } catch {
+      /* handled by api() */
+    } finally {
+      setPrLoaded(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (activeCategory !== "billing_codes" || activeSubFeature !== "payment_requests") return;
+    let cancelled = false;
+    fetch("/api/v1/admin/payment-requests")
+      .then((r) => r.json())
+      .then((json) => {
+        if (!cancelled && json.ok && json.data?.requests) setPaymentRequests(json.data.requests);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPrLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCategory, activeSubFeature]);
+
+  async function handleIssueRequestCode(id: string) {
+    const kind = prIssueKind[id] ?? "wallet_balance";
+    const body =
+      kind === "wallet_balance"
+        ? { kind, amountEgp: Number(prIssueAmount[id] || 0) }
+        : { kind, courseId: prIssueCourse[id] || undefined };
+    if (kind === "wallet_balance" && (!body.amountEgp || (body.amountEgp ?? 0) <= 0)) {
+      pushToast("err", "حدد مبلغ الرصيد");
+      return;
+    }
+    if (kind === "course_access" && !body.courseId) {
+      pushToast("err", "حدد الكورس");
+      return;
+    }
+    setPrBusyId(id);
+    const data = await api(`/api/v1/admin/payment-requests/${id}/issue`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    setPrBusyId(null);
+    if (data && data.code) {
+      void navigator.clipboard.writeText(data.code);
+      setPrCopiedId(id);
+      setTimeout(() => setPrCopiedId(null), 2500);
+      pushToast("ok", `تم إصدار الكود ${data.code} وإرساله للطالب عبر الإشعارات (منسوخ للحافظة)`);
+      await loadPaymentRequests();
+    }
+  }
+
+  async function handleRejectRequest(id: string) {
+    setPrBusyId(id);
+    const data = await api(`/api/v1/admin/payment-requests/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ note: prRejectNote }),
+    });
+    setPrBusyId(null);
+    if (data) {
+      pushToast("ok", "تم رفض الطلب وإشعار الطالب");
+      setPrRejectOpen(null);
+      setPrRejectNote("");
+      await loadPaymentRequests();
+    }
+  }
+
+  /* ── Handlers ── */
   async function handleBatchGenerateCodes(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    try {
-      const res = await fetch("/api/v1/admin/coupons/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prefix: codePrefix,
-          count: Math.min(100, Math.max(1, Number(codeCount) || 10)),
-          percentOff: Number(codePercent) || 100,
-          maxUses: Number(codeMaxUses) || 1,
-          daysValid: Number(codeDaysValid) || 30,
-        }),
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        setNote({ kind: "err", text: json.error?.message ?? "فشل توليد الأكواد" });
-        return;
-      }
-      setGeneratedCodes(json.data.codes || []);
-      setNote({ kind: "ok", text: json.data.message });
-      // update local coupons
-      if (json.data.coupons) {
+    const data = await api("/api/v1/admin/coupons/batch", {
+      method: "POST",
+      body: JSON.stringify({
+        prefix: codePrefix,
+        count: Math.min(100, Math.max(1, Number(codeCount) || 10)),
+        percentOff: Number(codePercent) || 100,
+        maxUses: Number(codeMaxUses) || 1,
+        daysValid: Number(codeDaysValid) || 30,
+      }),
+    });
+    if (data) {
+      setGeneratedCodes(data.codes || []);
+      pushToast("ok", data.message ?? "تم توليد الأكواد وحفظها بنجاح");
+      if (data.coupons) {
         setLocalCoupons((prev) => [
-          ...json.data.coupons.map((c: any) => ({
+          ...data.coupons.map((c: any) => ({
             id: c.id,
             code: c.code,
             percentOff: Number(codePercent) || 100,
@@ -523,61 +784,77 @@ export function AdminConsole({
           ...prev,
         ]);
       }
-    } catch {
-      setNote({ kind: "err", text: "تعذر الاتصال بالسيرفر لتوليد الأكواد" });
-    } finally {
-      setBusy(false);
     }
   }
 
-  // Toggle User Active Status
-  async function handleToggleUserStatus(u: UserRow) {
-    const nextStatus = !u.isActive;
-    // optimistic update
+  function requestToggleUserStatus(u: UserRow) {
+    if (u.isActive) {
+      setConfirmReq({
+        title: `تجميد حساب «${u.name}»؟`,
+        description: "لن يستطيع الطالب تسجيل الدخول أو استخدام المنصة حتى إعادة التفعيل. يمكن التراجع في أي وقت.",
+        confirmLabel: "تجميد الحساب",
+        tone: "danger",
+        onConfirm: () => applyUserStatus(u, false),
+      });
+    } else {
+      applyUserStatus(u, true);
+    }
+  }
+
+  async function applyUserStatus(u: UserRow, nextStatus: boolean) {
+    const key = `user-${u.id}`;
+    markPending(key);
     setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, isActive: nextStatus } : item)));
     const done = await api(`/api/v1/admin/users/${u.id}`, {
       method: "PATCH",
       body: JSON.stringify({ isActive: nextStatus }),
     });
     if (done) {
-      setNote({
-        kind: "ok",
-        text: `تم ${nextStatus ? "تفعيل" : "تجميد"} حساب «${u.name}» بنجاح.`,
-      });
+      pushToast("ok", `تم ${nextStatus ? "تفعيل" : "تجميد"} حساب «${u.name}» بنجاح.`);
     } else {
-      // rollback
       setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, isActive: u.isActive } : item)));
     }
+    unmarkPending(key);
   }
 
-  // Change User Role
-  async function handleChangeUserRole(u: UserRow, newRole: Role) {
+  function requestRoleChange(u: UserRow, newRole: Role) {
     if (u.role === newRole) return;
+    setConfirmReq({
+      title: `تغيير رتبة «${u.name}»؟`,
+      description: `ستنتقل الرتبة من «${ROLE_LABELS[u.role]}» إلى «${ROLE_LABELS[newRole]}». الرتب الأعلى تمنح صلاحيات أوسع على المنصة.`,
+      confirmLabel: "تغيير الرتبة",
+      tone: "primary",
+      onConfirm: () => applyRoleChange(u, newRole),
+    });
+  }
+
+  async function applyRoleChange(u: UserRow, newRole: Role) {
+    const key = `user-${u.id}`;
+    markPending(key);
     setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, role: newRole } : item)));
     const done = await api(`/api/v1/admin/users/${u.id}`, {
       method: "PATCH",
       body: JSON.stringify({ role: newRole }),
     });
     if (done) {
-      setNote({ kind: "ok", text: `تم تحديث دور «${u.name}» إلى ${ROLE_LABELS[newRole]}.` });
+      pushToast("ok", `تم تحديث دور «${u.name}» إلى ${ROLE_LABELS[newRole]}.`);
+    } else {
+      setLocalUsers((prev) => prev.map((item) => (item.id === u.id ? { ...item, role: u.role } : item)));
     }
+    unmarkPending(key);
   }
 
-  // Adjust Wallet Balance
   async function handleAdjustWallet(e: FormEvent) {
     e.preventDefault();
     if (!walletModalUser) return;
     const amount = Number(walletAdjustAmount);
     if (isNaN(amount) || amount === 0) {
-      setNote({ kind: "err", text: "يرجى تحديد مبلغ صالح للتعديل" });
+      pushToast("err", "يرجى تحديد مبلغ صالح للتعديل");
       return;
     }
     const done = await api(`/api/v1/admin/users/${walletModalUser.id}/wallet`, {
       method: "POST",
-      body: JSON.stringify({
-        amountEgp: amount,
-        reason: walletAdjustReason,
-      }),
+      body: JSON.stringify({ amountEgp: amount, reason: walletAdjustReason }),
     });
     if (done) {
       setLocalUsers((prev) =>
@@ -587,44 +864,160 @@ export function AdminConsole({
             : item
         )
       );
-      setNote({
-        kind: "ok",
-        text: `تم ${amount >= 0 ? "شحن" : "خصم"} ${Math.abs(amount)} ج.م لمحفظة الطالب «${walletModalUser.name}» بنجاح.`,
-      });
+      pushToast(
+        "ok",
+        `تم ${amount >= 0 ? "شحن" : "خصم"} ${Math.abs(amount)} ج.م لمحفظة الطالب «${walletModalUser.name}» بنجاح.`
+      );
       setWalletModalUser(null);
     }
   }
 
-  // Toggle Course Status
   async function handleCourseStatusChange(c: CourseRow, newStatus: "draft" | "published" | "archived") {
     if (c.status === newStatus) return;
+    const key = `course-${c.id}`;
+    markPending(key);
     setLocalCourses((prev) => prev.map((item) => (item.id === c.id ? { ...item, status: newStatus } : item)));
     const done = await api(`/api/v1/admin/courses/${c.id}`, {
       method: "PATCH",
       body: JSON.stringify({ status: newStatus }),
     });
     if (done) {
-      setNote({ kind: "ok", text: `تم تغيير حالة المقرر «${c.title}» إلى ${STATUS_LABEL[newStatus]?.label}.` });
+      pushToast("ok", `تم تغيير حالة المقرر «${c.title}» إلى ${statusLabel(newStatus)}.`);
+    } else {
+      setLocalCourses((prev) => prev.map((item) => (item.id === c.id ? { ...item, status: c.status } : item)));
     }
+    unmarkPending(key);
   }
 
-  // Toggle Exam Publish
+  function requestDeleteCourse(c: CourseRow) {
+    setConfirmReq({
+      title: `حذف مقرر «${c.title}»؟`,
+      description: "سيتم حذف المقرر نهائياً مع ارتباطاته. لا يمكن التراجع عن هذه العملية.",
+      confirmLabel: "حذف نهائي",
+      tone: "danger",
+      requireText: "حذف",
+      onConfirm: async () => {
+        const key = `course-${c.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/courses/${c.id}/delete`, { method: "DELETE" });
+        if (done) {
+          setLocalCourses((prev) => prev.filter((item) => item.id !== c.id));
+          pushToast("ok", `تم حذف المقرر «${c.title}» نهائياً.`);
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
   async function handleToggleExamPublish(e: ExamRow) {
+    const key = `exam-${e.id}`;
     const nextVal = !e.isPublished;
+    markPending(key);
     setLocalExams((prev) => prev.map((item) => (item.id === e.id ? { ...item, isPublished: nextVal } : item)));
     const done = await api(`/api/v1/admin/exams/${e.id}`, {
       method: "PATCH",
       body: JSON.stringify({ isPublished: nextVal }),
     });
     if (done) {
-      setNote({
-        kind: "ok",
-        text: `تم ${nextVal ? "نشر" : "إخفاء"} الامتحان «${e.title}» بنجاح.`,
-      });
+      pushToast("ok", `تم ${nextVal ? "نشر" : "إخفاء"} الامتحان «${e.title}» بنجاح.`);
+    } else {
+      setLocalExams((prev) => prev.map((item) => (item.id === e.id ? { ...item, isPublished: e.isPublished } : item)));
     }
+    unmarkPending(key);
   }
 
-  // Create Course Handler
+  function requestDeleteExam(ex: ExamRow) {
+    setConfirmReq({
+      title: `حذف امتحان «${ex.title}»؟`,
+      description: "سيُحذف الامتحان ومحاولاته المرتبطة نهائياً.",
+      confirmLabel: "حذف نهائي",
+      tone: "danger",
+      onConfirm: async () => {
+        const key = `exam-${ex.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/exams/${ex.id}/delete`, { method: "DELETE" });
+        if (done) {
+          setLocalExams((prev) => prev.filter((item) => item.id !== ex.id));
+          pushToast("ok", `تم حذف الامتحان «${ex.title}».`);
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
+  async function handleToggleCoupon(c: CouponRow) {
+    const key = `coupon-${c.id}`;
+    markPending(key);
+    setLocalCoupons((prev) => prev.map((item) => (item.id === c.id ? { ...item, isActive: !c.isActive } : item)));
+    const done = await api(`/api/v1/admin/coupons/${c.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive: !c.isActive }),
+    });
+    if (done) {
+      pushToast("ok", `تم ${c.isActive ? "تعطيل" : "تفعيل"} الكود «${c.code}».`);
+    } else {
+      setLocalCoupons((prev) => prev.map((item) => (item.id === c.id ? { ...item, isActive: c.isActive } : item)));
+    }
+    unmarkPending(key);
+  }
+
+  function requestDeleteCoupon(c: CouponRow) {
+    setConfirmReq({
+      title: `حذف الكود «${c.code}»؟`,
+      description: "لن يستطيع أحد استخدام هذا الكود بعد الحذف.",
+      confirmLabel: "حذف",
+      tone: "danger",
+      onConfirm: async () => {
+        const key = `coupon-${c.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/coupons/${c.id}`, { method: "DELETE" });
+        if (done) {
+          setLocalCoupons((prev) => prev.filter((item) => item.id !== c.id));
+          pushToast("ok", `تم حذف الكود «${c.code}».`);
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
+  function requestDeleteQuestion(q: QuestionRow) {
+    setConfirmReq({
+      title: "حذف هذا السؤال من البنك؟",
+      description: q.prompt.slice(0, 120),
+      confirmLabel: "حذف",
+      tone: "danger",
+      onConfirm: async () => {
+        const key = `question-${q.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/questions/${q.id}`, { method: "DELETE" });
+        if (done) {
+          pushToast("ok", "تم حذف السؤال من البنك.");
+          router.refresh();
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
+  function requestDeletePost(p: PostRow) {
+    setConfirmReq({
+      title: `حذف منشور «${p.authorName}»؟`,
+      description: p.body.slice(0, 120),
+      confirmLabel: "حذف المنشور",
+      tone: "danger",
+      onConfirm: async () => {
+        const key = `post-${p.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/community/posts/${p.id}`, { method: "DELETE" });
+        if (done) {
+          pushToast("ok", "تم حذف المنشور.");
+          router.refresh();
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
   async function handleCreateCourse(e: FormEvent) {
     e.preventDefault();
     const done = await api("/api/v1/admin/courses", {
@@ -640,7 +1033,7 @@ export function AdminConsole({
       }),
     });
     if (done) {
-      setNote({ kind: "ok", text: "تم إنشاء المقرر الدراسي بنجاح." });
+      pushToast("ok", "تم إنشاء المقرر الدراسي بنجاح.");
       setCTitle("");
       setCSlug("");
       setCSummary("");
@@ -648,7 +1041,6 @@ export function AdminConsole({
     }
   }
 
-  // Add Student Handler
   async function handleAddStudent(e: FormEvent) {
     e.preventDefault();
     const done = await api("/api/v1/admin/users/create-student", {
@@ -661,19 +1053,7 @@ export function AdminConsole({
       }),
     });
     if (done) {
-      setNote({ kind: "ok", text: `تم تسجيل حساب الطالب «${newStudentName}» بنجاح في قاعدة البيانات.` });
-      setLocalUsers((prev) => [
-        {
-          id: `u-${Date.now()}`,
-          name: newStudentName,
-          email: newStudentEmail,
-          role: "student",
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          balanceCents: 0,
-        },
-        ...prev,
-      ]);
+      pushToast("ok", `تم تسجيل حساب الطالب «${newStudentName}» بنجاح.`);
       setNewStudentName("");
       setNewStudentEmail("");
       setNewStudentPhone("");
@@ -681,7 +1061,6 @@ export function AdminConsole({
     }
   }
 
-  // Create Exam Handler
   async function handleCreateExam(e: FormEvent) {
     e.preventDefault();
     const done = await api("/api/v1/admin/exams", {
@@ -695,18 +1074,17 @@ export function AdminConsole({
       }),
     });
     if (done) {
-      setNote({ kind: "ok", text: `تم إنشاء الامتحان «${examTitle}» بنجاح.` });
+      pushToast("ok", `تم إنشاء الامتحان «${examTitle}» بنجاح.`);
       setExamTitle("");
       setActiveSubFeature("exams_table");
     }
   }
 
-  // Create Single Question Handler
   async function handleCreateQuestion(e: FormEvent) {
     e.preventDefault();
     const options = [qOpt1, qOpt2, qOpt3, qOpt4].map((o) => o.trim()).filter(Boolean);
     if (options.length < 2) {
-      setNote({ kind: "err", text: "يجب إدخال خيارين على الأقل للسؤال." });
+      pushToast("err", "يجب إدخال خيارين على الأقل للسؤال.");
       return;
     }
     const done = await api("/api/v1/admin/questions", {
@@ -723,7 +1101,7 @@ export function AdminConsole({
       }),
     });
     if (done) {
-      setNote({ kind: "ok", text: "تمت إضافة السؤال بنجاح إلى بنك الأسئلة!" });
+      pushToast("ok", "تمت إضافة السؤال بنجاح إلى بنك الأسئلة.");
       setQPrompt("");
       setQOpt1("");
       setQOpt2("");
@@ -734,7 +1112,6 @@ export function AdminConsole({
     }
   }
 
-  // Manual Enroll Handler
   async function handleManualEnroll(e: FormEvent) {
     e.preventDefault();
     const done = await api("/api/v1/admin/billing/manual-enroll", {
@@ -747,22 +1124,121 @@ export function AdminConsole({
       }),
     });
     if (done) {
-      setNote({
-        kind: "ok",
-        text: `تم تفعيل اشتراك الطالب (${mpStudentEmail}) بنجاح وإصدار الفاتورة.`,
-      });
+      pushToast("ok", `تم تفعيل اشتراك الطالب (${mpStudentEmail}) بنجاح وإصدار الفاتورة.`);
       setMpStudentEmail("");
       setActiveSubFeature("subscriptions_table");
     }
   }
 
-  // Switch Subfeature Helper
-  function selectSubFeature(catId: CategoryId, subId: string) {
-    setActiveCategory(catId);
-    setActiveSubFeature(subId);
+  async function handleSendBroadcast(e: FormEvent) {
+    e.preventDefault();
+    const data = await api("/api/v1/admin/communications/broadcast", {
+      method: "POST",
+      body: JSON.stringify({ target: smsTarget, title: smsTitle, body: smsText }),
+    });
+    if (data) {
+      pushToast("ok", data.message ?? "تم إرسال التنبيه بنجاح.");
+      setSmsTitle("");
+      setSmsText("");
+    }
   }
 
-  // Filtered Users
+  async function handleBulkImport() {
+    const { questions: parsed, errors } = parseBulkQuestions(bulkText);
+    if (parsed.length === 0) {
+      setBulkResult({ added: 0, total: 0, errors });
+      pushToast("err", "لم يُعثر على أي سؤال صالح في النص المُلصق.");
+      return;
+    }
+    setBulkBusy(true);
+    setBulkResult(null);
+    let added = 0;
+    const failErrors: string[] = [];
+    for (let i = 0; i < parsed.length; i++) {
+      const q = parsed[i];
+      const done = await api(
+        "/api/v1/admin/questions",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            subjectId: bulkSubjectId,
+            topic: bulkTopic || "عام",
+            prompt: q.prompt,
+            options: q.options,
+            correctIndex: q.correctIndex,
+            explanation: "",
+            marks: 1,
+            difficulty: 2,
+          }),
+        },
+        { silent: true, noRefresh: true }
+      );
+      if (done) added++;
+      else failErrors.push(`السؤال ${i + 1}: ${q.prompt.slice(0, 60)}…`);
+    }
+    setBulkBusy(false);
+    setBulkResult({ added, total: parsed.length, errors: [...errors, ...failErrors] });
+    if (added > 0) {
+      pushToast("ok", `تم إدراج ${added} من ${parsed.length} سؤالاً في البنك.`);
+      router.refresh();
+      if (added === parsed.length) setBulkText("");
+    } else {
+      pushToast("err", "فشل إدراج جميع الأسئلة — راجع التفاصيل أسفل النموذج.");
+    }
+  }
+
+  async function handleAddStage(e: FormEvent) {
+    e.preventDefault();
+    const data = await api("/api/v1/admin/stages", {
+      method: "POST",
+      body: JSON.stringify({ name: stageName, slug: stageSlug || undefined, sortOrder: Number(stageOrder) || 0 }),
+    });
+    if (data) {
+      setLocalStages((prev) => [...prev, { id: data.id, name: data.name, slug: data.slug, sortOrder: data.sortOrder }]);
+      pushToast("ok", `تمت إضافة المرحلة «${data.name}» بنجاح.`);
+      setStageName("");
+      setStageSlug("");
+      setStageOrder("0");
+    }
+  }
+
+  async function handleUpdateStage(stage: StageRow, patch: { name?: string; sortOrder?: number }) {
+    const key = `stage-${stage.id}`;
+    markPending(key);
+    const done = await api(`/api/v1/admin/stages/${stage.id}`, { method: "PATCH", body: JSON.stringify(patch) });
+    if (done) {
+      setLocalStages((prev) => prev.map((s) => (s.id === stage.id ? { ...s, ...patch } : s)));
+      pushToast("ok", "تم تحديث المرحلة.");
+    }
+    unmarkPending(key);
+  }
+
+  function requestDeleteStage(stage: StageRow) {
+    setConfirmReq({
+      title: `حذف مرحلة «${stage.name}»؟`,
+      description: "قد تؤثر على تصنيف الصفوف المرتبطة بها.",
+      confirmLabel: "حذف",
+      tone: "danger",
+      onConfirm: async () => {
+        const key = `stage-${stage.id}`;
+        markPending(key);
+        const done = await api(`/api/v1/admin/stages/${stage.id}`, { method: "DELETE" });
+        if (done) {
+          setLocalStages((prev) => prev.filter((s) => s.id !== stage.id));
+          pushToast("ok", `تم حذف المرحلة «${stage.name}».`);
+        }
+        unmarkPending(key);
+      },
+    });
+  }
+
+  function printVouchers() {
+    document.body.classList.add("printing-voucher");
+    window.print();
+    document.body.classList.remove("printing-voucher");
+  }
+
+  /* ── Derived data ── */
   const filteredUsers = useMemo(() => {
     return localUsers.filter((u) => {
       const matchSearch =
@@ -778,7 +1254,6 @@ export function AdminConsole({
     });
   }, [localUsers, globalSearch, userRoleFilter, userStatusFilter]);
 
-  // Filtered Courses
   const filteredCourses = useMemo(() => {
     return localCourses.filter((c) => {
       const matchSearch =
@@ -791,7 +1266,6 @@ export function AdminConsole({
     });
   }, [localCourses, globalSearch, courseStatusFilter]);
 
-  // Filtered Exams
   const filteredExams = useMemo(() => {
     return localExams.filter((e) => {
       const matchSearch =
@@ -803,7 +1277,8 @@ export function AdminConsole({
     });
   }, [localExams, globalSearch, examModeFilter]);
 
-  // Filtered Questions
+  const questionTopics = useMemo(() => Array.from(new Set(questions.map((q) => q.topic))).sort(), [questions]);
+
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {
       const matchSearch =
@@ -815,14 +1290,46 @@ export function AdminConsole({
     });
   }, [questions, globalSearch, questionTopicFilter]);
 
-  // Filtered Coupons
   const filteredCoupons = useMemo(() => {
     return localCoupons.filter((c) => {
-      return !globalSearch || c.code.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchSearch = !globalSearch || c.code.toLowerCase().includes(globalSearch.toLowerCase());
+      const usedUp = c.maxUses > 0 && c.usedCount >= c.maxUses;
+      const exp = expiryState(c.expiresAt, usedUp);
+      const matchChip =
+        couponChip === "all" ||
+        (couponChip === "active" && c.isActive && exp !== "expired") ||
+        (couponChip === "inactive" && !c.isActive) ||
+        (couponChip === "expiring" && exp === "expiring") ||
+        (couponChip === "expired" && exp === "expired");
+      return matchSearch && matchChip;
     });
-  }, [localCoupons, globalSearch]);
+  }, [localCoupons, globalSearch, couponChip]);
 
-  // Filtered Subscriptions
+  const couponChipOptions = useMemo(() => {
+    const count = (pred: (c: CouponRow) => boolean) => localCoupons.filter(pred).length;
+    const usedUp = (c: CouponRow) => c.maxUses > 0 && c.usedCount >= c.maxUses;
+    return [
+      { value: "all", label: "الكل", count: localCoupons.length },
+      { value: "active", label: "فعال", count: count((c) => c.isActive && expiryState(c.expiresAt, usedUp(c)) !== "expired") },
+      { value: "expiring", label: "ينتهي قريباً", count: count((c) => expiryState(c.expiresAt, usedUp(c)) === "expiring") },
+      { value: "expired", label: "منتهي", count: count((c) => expiryState(c.expiresAt, usedUp(c)) === "expired") },
+      { value: "inactive", label: "معطل", count: count((c) => !c.isActive) },
+    ];
+  }, [localCoupons]);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      const matchSearch =
+        !globalSearch ||
+        o.studentName.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        o.studentEmail.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        o.courseTitle.toLowerCase().includes(globalSearch.toLowerCase());
+      const matchStatus = orderStatusChip === "all" || o.status === orderStatusChip;
+      return matchSearch && matchStatus && inDateRange(o.createdAt);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, globalSearch, orderStatusChip, dateFrom, dateTo]);
+
   const filteredSubscriptions = useMemo(() => {
     return localSubscriptions.filter((s) => {
       return (
@@ -834,55 +1341,941 @@ export function AdminConsole({
     });
   }, [localSubscriptions, globalSearch]);
 
-  // Active Category Definition
+  const orderChipOptions = useMemo(() => {
+    const count = (pred: (o: OrderRow) => boolean) => orders.filter(pred).length;
+    return [
+      { value: "all", label: "الكل", count: orders.length },
+      { value: "paid", label: "مدفوع", count: count((o) => o.status === "paid") },
+      { value: "pending", label: "معلق", count: count((o) => o.status === "pending") },
+      { value: "failed", label: "فاشل", count: count((o) => o.status === "failed") },
+      { value: "refunded", label: "مسترد", count: count((o) => o.status === "refunded") },
+    ];
+  }, [orders]);
+
+  const filteredAttempts = useMemo(() => {
+    return attempts.filter((a) => inDateRange(a.submittedAt));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attempts, dateFrom, dateTo]);
+
+  /* Exam results analytics (pass rate + score distribution) */
+  const resultsAnalytics = useMemo(() => {
+    if (filteredAttempts.length === 0) return null;
+    const pcts = filteredAttempts.map((a) => Math.round((a.score / (a.totalMarks || 1)) * 100));
+    const pass = pcts.filter((p) => p >= 50).length;
+    const buckets = [
+      { label: "ضعيف (أقل من 50%)", count: pcts.filter((p) => p < 50).length, tone: "bg-danger/60" },
+      { label: "مقبول (50–69%)", count: pcts.filter((p) => p >= 50 && p < 70).length, tone: "bg-gold/60" },
+      { label: "جيد (70–84%)", count: pcts.filter((p) => p >= 70 && p < 85).length, tone: "bg-brand/40" },
+      { label: "ممتاز (85%+)", count: pcts.filter((p) => p >= 85).length, tone: "bg-brand" },
+    ];
+    return {
+      total: filteredAttempts.length,
+      passRate: Math.round((pass / pcts.length) * 100),
+      avg: Math.round(pcts.reduce((s, p) => s + p, 0) / pcts.length),
+      best: Math.max(...pcts),
+      worst: Math.min(...pcts),
+      buckets,
+    };
+  }, [filteredAttempts]);
+
+  /* Question bank insights (topics + difficulty spread) */
+  const questionInsights = useMemo(() => {
+    if (questions.length === 0) return null;
+    const byDifficulty = [1, 2, 3, 4, 5].map((level) => ({
+      level,
+      count: questions.filter((q) => q.difficulty === level).length,
+    }));
+    const topTopics = [...questionTopics.slice(0, 5)];
+    return { byDifficulty, topTopics, total: questions.length };
+  }, [questions, questionTopics]);
+
   const currentCategory = CATEGORIES.find((c) => c.id === activeCategory)!;
 
-  return (
-    <div className="space-y-6">
-      {/* ── TOP HEADER / HUB NAVIGATION BAR ── */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-line pb-5">
+  /* ── Feature: command palette (Ctrl+K / "/"/ "?") ── */
+  const paletteCommands = useMemo<PaletteCommand[]>(() => {
+    const navCommands: PaletteCommand[] = CATEGORIES.flatMap((cat) =>
+      cat.subFeatures.map((sub) => ({
+        id: `nav-${cat.id}-${sub.id}`,
+        label: sub.label,
+        group: cat.label,
+        keywords: cat.description,
+        icon: <cat.icon size={16} />,
+        run: () => selectSubFeature(cat.id, sub.id),
+      }))
+    );
+    const actions: PaletteCommand[] = [
+      {
+        id: "act-generate-codes",
+        label: "توليد أكواد تفعيل",
+        group: "إجراءات سريعة",
+        keywords: "أكواد كوبونات سنتر",
+        icon: <Sparkles size={16} />,
+        run: () => selectSubFeature("billing_codes", "create_codes"),
+      },
+      {
+        id: "act-add-student",
+        label: "إضافة طالب جديد",
+        group: "إجراءات سريعة",
+        keywords: "طالب حساب تسجيل",
+        icon: <UserPlus size={16} />,
+        run: () => selectSubFeature("users", "add_student"),
+      },
+      {
+        id: "act-manual-payment",
+        label: "تفعيل اشتراك يدوي (دفع سنتر)",
+        group: "إجراءات سريعة",
+        keywords: "دفع كاش فودافون",
+        icon: <CreditCard size={16} />,
+        run: () => selectSubFeature("billing_codes", "manual_payment"),
+      },
+      {
+        id: "act-broadcast",
+        label: "إرسال تنبيه جماعي",
+        group: "إجراءات سريعة",
+        keywords: "رسائل إشعارات sms",
+        icon: <Send size={16} />,
+        run: () => selectSubFeature("communications", "sms_messages"),
+      },
+      {
+        id: "act-refresh",
+        label: "تحديث البيانات من السيرفر",
+        group: "إجراءات سريعة",
+        keywords: "refresh reload",
+        icon: <RefreshCw size={16} />,
+        run: refreshNow,
+      },
+      {
+        id: "act-density",
+        label: density === "comfortable" ? "تبديل كثافة الجداول إلى: مضغوط" : "تبديل كثافة الجداول إلى: مريح",
+        group: "إجراءات سريعة",
+        keywords: "density compact عرض",
+        icon: <ListChecks size={16} />,
+        run: () => changeDensity(density === "comfortable" ? "compact" : "comfortable"),
+      },
+      {
+        id: "act-auto-refresh",
+        label: autoRefresh ? "إيقاف التحديث التلقائي (30 ثانية)" : "تشغيل التحديث التلقائي (30 ثانية)",
+        group: "إجراءات سريعة",
+        keywords: "auto refresh live",
+        icon: <Zap size={16} />,
+        run: toggleAutoRefresh,
+      },
+      {
+        id: "act-view-site",
+        label: "عرض المنصة كما يراها الطالب",
+        group: "إجراءات سريعة",
+        keywords: "site preview",
+        icon: <ExternalLink size={16} />,
+        run: () => window.open("/courses", "_blank"),
+      },
+    ];
+    return [...actions, ...navCommands];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [density, autoRefresh]);
+
+  const { open: paletteOpen, setOpen: setPaletteOpen } = useCommandPalette(paletteCommands);
+
+  /* ── Feature: bulk user activation / freeze ── */
+  const selectedUsers = useMemo(
+    () => localUsers.filter((u) => selectedUserIds.has(u.id)),
+    [localUsers, selectedUserIds]
+  );
+
+  function requestBulkUserStatus(nextStatus: boolean) {
+    const targets = selectedUsers.filter((u) => u.isActive !== nextStatus);
+    if (targets.length === 0) {
+      pushToast("info", "العناصر المحددة في الحالة المطلوبة بالفعل.");
+      return;
+    }
+    setConfirmReq({
+      title: nextStatus
+        ? `تفعيل ${targets.length} حساباً محدداً؟`
+        : `تجميد ${targets.length} حساباً محدداً؟`,
+      description: nextStatus
+        ? "سيستطيع الطلاب المحددون تسجيل الدخول واستخدام المنصة."
+        : "لن يستطيع الطلاب المحددون تسجيل الدخول حتى إعادة تفعيلهم.",
+      confirmLabel: nextStatus ? "تفعيل الجميع" : "تجميد الجميع",
+      tone: nextStatus ? "primary" : "danger",
+      onConfirm: async () => {
+        const keys = targets.map((u) => `user-${u.id}`);
+        keys.forEach(markPending);
+        setLocalUsers((prev) =>
+          prev.map((item) => (selectedUserIds.has(item.id) ? { ...item, isActive: nextStatus } : item))
+        );
+        let ok = 0;
+        for (const u of targets) {
+          const done = await api(
+            `/api/v1/admin/users/${u.id}`,
+            { method: "PATCH", body: JSON.stringify({ isActive: nextStatus }) },
+            { silent: true, noRefresh: true }
+          );
+          if (done) ok++;
+        }
+        keys.forEach(unmarkPending);
+        setSelectedUserIds(new Set());
+        router.refresh();
+        pushToast(ok === targets.length ? "ok" : "err", `تم تحديث ${ok} من ${targets.length} حساباً.`);
+      },
+    });
+  }
+
+  /* ── Feature: duplicate course ── */
+  function requestDuplicateCourse(c: CourseRow) {
+    const gradeId = grades.find((g) => g.name === c.gradeName)?.id;
+    const subjectId = subjects.find((s) => s.name === c.subjectName)?.id;
+    if (!gradeId || !subjectId) {
+      pushToast("err", "تعذر تحديد الصف أو المادة الأصلية للمضاعفة.");
+      return;
+    }
+    setConfirmReq({
+      title: `إنشاء نسخة من «${c.title}»؟`,
+      description: "ستُنشأ نسخة بمحتوى مطابق بعنوان ورابط مميزين، تبقى مسودة حتى تنشرها.",
+      confirmLabel: "إنشاء النسخة",
+      tone: "primary",
+      onConfirm: async () => {
+        const suffix = Date.now().toString(36).slice(-4);
+        const done = await api("/api/v1/admin/courses", {
+          method: "POST",
+          body: JSON.stringify({
+            title: `${c.title} — نسخة`.slice(0, 140),
+            slug: `${c.slug}-copy-${suffix}`.slice(0, 90),
+            summary: "",
+            description: "",
+            gradeId,
+            subjectId,
+            priceEgp: c.priceCents / 100,
+          }),
+        });
+        if (done) pushToast("ok", "تم إنشاء نسخة المقرر كمسودة — عدّلها ثم انشرها.");
+      },
+    });
+  }
+
+  /* ── Feature: inline course price edit ── */
+  async function savePriceInline(c: CourseRow) {
+    if (!editingPrice || editingPrice.id !== c.id) return;
+    const egp = Number(editingPrice.value);
+    if (isNaN(egp) || egp < 0 || egp === c.priceCents / 100) {
+      setEditingPrice(null);
+      return;
+    }
+    const key = `course-${c.id}`;
+    markPending(key);
+    const done = await api(`/api/v1/admin/courses/${c.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ priceEgp: egp }),
+    });
+    if (done) {
+      setLocalCourses((prev) => prev.map((item) => (item.id === c.id ? { ...item, priceCents: Math.round(egp * 100) } : item)));
+      pushToast("ok", `تم تحديث سعر «${c.title}» إلى ${formatEGP(Math.round(egp * 100))}.`);
+    }
+    setEditingPrice(null);
+    unmarkPending(key);
+  }
+
+  /* ── Table column definitions ── */
+  const courseColumns: Column<CourseRow>[] = [
+    {
+      key: "title",
+      header: "عنوان المقرر",
+      sortValue: (c) => c.title,
+      render: (c) => (
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-0.5 text-xs font-bold text-brand">
-              <span className="size-1.5 rounded-full bg-brand animate-pulse" />
+          <p className="font-semibold text-ink">{c.title}</p>
+          <span className="text-[11px] text-muted" dir="ltr">
+            /{c.slug}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "grade",
+      header: "الصف والمادة",
+      sortValue: (c) => c.gradeName,
+      render: (c) => <span className="text-muted">{c.gradeName} · {c.subjectName}</span>,
+    },
+    {
+      key: "lessons",
+      header: "الدروس",
+      sortValue: (c) => c.lessonsCount,
+      render: (c) => <span className="tabular-nums font-medium">{c.lessonsCount} درس</span>,
+    },
+    {
+      key: "price",
+      header: "السعر",
+      sortValue: (c) => c.priceCents,
+      render: (c) => <span className="font-semibold tabular-nums text-brand">{formatEGP(c.priceCents)}</span>,
+    },
+    {
+      key: "status",
+      header: "حالة النشر",
+      render: (c) => (
+        <select
+          value={c.status}
+          onChange={(e) => handleCourseStatusChange(c, e.target.value as CourseRow["status"])}
+          aria-label={`حالة نشر ${c.title}`}
+          disabled={pendingIds.has(`course-${c.id}`)}
+          className={cn(
+            "cursor-pointer rounded-lg border px-2 py-1.5 text-xs font-semibold outline-none transition-colors",
+            c.status === "published" && "border-success/30 bg-success/10 text-success",
+            c.status === "draft" && "border-line bg-surface2 text-muted",
+            c.status === "archived" && "border-danger/30 bg-danger/10 text-danger"
+          )}
+        >
+          <option value="published">منشور (ظاهر للطلاب)</option>
+          <option value="draft">مسودة (مخفي)</option>
+          <option value="archived">مؤرشف</option>
+        </select>
+      ),
+    },
+    {
+      key: "actions",
+      header: "إجراءات",
+      className: "text-center",
+      hideOnMobile: true,
+      render: (c) => (
+        <div className="flex items-center justify-center gap-1.5">
+          <Link
+            href={`/courses/${c.slug}`}
+            target="_blank"
+            aria-label={`معاينة ${c.title}`}
+            title="معاينة"
+            className="inline-flex items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-xs font-medium text-brand transition-colors hover:border-brand/50"
+          >
+            <Eye size={14} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => requestDeleteCourse(c)}
+            aria-label={`حذف ${c.title}`}
+            title="حذف"
+            className="inline-flex items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger cursor-pointer"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const orderColumns: Column<OrderRow>[] = [
+    {
+      key: "student",
+      header: "الطالب",
+      sortValue: (o) => o.studentName,
+      render: (o) => (
+        <div>
+          <p className="font-semibold text-ink">{o.studentName}</p>
+          <span className="text-[11px] text-muted" dir="ltr">{o.studentEmail}</span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "المقرر",
+      render: (o) => <span className="text-muted">{o.courseTitle}</span>,
+    },
+    {
+      key: "total",
+      header: "الإجمالي",
+      sortValue: (o) => o.totalCents,
+      render: (o) => <span className="font-semibold tabular-nums text-brand">{formatEGP(o.totalCents)}</span>,
+    },
+    {
+      key: "discount",
+      header: "الخصم",
+      sortValue: (o) => o.discountCents,
+      render: (o) =>
+        o.discountCents > 0 ? (
+          <span className="tabular-nums text-gold">{formatEGP(o.discountCents)}</span>
+        ) : (
+          <span className="text-muted">—</span>
+        ),
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (o) => <Badge tone={statusTone(o.status)}>{statusLabel(o.status)}</Badge>,
+    },
+    {
+      key: "date",
+      header: "التاريخ",
+      sortValue: (o) => new Date(o.createdAt).getTime(),
+      render: (o) => <span className="text-muted tabular-nums" dir="ltr">{formatDate(o.createdAt)}</span>,
+    },
+  ];
+
+  const examColumns: Column<ExamRow>[] = [
+    {
+      key: "title",
+      header: "عنوان الامتحان",
+      sortValue: (e) => e.title,
+      render: (e) => (
+        <div>
+          <p className="font-semibold text-ink">{e.title}</p>
+          <span className="text-[11px] text-muted">{e.courseTitle}</span>
+        </div>
+      ),
+    },
+    {
+      key: "mode",
+      header: "النوع",
+      render: (e) => (
+        <Badge tone={e.mode === "graded" ? "gold" : "brand"}>
+          {e.mode === "graded" ? "رسمي بدرجات" : "تدريبي"}
+        </Badge>
+      ),
+    },
+    {
+      key: "duration",
+      header: "المدة",
+      sortValue: (e) => e.durationMin,
+      render: (e) => <span className="tabular-nums text-muted">{e.durationMin} دقيقة</span>,
+    },
+    {
+      key: "attempts",
+      header: "المحاولات",
+      sortValue: (e) => e.attemptsCount,
+      render: (e) => <span className="font-semibold tabular-nums">{e.attemptsCount}</span>,
+    },
+    {
+      key: "avg",
+      header: "متوسط الدرجات",
+      sortValue: (e) => e.avgScore,
+      render: (e) => <span className="font-semibold tabular-nums text-brand">{e.avgScore}%</span>,
+    },
+    {
+      key: "publish",
+      header: "النشر",
+      render: (e) => (
+        <button
+          type="button"
+          onClick={() => handleToggleExamPublish(e)}
+          disabled={pendingIds.has(`exam-${e.id}`)}
+          aria-pressed={e.isPublished}
+          className={cn(
+            "cursor-pointer rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all",
+            e.isPublished
+              ? "border-success/30 bg-success/10 text-success hover:bg-success/20"
+              : "border-line bg-surface2 text-muted hover:text-ink"
+          )}
+        >
+          {e.isPublished ? "منشور ومتاح" : "مسودة مخفية"}
+        </button>
+      ),
+    },
+    {
+      key: "actions",
+      header: "إجراءات",
+      className: "text-center",
+      hideOnMobile: true,
+      render: (e) => (
+        <button
+          type="button"
+          onClick={() => requestDeleteExam(e)}
+          aria-label={`حذف ${e.title}`}
+          title="حذف"
+          className="inline-flex items-center rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger cursor-pointer"
+        >
+          <Trash2 size={14} />
+        </button>
+      ),
+    },
+  ];
+
+  const questionColumns: Column<QuestionRow>[] = [
+    {
+      key: "prompt",
+      header: "نص السؤال",
+      sortValue: (q) => q.prompt,
+      render: (q) => (
+        <div className="max-w-xs">
+          <p className="line-clamp-2 font-medium text-ink">{q.prompt}</p>
+          {q.explanation ? <p className="mt-0.5 line-clamp-1 text-[11px] text-muted">{q.explanation}</p> : null}
+        </div>
+      ),
+    },
+    {
+      key: "topic",
+      header: "الفرع والموضوع",
+      sortValue: (q) => q.topic,
+      render: (q) => <span className="text-muted">{q.subjectName} · {q.topic}</span>,
+    },
+    {
+      key: "options",
+      header: "الخيارات",
+      sortValue: (q) => q.options?.length ?? 0,
+      render: (q) => <span className="tabular-nums text-muted">{q.options?.length ?? 4} خيارات</span>,
+    },
+    {
+      key: "correct",
+      header: "الإجابة الصحيحة",
+      render: (q) => (
+        <span className="font-medium text-success">
+          الخيار ({(q.correctIndex ?? 0) + 1}): {q.options?.[q.correctIndex] ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "difficulty",
+      header: "الصعوبة",
+      sortValue: (q) => q.difficulty,
+      render: (q) => (
+        <Badge tone={q.difficulty > 3 ? "danger" : q.difficulty > 1 ? "gold" : "success"}>
+          مستوى {q.difficulty}/5
+        </Badge>
+      ),
+    },
+    {
+      key: "actions",
+      header: "إجراءات",
+      className: "text-center",
+      hideOnMobile: true,
+      render: (q) => (
+        <button
+          type="button"
+          onClick={() => requestDeleteQuestion(q)}
+          aria-label="حذف السؤال"
+          title="حذف"
+          className="inline-flex items-center rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger cursor-pointer"
+        >
+          <Trash2 size={14} />
+        </button>
+      ),
+    },
+  ];
+
+  const attemptColumns: Column<AttemptRow>[] = [
+    {
+      key: "student",
+      header: "الطالب",
+      sortValue: (a) => a.studentName,
+      render: (a) => (
+        <div>
+          <p className="font-semibold text-ink">{a.studentName}</p>
+          <span className="text-[11px] text-muted" dir="ltr">{a.studentEmail}</span>
+        </div>
+      ),
+    },
+    {
+      key: "exam",
+      header: "الامتحان",
+      render: (a) => <span className="text-muted">{a.examTitle}</span>,
+    },
+    {
+      key: "score",
+      header: "الدرجة",
+      sortValue: (a) => (a.score / (a.totalMarks || 1)) * 100,
+      render: (a) => (
+        <span className="font-semibold tabular-nums text-ink">
+          {a.score} / {a.totalMarks}
+        </span>
+      ),
+    },
+    {
+      key: "pct",
+      header: "النسبة",
+      render: (a) => {
+        const pct = Math.round((a.score / (a.totalMarks || 1)) * 100);
+        return <Badge tone={pct >= 85 ? "success" : pct >= 50 ? "gold" : "danger"}>{pct}%</Badge>;
+      },
+    },
+    {
+      key: "date",
+      header: "التاريخ",
+      sortValue: (a) => new Date(a.submittedAt).getTime(),
+      render: (a) => <span className="text-muted tabular-nums" dir="ltr">{formatDate(a.submittedAt)}</span>,
+    },
+  ];
+
+  const couponColumns: Column<CouponRow>[] = [
+    {
+      key: "code",
+      header: "الكود",
+      sortValue: (c) => c.code,
+      render: (c) => (
+        <span className="font-mono font-semibold text-ink select-all" dir="ltr">{c.code}</span>
+      ),
+    },
+    {
+      key: "percent",
+      header: "الخصم",
+      sortValue: (c) => c.percentOff,
+      render: (c) => <span className="font-semibold tabular-nums text-brand">{c.percentOff}%</span>,
+    },
+    {
+      key: "usage",
+      header: "الاستخدام",
+      sortValue: (c) => c.usedCount,
+      render: (c) => <span className="tabular-nums text-muted">{c.usedCount} / {c.maxUses}</span>,
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (c) => (
+        <button
+          type="button"
+          onClick={() => handleToggleCoupon(c)}
+          disabled={pendingIds.has(`coupon-${c.id}`)}
+          aria-pressed={c.isActive}
+          className={cn(
+            "cursor-pointer rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all",
+            c.isActive
+              ? "border-success/30 bg-success/10 text-success hover:bg-success/20"
+              : "border-line bg-surface2 text-muted hover:text-ink"
+          )}
+        >
+          {c.isActive ? "فعال" : "معطل"}
+        </button>
+      ),
+    },
+    {
+      key: "expiry",
+      header: "الصلاحية",
+      sortValue: (c) => (c.expiresAt ? new Date(c.expiresAt).getTime() : 0),
+      render: (c) => (
+        <span className="text-muted tabular-nums" dir="ltr">
+          {c.expiresAt ? formatDate(c.expiresAt) : "غير محدد"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "إجراءات",
+      className: "text-center",
+      hideOnMobile: true,
+      render: (c) => (
+        <button
+          type="button"
+          onClick={() => requestDeleteCoupon(c)}
+          aria-label={`حذف الكود ${c.code}`}
+          title="حذف"
+          className="inline-flex items-center rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger cursor-pointer"
+        >
+          <Trash2 size={14} />
+        </button>
+      ),
+    },
+  ];
+
+  const subscriptionColumns: Column<SubscriptionRow>[] = [
+    {
+      key: "student",
+      header: "الطالب",
+      sortValue: (s) => s.studentName,
+      render: (s) => (
+        <div>
+          <p className="font-semibold text-ink">{s.studentName}</p>
+          <span className="text-[11px] text-muted" dir="ltr">{s.studentEmail}</span>
+        </div>
+      ),
+    },
+    {
+      key: "course",
+      header: "المقرر",
+      sortValue: (s) => s.courseTitle,
+      render: (s) => <span className="font-medium text-ink">{s.courseTitle}</span>,
+    },
+    {
+      key: "price",
+      header: "السعر",
+      sortValue: (s) => s.priceCents,
+      render: (s) => <span className="tabular-nums text-brand">{formatEGP(s.priceCents)}</span>,
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (s) => <Badge tone={statusTone(s.status)}>{statusLabel(s.status)}</Badge>,
+    },
+    {
+      key: "start",
+      header: "البداية",
+      sortValue: (s) => new Date(s.startsAt).getTime(),
+      render: (s) => <span className="text-muted tabular-nums" dir="ltr">{formatDate(s.startsAt)}</span>,
+    },
+  ];
+
+  const invoiceColumns: Column<InvoiceRow>[] = [
+    {
+      key: "number",
+      header: "رقم الفاتورة",
+      sortValue: (i) => i.number,
+      render: (i) => <span className="font-mono font-semibold text-brand" dir="ltr">{i.number}</span>,
+    },
+    {
+      key: "total",
+      header: "الإجمالي",
+      sortValue: (i) => i.totalCents,
+      render: (i) => <span className="font-semibold tabular-nums text-ink">{formatEGP(i.totalCents)}</span>,
+    },
+    {
+      key: "date",
+      header: "تاريخ الإصدار",
+      sortValue: (i) => new Date(i.issuedAt).getTime(),
+      render: (i) => <span className="text-muted tabular-nums" dir="ltr">{formatDate(i.issuedAt)}</span>,
+    },
+  ];
+
+  const userColumns: Column<UserRow>[] = [
+    {
+      key: "user",
+      header: "المستخدم",
+      sortValue: (u) => u.name,
+      render: (u) => (
+        <div>
+          <button
+            type="button"
+            onClick={() => setProfileUser(u)}
+            title="عرض الملف الكامل للطالب"
+            className="cursor-pointer font-semibold text-ink underline-offset-4 transition-colors hover:text-brand hover:underline"
+          >
+            {hl(u.name)}
+          </button>
+          <span className="flex items-center gap-1 text-[11px] text-muted">
+            <span dir="ltr">{u.email}</span>
+            <button
+              type="button"
+              onClick={() => copyText(u.email, `تم نسخ بريد ${u.name}`)}
+              aria-label={`نسخ بريد ${u.name}`}
+              className="cursor-pointer rounded p-0.5 transition-colors hover:bg-surface2 hover:text-brand"
+            >
+              <Copy size={11} />
+            </button>
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "role",
+      header: "الرتبة",
+      sortValue: (u) => u.role,
+      render: (u) =>
+        canManageUsers ? (
+          <select
+            value={u.role}
+            onChange={(e) => requestRoleChange(u, e.target.value as Role)}
+            aria-label={`رتبة ${u.name}`}
+            disabled={pendingIds.has(`user-${u.id}`)}
+            className="cursor-pointer rounded-lg border border-line bg-surface px-2 py-1.5 text-xs font-medium text-ink outline-none transition-colors focus:border-brand"
+          >
+            <option value="student">طالب</option>
+            <option value="teacher">مدرّس</option>
+            <option value="assistant">مساعد</option>
+            <option value="admin">مدير</option>
+          </select>
+        ) : (
+          <Badge tone="brand">{ROLE_LABELS[u.role]}</Badge>
+        ),
+    },
+    {
+      key: "balance",
+      header: "المحفظة",
+      sortValue: (u) => u.balanceCents,
+      render: (u) => <span className="font-semibold tabular-nums text-brand">{formatEGP(u.balanceCents)}</span>,
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (u) => (
+        <button
+          type="button"
+          onClick={() => requestToggleUserStatus(u)}
+          disabled={pendingIds.has(`user-${u.id}`)}
+          aria-pressed={u.isActive}
+          className={cn(
+            "cursor-pointer rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all",
+            u.isActive
+              ? "border-success/30 bg-success/10 text-success hover:border-danger/30 hover:bg-danger/10 hover:text-danger"
+              : "border-danger/30 bg-danger/10 text-danger hover:border-success/30 hover:bg-success/10 hover:text-success"
+          )}
+        >
+          {u.isActive ? "نشط ومفعل" : "مجمد / معطل"}
+        </button>
+      ),
+    },
+    {
+      key: "wallet",
+      header: "إجراءات المحفظة",
+      className: "text-center",
+      render: (u) => (
+        <Button
+          type="button"
+          onClick={() => setWalletModalUser(u)}
+          variant="outline"
+          size="sm"
+          className="h-9 gap-1.5 text-xs"
+        >
+          <Wallet size={13} className="text-brand" />
+          تعديل المحفظة
+        </Button>
+      ),
+    },
+  ];
+
+  const videoColumns: Column<VideoRow>[] = [
+    {
+      key: "title",
+      header: "عنوان الفيديو",
+      sortValue: (v) => v.title,
+      render: (v) => (
+        <div>
+          <p className="font-semibold text-ink">{v.title}</p>
+          <span className="text-[11px] text-muted">{v.courseTitle} · {v.lessonTitle}</span>
+        </div>
+      ),
+    },
+    {
+      key: "duration",
+      header: "المدة",
+      sortValue: (v) => v.durationSec,
+      render: (v) => <span className="tabular-nums text-muted">{Math.round(v.durationSec / 60)} دقيقة</span>,
+    },
+    {
+      key: "order",
+      header: "الترتيب",
+      sortValue: (v) => v.sortOrder,
+      render: (v) => <span className="tabular-nums text-muted">#{v.sortOrder}</span>,
+    },
+    {
+      key: "yt",
+      header: "معرف يوتيوب",
+      render: (v) => (
+        <span className="font-mono text-xs text-muted" dir="ltr">{v.youtubeVideoId}</span>
+      ),
+    },
+  ];
+
+  const fileColumns: Column<CourseFileRow>[] = [
+    {
+      key: "title",
+      header: "اسم المذكرة",
+      sortValue: (f) => f.title,
+      render: (f) => <p className="font-semibold text-ink">{f.title}</p>,
+    },
+    {
+      key: "course",
+      header: "المقرر",
+      render: (f) => <span className="text-muted">{f.courseTitle}</span>,
+    },
+    {
+      key: "kind",
+      header: "النوع",
+      render: (f) => <Badge tone="brand">{f.kind.toUpperCase()}</Badge>,
+    },
+    {
+      key: "size",
+      header: "الحجم",
+      sortValue: (f) => f.sizeBytes,
+      render: (f) => <span className="tabular-nums text-muted">{(f.sizeBytes / (1024 * 1024)).toFixed(1)} MB</span>,
+    },
+    {
+      key: "preview",
+      header: "معاينة مجانية",
+      render: (f) => (
+        <Badge tone={f.isFreePreview ? "success" : "muted"}>{f.isFreePreview ? "نعم" : "للمشتركين"}</Badge>
+      ),
+    },
+  ];
+
+  return (
+    <TablePrefsProvider
+      value={{ density, pageSize, onPageSizeChange: changePageSize }}
+    >
+    <div className="space-y-6">
+      {/* ── TOP HEADER ── */}
+      <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
+              <span className="size-1.5 animate-pulse rounded-full bg-brand" />
               مركز العمليات والإدارة الموحد
             </span>
-            <span className="text-xs text-muted font-medium">· مرحبًا، {actor.name}</span>
+            <span className="text-xs font-medium text-muted">· مرحبًا، {actor.name}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
-            لوحة الإدارة الأكاديمية
-          </h1>
-          <p className="text-xs sm:text-sm text-muted mt-0.5">
-            إدارة متكاملة وشاملة لجميع محتويات المنصة، الطلاب، المقررات، الامتحانات، والعمليات المالية.
+          <h1 className="font-brand text-2xl font-bold text-ink sm:text-3xl">لوحة الإدارة الأكاديمية</h1>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted sm:text-sm">
+            إدارة متكاملة لجميع محتويات المنصة، الطلاب، المقررات، الامتحانات، والعمليات المالية.
           </p>
         </div>
 
-        {/* Action Controls & Quick Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="لوحة الأوامر السريعة"
+            title="لوحة الأوامر (Ctrl+K)"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-xs text-muted transition-colors hover:border-brand/50 hover:text-ink"
+          >
+            <Search size={14} className="text-brand" />
+            <span className="hidden sm:inline">أوامر سريعة</span>
+            <kbd className="rounded-md border border-line bg-surface2 px-1.5 py-0.5 font-mono text-[10px]" dir="ltr">
+              Ctrl K
+            </kbd>
+          </button>
+          <button
+            type="button"
+            onClick={() => changeDensity(density === "comfortable" ? "compact" : "comfortable")}
+            aria-pressed={density === "compact"}
+            title={density === "comfortable" ? "تبديل إلى العرض المضغوط" : "تبديل إلى العرض المريح"}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface2"
+          >
+            <ListChecks size={14} className="text-brand" />
+            <span>{density === "comfortable" ? "مريح" : "مضغوط"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={toggleAutoRefresh}
+            aria-pressed={autoRefresh}
+            title="تحديث تلقائي كل 30 ثانية"
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors",
+              autoRefresh
+                ? "border-brand/50 bg-brand/10 text-brand"
+                : "border-line bg-surface text-ink hover:bg-surface2"
+            )}
+          >
+            <Zap size={14} className={autoRefresh ? "text-brand" : "text-brand opacity-70"} />
+            <span>تحديث تلقائي</span>
+          </button>
+          <span className="hidden items-center gap-1.5 text-[11px] text-muted lg:inline-flex" title="وقت آخر تحديث للبيانات">
+            <Timer size={13} />
+            {relativeTime(lastRefreshed.toISOString())}
+          </span>
           <Link
             href="/courses"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-line bg-surface hover:bg-surface2 text-xs font-bold text-ink transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface2"
           >
             <ExternalLink size={14} className="text-brand" />
             <span>عرض المنصة كطالب</span>
           </Link>
           <button
+            type="button"
+            onClick={refreshNow}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface2"
+          >
+            <RefreshCw size={14} className="text-brand" />
+            <span>تحديث</span>
+          </button>
+          <button
+            type="button"
             onClick={() => selectSubFeature("billing_codes", "create_codes")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand text-white text-xs font-bold shadow-sm hover:brightness-110 transition-all cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:brightness-110"
           >
             <Sparkles size={14} />
             <span>توليد أكواد</span>
           </button>
           <button
+            type="button"
             onClick={() => selectSubFeature("users", "add_student")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface2 border border-line hover:bg-line text-xs font-bold text-ink transition-all cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface2 px-3.5 py-2 text-xs font-semibold text-ink transition-all hover:bg-line"
           >
             <UserPlus size={14} className="text-brand" />
             <span>إضافة طالب</span>
           </button>
           <button
+            type="button"
             onClick={() => selectSubFeature("billing_codes", "manual_payment")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface2 border border-line hover:bg-line text-xs font-bold text-ink transition-all cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-surface2 px-3.5 py-2 text-xs font-semibold text-ink transition-all hover:bg-line"
           >
             <CreditCard size={14} className="text-brand" />
             <span>دفع سنتر</span>
@@ -890,48 +2283,30 @@ export function AdminConsole({
         </div>
       </div>
 
-      {/* ── NOTIFICATION BANNER ── */}
-      {note && (
-        <div
-          className={cn(
-            "flex items-center justify-between rounded-xl px-4 py-3 text-xs font-bold border transition-all",
-            note.kind === "ok"
-              ? "bg-success/10 border-success/30 text-success"
-              : "bg-danger/10 border-danger/30 text-danger"
-          )}
-        >
-          <div className="flex items-center gap-2">
-            {note.kind === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-            <span>{note.text}</span>
-          </div>
-          <button onClick={() => setNote(null)} className="text-xs hover:underline cursor-pointer">
-            إغلاق
-          </button>
-        </div>
-      )}
-
       {/* ── GLOBAL SEARCH & DATA EXPORT BAR ── */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-surface p-3 rounded-2xl border border-line shadow-xs">
-        <div className="relative flex-1 w-full">
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-3 shadow-xs sm:flex-row">
+        <div className="relative w-full flex-1">
           <Search size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
           <Input
+            type="search"
             value={globalSearch}
             onChange={(e) => setGlobalSearch(e.target.value)}
             placeholder="بحث فوري في الطلاب، المقررات، الأسئلة، الأكواد، الفواتير..."
-            className="pr-10 h-10 text-xs bg-surface2 border-line w-full"
+            aria-label="بحث شامل في لوحة الإدارة"
+            className="h-10 w-full border-line bg-surface2 pr-10 text-xs"
           />
           {globalSearch && (
             <button
+              type="button"
               onClick={() => setGlobalSearch("")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted hover:text-ink cursor-pointer"
+              className="absolute left-3 top-1/2 -translate-y-1/2 cursor-pointer text-xs text-muted hover:text-ink"
             >
               مسح
             </button>
           )}
         </div>
 
-        {/* Quick CSV Export Shortcuts */}
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+        <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
           {activeCategory === "users" && (
             <Button
               onClick={() =>
@@ -939,138 +2314,168 @@ export function AdminConsole({
                   { key: "name", label: "اسم الطالب" },
                   { key: "email", label: "البريد الإلكتروني" },
                   { key: "role", label: "الرتبة" },
-                  { key: "isActive", label: "الحالة (مفعل)" },
+                  { key: "status", label: "الحالة" },
                   { key: "createdAt", label: "تاريخ التسجيل" },
                 ])
               }
               variant="outline"
               size="sm"
-              className="text-xs flex-1 sm:flex-initial"
+              className="flex-1 text-xs sm:flex-initial"
             >
               <Download size={14} className="text-brand" />
-              تصدير الطلاب (CSV)
+              تصدير الطلاب
             </Button>
           )}
-
-          {activeCategory === "billing_codes" && (
+          {activeCategory === "billing_codes" && activeSubFeature === "codes_table" && (
             <Button
               onClick={() =>
-                downloadCSV("coupons_codes", filteredCoupons, [
-                  { key: "code", label: "كود التفعيل" },
-                  { key: "percentOff", label: "نسبة الخصم %" },
-                  { key: "maxUses", label: "أقصى استخدامات" },
-                  { key: "usedCount", label: "مرات الاستخدام" },
-                  { key: "createdAt", label: "تاريخ الإنشاء" },
-                ])
+                downloadCSV(
+                  "coupons_codes",
+                  filteredCoupons.map((c) => ({
+                    code: c.code,
+                    percentOff: c.percentOff,
+                    maxUses: c.maxUses,
+                    usedCount: c.usedCount,
+                    status: yesNo(c.isActive),
+                    expiresAt: c.expiresAt ? formatDate(c.expiresAt) : "غير محدد",
+                  })),
+                  [
+                    { key: "code", label: "كود التفعيل" },
+                    { key: "percentOff", label: "نسبة الخصم %" },
+                    { key: "maxUses", label: "أقصى استخدامات" },
+                    { key: "usedCount", label: "مرات الاستخدام" },
+                    { key: "status", label: "الحالة" },
+                    { key: "expiresAt", label: "تاريخ الصلاحية" },
+                  ]
+                )
               }
               variant="outline"
               size="sm"
-              className="text-xs flex-1 sm:flex-initial"
+              className="flex-1 text-xs sm:flex-initial"
             >
               <Download size={14} className="text-brand" />
-              تصدير الأكواد (CSV)
+              تصدير الأكواد
             </Button>
           )}
-
           {activeCategory === "academic" && (
             <Button
               onClick={() =>
-                downloadCSV("courses_list", filteredCourses, [
-                  { key: "title", label: "اسم الكورس" },
-                  { key: "gradeName", label: "الصف الدراسي" },
-                  { key: "subjectName", label: "المادة" },
-                  { key: "status", label: "الحالة" },
-                  { key: "priceCents", label: "السعر بالقرش" },
-                ])
+                downloadCSV(
+                  "courses_list",
+                  filteredCourses.map((c) => ({
+                    title: c.title,
+                    gradeName: c.gradeName,
+                    subjectName: c.subjectName,
+                    status: statusLabel(c.status),
+                    price: formatEGP(c.priceCents),
+                  })),
+                  [
+                    { key: "title", label: "اسم الكورس" },
+                    { key: "gradeName", label: "الصف الدراسي" },
+                    { key: "subjectName", label: "المادة" },
+                    { key: "status", label: "الحالة" },
+                    { key: "price", label: "السعر" },
+                  ]
+                )
               }
               variant="outline"
               size="sm"
-              className="text-xs flex-1 sm:flex-initial"
+              className="flex-1 text-xs sm:flex-initial"
             >
               <Download size={14} className="text-brand" />
-              تصدير الكورسات (CSV)
+              تصدير الكورسات
             </Button>
           )}
-
-          {activeCategory === "exams" && (
+          {activeCategory === "exams" && activeSubFeature === "exam_results_table" && (
             <Button
               onClick={() =>
-                downloadCSV("exam_results", attempts, [
-                  { key: "examTitle", label: "الامتحان" },
-                  { key: "studentName", label: "اسم الطالب" },
-                  { key: "studentEmail", label: "البريد" },
-                  { key: "score", label: "الدرجة" },
-                  { key: "totalMarks", label: "الدرجة الكلية" },
-                  { key: "submittedAt", label: "تاريخ التسليم" },
-                ])
+                downloadCSV(
+                  "exam_results",
+                  attempts.map((a) => ({
+                    examTitle: a.examTitle,
+                    studentName: a.studentName,
+                    studentEmail: a.studentEmail,
+                    score: a.score,
+                    totalMarks: a.totalMarks,
+                    pct: `${Math.round((a.score / (a.totalMarks || 1)) * 100)}%`,
+                    submittedAt: formatDate(a.submittedAt),
+                  })),
+                  [
+                    { key: "examTitle", label: "الامتحان" },
+                    { key: "studentName", label: "اسم الطالب" },
+                    { key: "studentEmail", label: "البريد" },
+                    { key: "score", label: "الدرجة" },
+                    { key: "totalMarks", label: "الدرجة الكلية" },
+                    { key: "pct", label: "النسبة" },
+                    { key: "submittedAt", label: "تاريخ التسليم" },
+                  ]
+                )
               }
               variant="outline"
               size="sm"
-              className="text-xs flex-1 sm:flex-initial"
+              className="flex-1 text-xs sm:flex-initial"
             >
               <Download size={14} className="text-brand" />
-              تصدير النتائج (CSV)
+              تصدير النتائج
             </Button>
           )}
         </div>
       </div>
 
-      {/* ── SLEEK CATEGORY TABS (Main Hubs) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      {/* ── CATEGORY TABS ── */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
         {CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.id;
           const Icon = cat.icon;
           return (
             <button
               key={cat.id}
+              type="button"
               onClick={() => {
                 setActiveCategory(cat.id);
                 setActiveSubFeature(cat.subFeatures[0].id);
               }}
+              aria-pressed={isActive}
               className={cn(
-                "flex flex-col items-start gap-2 p-3.5 rounded-2xl border text-right transition-all cursor-pointer relative overflow-hidden",
+                "relative flex cursor-pointer flex-col items-start gap-2 overflow-hidden rounded-2xl border p-3.5 text-right transition-all",
                 isActive
-                  ? "bg-surface border-brand shadow-card ring-1 ring-brand"
-                  : "bg-surface/60 border-line hover:border-brand/40 hover:bg-surface"
+                  ? "border-brand bg-surface shadow-card ring-1 ring-brand"
+                  : "border-line bg-surface/60 hover:border-brand/40 hover:bg-surface"
               )}
             >
               <div
                 className={cn(
-                  "size-8 rounded-xl flex items-center justify-center transition-colors",
+                  "grid size-8 place-items-center rounded-xl transition-colors",
                   isActive ? "bg-brand text-white shadow-xs" : "bg-surface2 text-muted"
                 )}
               >
                 <Icon size={16} />
               </div>
               <div>
-                <p className={cn("text-xs font-bold line-clamp-1", isActive ? "text-brand" : "text-ink")}>
-                  {cat.label}
-                </p>
-                <p className="text-[10px] text-muted line-clamp-1 mt-0.5">
-                  {cat.subFeatures.length} أدوات فرعية
-                </p>
+                <p className={cn("text-xs font-bold", isActive ? "text-brand" : "text-ink")}>{cat.label}</p>
+                <p className="mt-0.5 text-[10px] tabular-nums text-muted">{cat.subFeatures.length} أدوات فرعية</p>
               </div>
-              {isActive && (
-                <span className="absolute top-2 left-2 size-1.5 rounded-full bg-brand" />
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* ── SUB-FEATURE PILLS FOR ACTIVE CATEGORY ── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+      {/* ── SUB-FEATURE PILLS ── */}
+      <div className="custom-scrollbar flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label={currentCategory.label}>
         {currentCategory.subFeatures.map((sub) => {
           const isSubActive = activeSubFeature === sub.id;
           return (
             <button
               key={sub.id}
+              type="button"
+              role="tab"
+              aria-selected={isSubActive}
               onClick={() => setActiveSubFeature(sub.id)}
               className={cn(
-                "whitespace-nowrap px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0",
+                "shrink-0 cursor-pointer whitespace-nowrap rounded-xl border px-4 py-2 text-xs font-semibold transition-all",
                 isSubActive
-                  ? "bg-brand text-white border-brand shadow-xs"
-                  : "bg-surface border-line text-muted hover:text-ink hover:border-brand/30"
+                  ? "border-brand bg-brand text-white shadow-xs"
+                  : "border-line bg-surface text-muted hover:border-brand/30 hover:text-ink"
               )}
             >
               {sub.label}
@@ -1079,331 +2484,288 @@ export function AdminConsole({
         })}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 1. CATEGORY: OVERVIEW & REPORTS                                    */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 1. OVERVIEW & REPORTS ═══ */}
       {activeCategory === "overview" && activeSubFeature === "home" && (
         <div className="space-y-6">
-          {/* Core KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-brand/10 text-brand grid place-items-center shrink-0">
-                <Users size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted">الطلاب المسجلين</p>
-                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.students}</p>
-                <span className="text-[10px] text-success font-semibold flex items-center gap-0.5">
-                  <Activity size={10} /> نشط في المنصة
-                </span>
-              </div>
-            </Card>
-
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-gold/10 text-gold grid place-items-center shrink-0">
-                <BookOpen size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted">الكورسات المنشورة</p>
-                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.publishedCourses}</p>
-                <span className="text-[10px] text-muted">متاحة للاشتراك</span>
-              </div>
-            </Card>
-
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-success/10 text-success grid place-items-center shrink-0">
-                <Receipt size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted">إجمالي الإيرادات</p>
-                <p className="text-2xl font-black text-ink mt-0.5">{formatEGP(overview.stats.revenueCents)}</p>
-                <span className="text-[10px] text-success font-semibold">فواتير مسددة</span>
-              </div>
-            </Card>
-
-            <Card className="p-5 flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-brand/10 text-brand grid place-items-center shrink-0">
-                <Award size={22} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-muted">الاشتراكات الفعالة</p>
-                <p className="text-2xl font-black text-ink mt-0.5">{overview.stats.activeSubscriptions}</p>
-                <span className="text-[10px] text-brand font-semibold">وصول مباشر للمحتوى</span>
-              </div>
-            </Card>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KpiCard icon={Users} label="الطلاب المسجلين" value={overview.stats.students} hint="نشط في المنصة" hintTone="success" />
+            <KpiCard icon={BookOpen} label="الكورسات المنشورة" value={overview.stats.publishedCourses} hint="متاحة للاشتراك" iconTone="gold" />
+            <KpiCard icon={Receipt} label="إجمالي الإيرادات" value={formatEGP(overview.stats.revenueCents)} hint="فواتير مسددة" hintTone="success" iconTone="success" />
+            <KpiCard icon={GraduationCap} label="الاشتراكات الفعالة" value={overview.stats.activeSubscriptions} hint="وصول مباشر للمحتوى" />
           </div>
 
-          {/* Quick Operations Grid */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card className="p-5 space-y-3 bg-gradient-to-br from-surface to-surface2 border-brand/20">
-              <div className="flex items-center gap-2 text-brand font-bold text-sm">
+          {/* Setup checklist */}
+          <Card className="space-y-4 p-5">
+            <SectionHeader
+              icon={ListChecks}
+              title="قائمة تجهيز المنصة"
+              hint="خطوات التشغيل الأساسية — تكتمل تلقائياً أولاً بأول"
+              actions={
+                <span className="rounded-full border border-line bg-surface2 px-3 py-1 text-xs font-semibold tabular-nums text-ink">
+                  {[
+                    localCourses.some((c) => c.status === "published"),
+                    localUsers.some((u) => u.role === "student"),
+                    localExams.some((e) => e.isPublished),
+                    questions.length > 0,
+                    localCoupons.length > 0,
+                  ].filter(Boolean).length} / 5
+                </span>
+              }
+            />
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  done: localCourses.some((c) => c.status === "published"),
+                  label: "نشر أول مقرر دراسي",
+                  action: () => selectSubFeature("academic", "courses_manage"),
+                },
+                {
+                  done: localUsers.some((u) => u.role === "student"),
+                  label: "تسجيل أول طالب",
+                  action: () => selectSubFeature("users", "add_student"),
+                },
+                {
+                  done: localExams.some((e) => e.isPublished),
+                  label: "نشر أول امتحان إلكتروني",
+                  action: () => selectSubFeature("exams", "exams_manage"),
+                },
+                {
+                  done: questions.length > 0,
+                  label: "تغذية بنك الأسئلة",
+                  action: () => selectSubFeature("exams", "bulk_questions_add"),
+                },
+                {
+                  done: localCoupons.length > 0,
+                  label: "توليد أكواد تفعيل للسنتر",
+                  action: () => selectSubFeature("billing_codes", "create_codes"),
+                },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.action}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-start text-xs font-medium transition-all",
+                    item.done
+                      ? "border-success/30 bg-success/10 text-ink"
+                      : "border-line bg-surface2/60 text-muted hover:border-brand/40 hover:text-ink"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "grid size-5 shrink-0 place-items-center rounded-full",
+                      item.done ? "bg-success text-white" : "border border-line bg-surface text-muted"
+                    )}
+                  >
+                    {item.done ? <Check size={12} /> : "+"}
+                  </span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="space-y-3 border-brand/20 bg-gradient-to-br from-surface to-surface2 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-brand">
                 <Sparkles size={18} /> تفعيل فوري سريع
               </div>
-              <p className="text-xs text-muted leading-relaxed">
+              <p className="text-xs leading-relaxed text-muted">
                 تفعيل اشتراك لطالب دفع نقداً في السنتر أو عبر فودافون كاش مباشرة دون انتظار.
               </p>
-              <Button
-                onClick={() => selectSubFeature("billing_codes", "manual_payment")}
-                variant="primary"
-                size="sm"
-                className="w-full text-xs"
-              >
+              <Button onClick={() => selectSubFeature("billing_codes", "manual_payment")} variant="primary" size="sm" className="w-full text-xs">
                 تفعيل اشتراك طالب الآن
               </Button>
             </Card>
-
-            <Card className="p-5 space-y-3">
-              <div className="flex items-center gap-2 text-ink font-bold text-sm">
+            <Card className="space-y-3 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <GraduationCap size={18} className="text-gold" /> بنك الأسئلة والامتحانات
               </div>
-              <p className="text-xs text-muted leading-relaxed">
-                يحتوي بنك الأسئلة حالياً على <strong>{questions.length}</strong> سؤالاً رياضياً مع الإجابات النموذجية.
+              <p className="text-xs leading-relaxed text-muted">
+                يحتوي بنك الأسئلة حالياً على <strong className="tabular-nums">{questions.length}</strong> سؤالاً رياضياً مع الإجابات النموذجية.
               </p>
-              <Button
-                onClick={() => selectSubFeature("exams", "exams_table")}
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
-              >
+              <Button onClick={() => selectSubFeature("exams", "exams_table")} variant="outline" size="sm" className="w-full text-xs">
                 إدارة الامتحانات والأسئلة
               </Button>
             </Card>
-
-            <Card className="p-5 space-y-3">
-              <div className="flex items-center gap-2 text-ink font-bold text-sm">
+            <Card className="space-y-3 p-5">
+              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <KeyRound size={18} className="text-brand" /> أكواد السنتر والشحن
               </div>
-              <p className="text-xs text-muted leading-relaxed">
+              <p className="text-xs leading-relaxed text-muted">
                 توليد أكواد تفعيل مجمعة وطباعتها كبطاقات كروت سنتر للطلاب.
               </p>
-              <Button
-                onClick={() => selectSubFeature("billing_codes", "create_codes")}
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
-              >
+              <Button onClick={() => selectSubFeature("billing_codes", "create_codes")} variant="outline" size="sm" className="w-full text-xs">
                 توليد وطباعة الأكواد
               </Button>
             </Card>
           </div>
 
-          {/* Recent Orders & Activity */}
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card className="p-5 space-y-4">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                <h3 className="flex items-center gap-2 font-brand text-sm font-semibold text-ink">
                   <Receipt size={16} className="text-brand" /> أحدث عمليات الشراء والاشتراك
                 </h3>
-                <span className="text-xs text-muted font-medium">{overview.recentOrders.length} عمليات</span>
+                <span className="text-xs tabular-nums text-muted">{overview.recentOrders.length} عمليات</span>
               </div>
-              <div className="divide-y divide-line/60">
-                {overview.recentOrders.map((o) => (
-                  <div key={o.id} className="py-2.5 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-bold text-ink">{o.studentName}</p>
-                      <p className="text-[11px] text-muted">{o.courseTitle}</p>
+              {overview.recentOrders.length === 0 ? (
+                <p className="py-6 text-center text-xs text-muted">لا توجد عمليات شراء بعد.</p>
+              ) : (
+                <div className="divide-y divide-line/60">
+                  {overview.recentOrders.map((o) => (
+                    <div key={o.id} className="flex items-center justify-between py-2.5 text-xs">
+                      <div>
+                        <p className="font-semibold text-ink">{o.studentName}</p>
+                        <p className="text-[11px] text-muted">{o.courseTitle}</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold tabular-nums text-brand">{formatEGP(o.totalCents)}</p>
+                        <Badge tone={statusTone(o.status)} className="text-[10px]">
+                          {statusLabel(o.status)}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="font-bold text-brand">{formatEGP(o.totalCents)}</p>
-                      <Badge tone="success" className="text-[10px]">
-                        {STATUS_LABEL[o.status]?.label ?? o.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
-            <Card className="p-5 space-y-4">
+            <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-ink flex items-center gap-2">
+                <h3 className="flex items-center gap-2 font-brand text-sm font-semibold text-ink">
                   <Clock size={16} className="text-gold" /> سجل تدقيق العمليات الأخير
                 </h3>
-                <Button
-                  onClick={() => selectSubFeature("overview", "updates")}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs h-7"
-                >
+                <Button onClick={() => selectSubFeature("overview", "updates")} variant="ghost" size="sm" className="h-8 text-xs">
                   عرض السجل كامل
                 </Button>
               </div>
-              <div className="divide-y divide-line/60">
-                {overview.recentAudit.map((a) => (
-                  <div key={a.id} className="py-2.5 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-bold text-ink">{a.action}</p>
-                      <p className="text-[11px] text-muted">
-                        بواسطة: {a.actorName ?? "النظام"} · {formatDate(a.createdAt)}
-                      </p>
+              {overview.recentAudit.length === 0 ? (
+                <p className="py-6 text-center text-xs text-muted">لا توجد عمليات مسجلة بعد.</p>
+              ) : (
+                <div className="divide-y divide-line/60">
+                  {overview.recentAudit.map((a) => (
+                    <div key={a.id} className="flex items-center justify-between py-2.5 text-xs">
+                      <div>
+                        <p className="font-semibold text-ink">{actionLabel(a.action)}</p>
+                        <p className="text-[11px] text-muted">
+                          بواسطة: {a.actorName ?? "النظام"} · <span dir="ltr">{formatDate(a.createdAt)}</span>
+                        </p>
+                      </div>
+                      <Badge tone="outline">{a.entity}</Badge>
                     </div>
-                    <Badge tone="outline" className="text-[10px]">
-                      {a.entity}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
         </div>
       )}
 
-      {/* Overview: Statistics */}
       {activeCategory === "overview" && activeSubFeature === "statistics" && (
         <div className="space-y-6">
-          <Card className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <BarChart3 size={18} className="text-brand" /> نمو الإيرادات الشهرية
-            </h3>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {overview.revenueByMonth.map((m) => (
-                <div key={m.month} className="p-4 rounded-xl bg-surface2 border border-line">
-                  <p className="text-xs font-bold text-muted">{m.month}</p>
-                  <p className="text-lg font-black text-ink mt-1">{formatEGP(m.total)}</p>
-                </div>
-              ))}
-            </div>
+          <Card className="space-y-5 p-6">
+            <SectionHeader icon={BarChart3} title="نمو الإيرادات الشهرية" hint="مقارنة الإيرادات المحصلة عبر آخر الأشهر" />
+            <RevenueChart data={overview.revenueByMonth} />
           </Card>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KpiCard icon={Users} label="إجمالي الطلاب" value={localUsers.length} />
+            <KpiCard icon={BookOpen} label="إجمالي المقررات" value={localCourses.length} iconTone="gold" />
+            <KpiCard icon={HelpCircle} label="بنك الأسئلة" value={questions.length} iconTone="success" />
+            <KpiCard icon={GraduationCap} label="الامتحانات" value={localExams.length} iconTone="gold" />
+          </div>
         </div>
       )}
 
-      {/* Overview: Audit Logs */}
       {activeCategory === "overview" && activeSubFeature === "updates" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Clock size={18} className="text-brand" /> سجل تدقيق وأمان العمليات الإدارية
-            </h3>
-            <span className="text-xs text-muted">توثيق زمني كامل لكافة الإجراءات</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">الإجراء</th>
-                  <th className="p-3">الكيان / الجدول</th>
-                  <th className="p-3">المسؤول المنفذ</th>
-                  <th className="p-3">التوقيت</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {overview.recentAudit.map((a) => (
-                  <tr key={a.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-bold text-ink">{a.action}</td>
-                    <td className="p-3">
-                      <Badge tone="brand">{a.entity}</Badge>
-                    </td>
-                    <td className="p-3 text-muted">{a.actorName ?? "النظام الآلي"}</td>
-                    <td className="p-3 text-muted" dir="ltr">
-                      {formatDate(a.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Clock}
+            title="سجل تدقيق وأمان العمليات الإدارية"
+            hint="توثيق زمني كامل لكافة الإجراءات"
+          />
+          <AdminTable
+            columns={[
+              {
+                key: "action",
+                header: "الإجراء",
+                render: (a) => <span className="font-semibold text-ink">{actionLabel(a.action)}</span>,
+                sortValue: (a) => a.action,
+              },
+              {
+                key: "entity",
+                header: "الكيان",
+                render: (a) => <Badge tone="brand">{a.entity}</Badge>,
+              },
+              {
+                key: "actor",
+                header: "المسؤول",
+                render: (a) => <span className="text-muted">{a.actorName ?? "النظام الآلي"}</span>,
+              },
+              {
+                key: "date",
+                header: "التوقيت",
+                sortValue: (a) => new Date(a.createdAt).getTime(),
+                render: (a) => (
+                  <span className="tabular-nums text-muted" dir="ltr">{formatDate(a.createdAt)}</span>
+                ),
+              },
+            ]}
+            rows={overview.recentAudit}
+            emptyTitle="السجل فارغ"
+            emptyHint="ستظهر هنا جميع العمليات الإدارية الموثقة تلقائياً."
+          />
         </Card>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 2. CATEGORY: ACADEMIC & COURSES                                    */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 2. ACADEMIC & COURSES ═══ */}
       {activeCategory === "academic" && activeSubFeature === "courses_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-base font-bold text-ink flex items-center gap-2">
-                <BookOpen size={18} className="text-brand" /> المقررات الدراسية ({filteredCourses.length})
-              </h3>
-              <p className="text-xs text-muted mt-0.5">يمكنك تغيير حالة الكورس مباشرة من الجدول</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={courseStatusFilter}
-                onChange={(e) => setCourseStatusFilter(e.target.value)}
-                className="text-xs h-9 w-32"
-              >
-                <option value="all">كل الحالات</option>
-                <option value="published">المنشورة فقط</option>
-                <option value="draft">المسودات</option>
-                <option value="archived">المؤرشفة</option>
-              </Select>
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={BookOpen}
+            title="المقررات الدراسية"
+            count={filteredCourses.length}
+            hint="يمكنك تغيير حالة الكورس أو حذفه مباشرة من الجدول"
+            actions={
+              <>
+                <Select value={courseStatusFilter} onChange={(e) => setCourseStatusFilter(e.target.value)} className="h-9 w-32 text-xs">
+                  <option value="all">كل الحالات</option>
+                  <option value="published">المنشورة فقط</option>
+                  <option value="draft">المسودات</option>
+                  <option value="archived">المؤرشفة</option>
+                </Select>
+                <Button onClick={() => setActiveSubFeature("courses_manage")} variant="primary" size="sm">
+                  <Plus size={14} /> إضافة مقرر
+                </Button>
+              </>
+            }
+          />
+          <AdminTable
+            columns={courseColumns}
+            rows={filteredCourses}
+            rowPending={(c) => pendingIds.has(`course-${c.id}`)}
+            emptyTitle="لا توجد مقررات مطابقة"
+            emptyHint="أضف مقرراً جديداً أو عدّل عوامل التصفية والبحث."
+            emptyAction={
               <Button onClick={() => setActiveSubFeature("courses_manage")} variant="primary" size="sm">
                 <Plus size={14} /> إضافة مقرر جديد
               </Button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">عنوان المقرر</th>
-                  <th className="p-3">الصف والمادة</th>
-                  <th className="p-3">عدد الدروس</th>
-                  <th className="p-3">السعر</th>
-                  <th className="p-3">حالة النشر</th>
-                  <th className="p-3 text-center">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredCourses.map((c) => (
-                  <tr key={c.id} className="hover:bg-surface2/50">
-                    <td className="p-3">
-                      <p className="font-bold text-ink">{c.title}</p>
-                      <span className="text-[10px] text-muted" dir="ltr">
-                        /{c.slug}
-                      </span>
-                    </td>
-                    <td className="p-3 text-muted">
-                      {c.gradeName} · {c.subjectName}
-                    </td>
-                    <td className="p-3 font-semibold">{c.lessonsCount} درس</td>
-                    <td className="p-3 font-bold text-brand">{formatEGP(c.priceCents)}</td>
-                    <td className="p-3">
-                      <select
-                        value={c.status}
-                        onChange={(e) => handleCourseStatusChange(c, e.target.value as any)}
-                        className={cn(
-                          "text-xs font-bold rounded-lg px-2 py-1 border cursor-pointer",
-                          c.status === "published" && "bg-success/10 border-success/30 text-success",
-                          c.status === "draft" && "bg-surface2 border-line text-muted",
-                          c.status === "archived" && "bg-danger/10 border-danger/30 text-danger"
-                        )}
-                      >
-                        <option value="published">منشور (ظاهر للطلاب)</option>
-                        <option value="draft">مسودة (مخفي)</option>
-                        <option value="archived">مؤرشف</option>
-                      </select>
-                    </td>
-                    <td className="p-3 text-center">
-                      <Link
-                        href={`/courses/${c.slug}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 text-brand hover:underline font-bold"
-                      >
-                        <Eye size={14} /> معاينة
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            }
+          />
         </Card>
       )}
 
-      {/* Academic: Create Course Form */}
       {activeCategory === "academic" && activeSubFeature === "courses_manage" && (
-        <Card className="p-6 max-w-2xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <PlusCircle size={18} className="text-brand" /> إضافة كورس / مقرر دراسي جديد
-            </h3>
-            <Button onClick={() => setActiveSubFeature("courses_table")} variant="ghost" size="sm">
-              العودة للجدول
-            </Button>
-          </div>
+        <Card className="mx-auto max-w-2xl space-y-4 p-6">
+          <SectionHeader
+            icon={PlusCircle}
+            title="إضافة كورس / مقرر دراسي جديد"
+            actions={
+              <Button onClick={() => setActiveSubFeature("courses_table")} variant="ghost" size="sm">
+                العودة للجدول
+              </Button>
+            }
+          />
           <form onSubmit={handleCreateCourse} className="space-y-4">
             <Field label="عنوان المقرر">
               <Input
@@ -1414,7 +2776,7 @@ export function AdminConsole({
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="الرابط اللاتيني (Slug)">
+              <Field label="الرابط اللاتيني (Slug)" hint="يستخدم في رابط صفحة الكورس">
                 <Input
                   required
                   dir="ltr"
@@ -1428,6 +2790,7 @@ export function AdminConsole({
                   required
                   type="number"
                   dir="ltr"
+                  min="0"
                   value={cPrice}
                   onChange={(e) => setCPrice(e.target.value)}
                   placeholder="250"
@@ -1470,187 +2833,155 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Academic: Videos List */}
       {activeCategory === "academic" && activeSubFeature === "videos_manage" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Film size={18} className="text-brand" /> الفيديوهات والمحاضرات ({videos.length})
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">عنوان الفيديو</th>
-                  <th className="p-3">المقرر والدرس</th>
-                  <th className="p-3">المدة</th>
-                  <th className="p-3">معرف الفيديو (YouTube ID)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {videos.map((v) => (
-                  <tr key={v.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-bold text-ink">{v.title}</td>
-                    <td className="p-3 text-muted">
-                      {v.courseTitle} · {v.lessonTitle}
-                    </td>
-                    <td className="p-3 text-muted">{Math.round(v.durationSec / 60)} دقيقة</td>
-                    <td className="p-3 font-mono text-muted" dir="ltr">
-                      {v.youtubeVideoId}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={Film} title="الفيديوهات والمحاضرات" count={videos.length} hint="جميع محاضرات المنصة مرتبة بالمقرر والدرس" />
+          <AdminTable
+            columns={videoColumns}
+            rows={videos}
+            emptyTitle="لا توجد فيديوهات بعد"
+            emptyHint="ستظهر هنا جميع محاضرات المنصة بعد ربطها بالدروس."
+          />
         </Card>
       )}
 
-      {/* Academic: Booklets List */}
       {activeCategory === "academic" && activeSubFeature === "booklets_manage" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <FileText size={18} className="text-brand" /> المذكرات والملازم المرفقة ({courseFiles.length})
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">اسم المذكرة</th>
-                  <th className="p-3">المقرر المرتبط</th>
-                  <th className="p-3">النوع</th>
-                  <th className="p-3">الحجم</th>
-                  <th className="p-3">معاينة مجانية</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {courseFiles.map((f) => (
-                  <tr key={f.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-bold text-ink">{f.title}</td>
-                    <td className="p-3 text-muted">{f.courseTitle}</td>
-                    <td className="p-3">
-                      <Badge tone="brand">{f.kind.toUpperCase()}</Badge>
-                    </td>
-                    <td className="p-3 text-muted">{(f.sizeBytes / (1024 * 1024)).toFixed(1)} MB</td>
-                    <td className="p-3">
-                      <Badge tone={f.isFreePreview ? "success" : "muted"}>
-                        {f.isFreePreview ? "نعم" : "للمشتركين"}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={FileText} title="المذكرات والملازم المرفقة" count={courseFiles.length} />
+          <AdminTable
+            columns={fileColumns}
+            rows={courseFiles}
+            emptyTitle="لا توجد مذكرات مرفوعة"
+            emptyHint="ستظهر ملفات PDF والمذكرات المرتبطة بالمقررات هنا."
+          />
         </Card>
       )}
 
-      {/* Academic: Stages */}
       {activeCategory === "academic" && activeSubFeature === "sections_manage" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Layers size={18} className="text-brand" /> المراحل والصفوف الدراسية
-          </h3>
-          <div className="grid sm:grid-cols-3 gap-3">
-            {grades.map((g) => (
-              <div key={g.id} className="p-4 rounded-xl bg-surface2 border border-line space-y-1">
-                <p className="font-bold text-ink">{g.name}</p>
-                <p className="text-xs text-muted">مرحلة الثانوية العامة</p>
+        <div className="space-y-6">
+          <Card className="space-y-4 p-6">
+            <SectionHeader icon={Layers} title="المراحل الدراسية" count={localStages.length} hint="أضف ورتّب المراحل التي تُبنى عليها الصفوف والمسارات" />
+            <form onSubmit={handleAddStage} className="grid gap-3 rounded-2xl border border-line bg-surface2/50 p-4 sm:grid-cols-[1fr_180px_100px_auto]">
+              <Field label="اسم المرحلة">
+                <Input required value={stageName} onChange={(e) => setStageName(e.target.value)} placeholder="مثال: المرحلة الإعدادية" />
+              </Field>
+              <Field label="الرابط اللاتيني (اختياري)">
+                <Input dir="ltr" value={stageSlug} onChange={(e) => setStageSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))} placeholder="prep-stage" />
+              </Field>
+              <Field label="الترتيب">
+                <Input type="number" dir="ltr" min="0" value={stageOrder} onChange={(e) => setStageOrder(e.target.value)} />
+              </Field>
+              <div className="flex items-end">
+                <Button type="submit" disabled={busy} variant="primary" className="w-full sm:w-auto">
+                  {busy ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+                  إضافة
+                </Button>
               </div>
-            ))}
-          </div>
-        </Card>
+            </form>
+
+            {localStages.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted">لا توجد مراحل بعد — أضف أول مرحلة من النموذج أعلاه.</p>
+            ) : (
+              <div className="divide-y divide-line">
+                {[...localStages]
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((s) => (
+                    <div key={s.id} className="flex flex-wrap items-center gap-3 py-3">
+                      <input
+                        defaultValue={s.name}
+                        onBlur={(e) => {
+                          const v = e.target.value.trim();
+                          if (v && v !== s.name) handleUpdateStage(s, { name: v });
+                        }}
+                        aria-label={`اسم المرحلة ${s.name}`}
+                        className="h-10 flex-1 rounded-xl border border-line bg-surface px-3 text-sm font-semibold text-ink outline-none transition-colors focus:border-brand"
+                      />
+                      <span className="font-mono text-[11px] text-muted" dir="ltr">/{s.slug}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        defaultValue={s.sortOrder}
+                        onBlur={(e) => {
+                          const v = Number(e.target.value);
+                          if (!isNaN(v) && v !== s.sortOrder) handleUpdateStage(s, { sortOrder: v });
+                        }}
+                        aria-label={`ترتيب المرحلة ${s.name}`}
+                        className="h-10 w-20 rounded-xl border border-line bg-surface px-3 text-center text-sm tabular-nums text-ink outline-none transition-colors focus:border-brand"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => requestDeleteStage(s)}
+                        aria-label={`حذف المرحلة ${s.name}`}
+                        className="inline-flex cursor-pointer items-center rounded-lg border border-line px-2.5 py-2 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </Card>
+
+          <Card className="space-y-4 p-6">
+            <SectionHeader icon={GraduationCap} title="الصفوف الدراسية المسجلة" count={grades.length} hint="الصفوف المرتبطة بالنظام الأكاديمي" />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {grades.map((g) => (
+                <div key={g.id} className="space-y-1 rounded-xl border border-line bg-surface2 p-4">
+                  <p className="font-semibold text-ink">{g.name}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 3. CATEGORY: EXAMS & QUESTION BANK                                 */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 3. EXAMS & QUESTION BANK ═══ */}
       {activeCategory === "exams" && activeSubFeature === "exams_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-base font-bold text-ink flex items-center gap-2">
-                <GraduationCap size={18} className="text-brand" /> جدول الامتحانات الإلكترونية ({filteredExams.length})
-              </h3>
-              <p className="text-xs text-muted mt-0.5">يمكنك تفعيل ونشر الامتحانات فوراً للطلاب المشتركين</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={examModeFilter}
-                onChange={(e) => setExamModeFilter(e.target.value)}
-                className="text-xs h-9 w-32"
-              >
-                <option value="all">كل الأنواع</option>
-                <option value="graded">امتحانات مقيمة</option>
-                <option value="practice">تدريبية</option>
-              </Select>
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={GraduationCap}
+            title="جدول الامتحانات الإلكترونية"
+            count={filteredExams.length}
+            hint="يمكنك نشر أو إخفاء أو حذف الامتحانات فوراً"
+            actions={
+              <>
+                <Select value={examModeFilter} onChange={(e) => setExamModeFilter(e.target.value)} className="h-9 w-32 text-xs">
+                  <option value="all">كل الأنواع</option>
+                  <option value="graded">امتحانات مقيمة</option>
+                  <option value="practice">تدريبية</option>
+                </Select>
+                <Button onClick={() => setActiveSubFeature("exams_manage")} variant="primary" size="sm">
+                  <Plus size={14} /> إنشاء امتحان
+                </Button>
+              </>
+            }
+          />
+          <AdminTable
+            columns={examColumns}
+            rows={filteredExams}
+            rowPending={(e) => pendingIds.has(`exam-${e.id}`)}
+            emptyTitle="لا توجد امتحانات"
+            emptyHint="أنشئ أول امتحان واربطه بمقرر دراسي."
+            emptyAction={
               <Button onClick={() => setActiveSubFeature("exams_manage")} variant="primary" size="sm">
                 <Plus size={14} /> إنشاء امتحان جديد
               </Button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">عنوان الامتحان</th>
-                  <th className="p-3">المقرر</th>
-                  <th className="p-3">النوع</th>
-                  <th className="p-3">المدة</th>
-                  <th className="p-3">عدد المحاولات</th>
-                  <th className="p-3">متوسط الدرجات</th>
-                  <th className="p-3">النشر للطلاب</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredExams.map((e) => (
-                  <tr key={e.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-bold text-ink">{e.title}</td>
-                    <td className="p-3 text-muted">{e.courseTitle}</td>
-                    <td className="p-3">
-                      <Badge tone={e.mode === "graded" ? "gold" : "brand"}>
-                        {e.mode === "graded" ? "رسمي بدرجات" : "تدريبي"}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-muted">{e.durationMin} دقيقة</td>
-                    <td className="p-3 font-bold">{e.attemptsCount} محاولة</td>
-                    <td className="p-3 font-bold text-brand">{e.avgScore}%</td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => handleToggleExamPublish(e)}
-                        className={cn(
-                          "px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer",
-                          e.isPublished
-                            ? "bg-success/10 border-success/30 text-success hover:bg-success/20"
-                            : "bg-surface2 border-line text-muted hover:text-ink"
-                        )}
-                      >
-                        {e.isPublished ? "منشور ومتاح" : "مسودة مخفية"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            }
+          />
         </Card>
       )}
 
-      {/* Exams: Create Exam */}
       {activeCategory === "exams" && activeSubFeature === "exams_manage" && (
-        <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <PlusCircle size={18} className="text-brand" /> إنشاء وتصميم امتحان جديد
-            </h3>
-            <Button onClick={() => setActiveSubFeature("exams_table")} variant="ghost" size="sm">
-              العودة للجدول
-            </Button>
-          </div>
+        <Card className="mx-auto max-w-xl space-y-4 p-6">
+          <SectionHeader
+            icon={PlusCircle}
+            title="إنشاء وتصميم امتحان جديد"
+            actions={
+              <Button onClick={() => setActiveSubFeature("exams_table")} variant="ghost" size="sm">
+                العودة للجدول
+              </Button>
+            }
+          />
           <form onSubmit={handleCreateExam} className="space-y-4">
             <Field label="عنوان الامتحان / الاختبار">
               <Input
@@ -1671,29 +3002,21 @@ export function AdminConsole({
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="مدة الامتحان (بالدقائق)">
-                <Input
-                  required
-                  type="number"
-                  dir="ltr"
-                  min="5"
-                  max="300"
-                  value={examDuration}
-                  onChange={(e) => setExamDuration(e.target.value)}
-                />
+                <Input required type="number" dir="ltr" min="5" max="300" value={examDuration} onChange={(e) => setExamDuration(e.target.value)} />
               </Field>
               <Field label="نوع الاختبار">
-                <Select value={examMode} onChange={(e) => setExamMode(e.target.value as any)}>
-                  <option value="graded">رسمي / مقيّم بدرجات (Graded)</option>
-                  <option value="practice">تدريبي / تجريبي (Practice)</option>
+                <Select value={examMode} onChange={(e) => setExamMode(e.target.value as "practice" | "graded")}>
+                  <option value="graded">رسمي / مقيّم بدرجات</option>
+                  <option value="practice">تدريبي / تجريبي</option>
                 </Select>
               </Field>
             </div>
-            <label className="flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer pt-1">
+            <label className="flex cursor-pointer items-center gap-2 pt-1 text-xs font-medium text-ink">
               <input
                 type="checkbox"
                 checked={examIsPublished}
                 onChange={(e) => setExamIsPublished(e.target.checked)}
-                className="rounded accent-brand text-brand"
+                className="rounded accent-brand"
               />
               نشر الامتحان فوراً للطلاب المشتركين في المقرر
             </label>
@@ -1705,77 +3028,56 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Exams: Questions Bank */}
       {activeCategory === "exams" && activeSubFeature === "questions_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-base font-bold text-ink flex items-center gap-2">
-                <HelpCircle size={18} className="text-brand" /> بنك الأسئلة والتمارين ({filteredQuestions.length})
-              </h3>
-              <p className="text-xs text-muted mt-0.5">أسئلة الاختيار من متعدد مع الحلول النموذجية والخطوات</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setActiveSubFeature("questions_manage")} variant="primary" size="sm">
-                <Plus size={14} /> إضافة سؤال فردي
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={HelpCircle}
+            title="بنك الأسئلة والتمارين"
+            count={filteredQuestions.length}
+            hint="أسئلة اختيار من متعدد مع الحلول النموذجية والخطوات"
+            actions={
+              <>
+                <Select value={questionTopicFilter} onChange={(e) => setQuestionTopicFilter(e.target.value)} className="h-9 w-36 text-xs">
+                  <option value="all">كل المواضيع</option>
+                  {questionTopics.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </Select>
+                <Button onClick={() => setActiveSubFeature("questions_manage")} variant="primary" size="sm">
+                  <Plus size={14} /> سؤال فردي
+                </Button>
+                <Button onClick={() => setActiveSubFeature("bulk_questions_add")} variant="outline" size="sm">
+                  <Layers size={14} /> إضافة مجمعة
+                </Button>
+              </>
+            }
+          />
+          <AdminTable
+            columns={questionColumns}
+            rows={filteredQuestions}
+            rowPending={(q) => pendingIds.has(`question-${q.id}`)}
+            emptyTitle="بنك الأسئلة فارغ"
+            emptyHint="أضف أسئلة فردية أو استورد مجموعة كاملة دفعة واحدة."
+            emptyAction={
+              <Button onClick={() => setActiveSubFeature("bulk_questions_add")} variant="primary" size="sm">
+                <Layers size={14} /> استيراد أسئلة مجمعة
               </Button>
-              <Button onClick={() => setActiveSubFeature("bulk_questions_add")} variant="outline" size="sm">
-                <Layers size={14} /> إضافة مجمعة
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">نص السؤال</th>
-                  <th className="p-3">الفرع والموضوع</th>
-                  <th className="p-3">الخيارات</th>
-                  <th className="p-3">الإجابة الصحيحة</th>
-                  <th className="p-3">الصعوبة</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredQuestions.map((q) => (
-                  <tr key={q.id} className="hover:bg-surface2/50">
-                    <td className="p-3 max-w-xs">
-                      <p className="font-bold text-ink line-clamp-2">{q.prompt}</p>
-                      {q.explanation && (
-                        <p className="text-[11px] text-muted line-clamp-1 mt-0.5">💡 {q.explanation}</p>
-                      )}
-                    </td>
-                    <td className="p-3 text-muted">
-                      {q.subjectName} · {q.topic}
-                    </td>
-                    <td className="p-3 text-muted">{q.options?.length ?? 4} خيارات</td>
-                    <td className="p-3 font-bold text-success">
-                      الخيار رقم ({(q.correctIndex ?? 0) + 1}): {q.options?.[q.correctIndex] ?? "—"}
-                    </td>
-                    <td className="p-3">
-                      <Badge tone={q.difficulty > 3 ? "danger" : q.difficulty > 1 ? "gold" : "success"}>
-                        مستوى {q.difficulty}/5
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            }
+          />
         </Card>
       )}
 
-      {/* Exams: Single Question Manage */}
       {activeCategory === "exams" && activeSubFeature === "questions_manage" && (
-        <Card className="p-6 max-w-2xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <HelpCircle size={18} className="text-brand" /> إضافة سؤال جديد لبنك الأسئلة
-            </h3>
-            <Button onClick={() => setActiveSubFeature("questions_table")} variant="ghost" size="sm">
-              العودة للبنك
-            </Button>
-          </div>
+        <Card className="mx-auto max-w-2xl space-y-4 p-6">
+          <SectionHeader
+            icon={HelpCircle}
+            title="إضافة سؤال جديد لبنك الأسئلة"
+            actions={
+              <Button onClick={() => setActiveSubFeature("questions_table")} variant="ghost" size="sm">
+                العودة للبنك
+              </Button>
+            }
+          />
           <form onSubmit={handleCreateQuestion} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Field label="الفرع">
@@ -1788,12 +3090,7 @@ export function AdminConsole({
                 </Select>
               </Field>
               <Field label="الموضوع / الدرس">
-                <Input
-                  required
-                  value={qTopic}
-                  onChange={(e) => setQTopic(e.target.value)}
-                  placeholder="مثال: النهايات والدوال المثلثية"
-                />
+                <Input required value={qTopic} onChange={(e) => setQTopic(e.target.value)} placeholder="مثال: النهايات والدوال المثلثية" />
               </Field>
             </div>
             <Field label="نص السؤال أو المعادلة">
@@ -1805,7 +3102,7 @@ export function AdminConsole({
                 placeholder="إذا كانت س + ص = 10 و س² - ص² = 40، فما هي قيمة س - ص؟"
               />
             </Field>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="الخيار الأول (1)">
                 <Input required value={qOpt1} onChange={(e) => setQOpt1(e.target.value)} placeholder="4" />
               </Field>
@@ -1843,155 +3140,109 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Exams: Bulk Questions */}
       {activeCategory === "exams" && activeSubFeature === "bulk_questions_add" && (
-        <Card className="p-6 max-w-2xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Layers size={18} className="text-brand" /> استيراد وإضافة أسئلة مجمعة
-            </h3>
-            <Button onClick={() => setActiveSubFeature("questions_table")} variant="ghost" size="sm">
-              العودة للبنك
-            </Button>
+        <Card className="mx-auto max-w-2xl space-y-4 p-6">
+          <SectionHeader
+            icon={Layers}
+            title="استيراد وإضافة أسئلة مجمعة"
+            actions={
+              <Button onClick={() => setActiveSubFeature("questions_table")} variant="ghost" size="sm">
+                العودة للبنك
+              </Button>
+            }
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="الفرع">
+              <Select value={bulkSubjectId} onChange={(e) => setBulkSubjectId(e.target.value)}>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="الموضوع الموحد للأسئلة">
+              <Input value={bulkTopic} onChange={(e) => setBulkTopic(e.target.value)} placeholder="عام" />
+            </Field>
           </div>
-          <p className="text-xs text-muted leading-relaxed">
-            الصق الأسئلة مع خياراتها متبوعة بسطر الإجابة، وسيقوم النظام بتنسيقها وإدراجها تلقائياً.
-          </p>
+          <div className="rounded-xl border border-line bg-surface2/60 p-3.5 text-[13px] leading-relaxed text-muted">
+            <p className="font-semibold text-ink">صيغة كل سؤال:</p>
+            <p>
+              سطر السؤال (يمكن أن يبدأ بترقيم)، ثم كل خيار في سطر، ثم سطر{" "}
+              <span className="font-mono text-xs" dir="rtl">الإجابة: رقم الخيار</span> — ويفصل بين الأسئلة سطر فارغ.
+            </p>
+          </div>
           <Textarea
             rows={10}
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
             className="font-mono text-xs"
+            placeholder={"1. ما هو ميل المستقيم 2x + 3y = 6؟\n-2/3\n3/2\n2/3\n-3/2\nالإجابة: 1\n\n2. إذا كان جا(س) = 0.5 فإن س = ؟\n30\n45\n60\n90\nالإجابة: 1"}
+            aria-label="نص الأسئلة المجمعة"
           />
-          <Button
-            onClick={() => {
-              setNote({ kind: "ok", text: "تم استيراد وإدراج 2 من الأسئلة بنجاح!" });
-              setActiveSubFeature("questions_table");
-            }}
-            variant="primary"
-            className="w-full"
-          >
-            <Plus size={16} /> معالجة وإدراج الأسئلة في البنك
+          <Button type="button" onClick={handleBulkImport} disabled={bulkBusy || !bulkText.trim()} variant="primary" className="w-full">
+            {bulkBusy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {bulkBusy ? "جارٍ الإدراج..." : "معالجة وإدراج الأسئلة في البنك"}
           </Button>
+          {bulkResult && (
+            <div
+              className={cn(
+                "rounded-xl border p-4 text-[13px] leading-relaxed",
+                bulkResult.added > 0 ? "border-success/30 bg-success/10" : "border-danger/30 bg-danger/10"
+              )}
+              role="status"
+            >
+              <p className="font-semibold text-ink">
+                النتيجة: تم إدراج {bulkResult.added} من {bulkResult.total} سؤالاً
+                {bulkResult.errors.length > 0 ? ` — ورفض ${bulkResult.errors.length}` : ""}.
+              </p>
+              {bulkResult.errors.length > 0 && (
+                <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-muted">
+                  {bulkResult.errors.map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </Card>
       )}
 
-      {/* Exams: Results Table */}
       {activeCategory === "exams" && activeSubFeature === "exam_results_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Award size={18} className="text-brand" /> نتائج ومحاولات الطلاب ({attempts.length})
-            </h3>
-            <span className="text-xs text-muted">تصحيح تلقائي فوري مع رصد الدرجة</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">اسم الطالب</th>
-                  <th className="p-3">الامتحان</th>
-                  <th className="p-3">الدرجة</th>
-                  <th className="p-3">النسبة المئوية</th>
-                  <th className="p-3">تاريخ التسليم</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {attempts.map((a) => {
-                  const pct = Math.round((a.score / (a.totalMarks || 1)) * 100);
-                  return (
-                    <tr key={a.id} className="hover:bg-surface2/50">
-                      <td className="p-3">
-                        <p className="font-bold text-ink">{a.studentName}</p>
-                        <span className="text-[10px] text-muted">{a.studentEmail}</span>
-                      </td>
-                      <td className="p-3 text-muted">{a.examTitle}</td>
-                      <td className="p-3 font-bold text-ink">
-                        {a.score} / {a.totalMarks}
-                      </td>
-                      <td className="p-3">
-                        <Badge tone={pct >= 85 ? "success" : pct >= 50 ? "gold" : "danger"}>{pct}%</Badge>
-                      </td>
-                      <td className="p-3 text-muted" dir="ltr">
-                        {formatDate(a.submittedAt)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={CheckCircle2} title="نتائج ومحاولات الطلاب" count={attempts.length} hint="تصحيح تلقائي فوري مع رصد الدرجة" />
+          <AdminTable
+            columns={attemptColumns}
+            rows={attempts}
+            emptyTitle="لا توجد محاولات بعد"
+            emptyHint="ستظهر نتائج الطلاب هنا فور تقديم أول امتحان."
+          />
         </Card>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 4. CATEGORY: BILLING & ACTIVATION CODES                            */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 4. BILLING & ACTIVATION CODES ═══ */}
       {activeCategory === "billing_codes" && activeSubFeature === "create_codes" && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Batch Code Generator Form */}
-          <Card className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Sparkles size={18} className="text-brand" /> توليد وحفظ أكواد تفعيل مباشرة في قاعدة البيانات
-            </h3>
-            <p className="text-xs text-muted">
-              يتم حفظ الأكواد المنشأة تلقائياً في قاعدة البيانات مع نسبة الخصم والصلاحية المحددة.
-            </p>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="space-y-4 p-6">
+            <SectionHeader icon={Sparkles} title="توليد وحفظ أكواد تفعيل" hint="تُحفظ الأكواد تلقائياً في قاعدة البيانات مع نسبة الخصم والصلاحية" />
             <form onSubmit={handleBatchGenerateCodes} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="بادئة الكود (Prefix)">
-                  <Input
-                    required
-                    dir="ltr"
-                    value={codePrefix}
-                    onChange={(e) => setCodePrefix(e.target.value.toUpperCase())}
-                    placeholder="MATH"
-                  />
+                  <Input required dir="ltr" value={codePrefix} onChange={(e) => setCodePrefix(e.target.value.toUpperCase())} placeholder="MATH" />
                 </Field>
                 <Field label="عدد الأكواد">
-                  <Input
-                    required
-                    type="number"
-                    dir="ltr"
-                    min="1"
-                    max="100"
-                    value={codeCount}
-                    onChange={(e) => setCodeCount(e.target.value)}
-                  />
+                  <Input required type="number" dir="ltr" min="1" max="100" value={codeCount} onChange={(e) => setCodeCount(e.target.value)} />
                 </Field>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <Field label="نسبة الخصم %">
-                  <Input
-                    required
-                    type="number"
-                    dir="ltr"
-                    min="1"
-                    max="100"
-                    value={codePercent}
-                    onChange={(e) => setCodePercent(e.target.value)}
-                  />
+                  <Input required type="number" dir="ltr" min="1" max="100" value={codePercent} onChange={(e) => setCodePercent(e.target.value)} />
                 </Field>
                 <Field label="أقصى استخدام">
-                  <Input
-                    required
-                    type="number"
-                    dir="ltr"
-                    min="1"
-                    value={codeMaxUses}
-                    onChange={(e) => setCodeMaxUses(e.target.value)}
-                  />
+                  <Input required type="number" dir="ltr" min="1" value={codeMaxUses} onChange={(e) => setCodeMaxUses(e.target.value)} />
                 </Field>
                 <Field label="صالح لمدة (يوم)">
-                  <Input
-                    required
-                    type="number"
-                    dir="ltr"
-                    min="1"
-                    max="365"
-                    value={codeDaysValid}
-                    onChange={(e) => setCodeDaysValid(e.target.value)}
-                  />
+                  <Input required type="number" dir="ltr" min="1" max="365" value={codeDaysValid} onChange={(e) => setCodeDaysValid(e.target.value)} />
                 </Field>
               </div>
               <Button type="submit" disabled={busy} variant="primary" className="w-full">
@@ -2001,55 +3252,56 @@ export function AdminConsole({
             </form>
           </Card>
 
-          {/* Generated Codes Preview & Actions */}
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink flex items-center gap-2">
-                <KeyRound size={18} className="text-gold" /> الأكواد المنشأة حديثاً ({generatedCodes.length})
-              </h3>
-              {generatedCodes.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedCodes.join("\n"));
-                      setNote({ kind: "ok", text: "تم نسخ جميع الأكواد إلى الحافظة بنجاح!" });
-                    }}
-                    className="text-xs text-brand font-bold hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <Copy size={13} /> نسخ الكل
-                  </button>
-                  <button
-                    onClick={() => setPrintVouchersModal(generatedCodes)}
-                    className="text-xs text-gold font-bold hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <Printer size={13} /> بطاقات السنتر
-                  </button>
-                </div>
-              )}
-            </div>
-
+          <Card className="space-y-4 p-6">
+            <SectionHeader
+              icon={KeyRound}
+              title="الأكواد المنشأة حديثاً"
+              count={generatedCodes.length}
+              actions={
+                generatedCodes.length > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedCodes.join("\n"));
+                        pushToast("ok", "تم نسخ جميع الأكواد إلى الحافظة بنجاح!");
+                      }}
+                      className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-brand hover:underline"
+                    >
+                      <Copy size={13} /> نسخ الكل
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrintVouchersModal(generatedCodes)}
+                      className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-gold hover:underline"
+                    >
+                      <Printer size={13} /> بطاقات السنتر
+                    </button>
+                  </div>
+                ) : undefined
+              }
+            />
             {generatedCodes.length === 0 ? (
-              <div className="py-12 text-center text-muted space-y-2">
-                <KeyRound size={32} className="mx-auto opacity-30 text-brand" />
-                <p>حدد الخيارات واضغط «توليد وحفظ» لإنشاء الأكواد وعرضها.</p>
+              <div className="space-y-2 py-12 text-center text-muted">
+                <KeyRound size={32} className="mx-auto text-brand opacity-30" />
+                <p className="text-sm">حدد الخيارات واضغط «توليد وحفظ» لإنشاء الأكواد وعرضها.</p>
               </div>
             ) : (
-              <div className="grid sm:grid-cols-2 gap-2.5 max-h-96 overflow-y-auto">
+              <div className="custom-scrollbar grid max-h-96 gap-2.5 overflow-y-auto sm:grid-cols-2">
                 {generatedCodes.map((code, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-surface2 border border-line"
-                  >
-                    <span className="font-mono text-xs font-bold text-ink select-all" dir="ltr">
+                  <div key={code} className="flex items-center justify-between rounded-xl border border-line bg-surface2 p-2.5">
+                    <span className="select-all font-mono text-xs font-semibold text-ink" dir="ltr">
                       {code}
                     </span>
                     <button
+                      type="button"
                       onClick={() => {
                         navigator.clipboard.writeText(code);
                         setCopiedIndex(idx);
                         setTimeout(() => setCopiedIndex(null), 1500);
                       }}
-                      className="p-1 rounded-md text-muted hover:text-brand hover:bg-surface cursor-pointer"
+                      aria-label={`نسخ الكود ${code}`}
+                      className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand"
                     >
                       {copiedIndex === idx ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                     </button>
@@ -2061,73 +3313,48 @@ export function AdminConsole({
         </div>
       )}
 
-      {/* Billing: Codes Table */}
       {activeCategory === "billing_codes" && activeSubFeature === "codes_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <KeyRound size={18} className="text-brand" /> سجل الأكواد في قاعدة البيانات ({filteredCoupons.length})
-            </h3>
-            <Button onClick={() => setActiveSubFeature("create_codes")} variant="primary" size="sm">
-              <Plus size={14} /> توليد أكواد جديدة
-            </Button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">الكود</th>
-                  <th className="p-3">نسبة الخصم</th>
-                  <th className="p-3">مرات الاستخدام</th>
-                  <th className="p-3">الحالة</th>
-                  <th className="p-3">تاريخ الصلاحية</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredCoupons.map((c) => (
-                  <tr key={c.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-mono font-bold text-ink select-all" dir="ltr">
-                      {c.code}
-                    </td>
-                    <td className="p-3 font-bold text-brand">{c.percentOff}%</td>
-                    <td className="p-3 text-muted">
-                      {c.usedCount} / {c.maxUses}
-                    </td>
-                    <td className="p-3">
-                      <Badge tone={c.isActive ? "success" : "muted"}>{c.isActive ? "فعال" : "معطل"}</Badge>
-                    </td>
-                    <td className="p-3 text-muted" dir="ltr">
-                      {c.expiresAt ? formatDate(c.expiresAt) : "غير محدد"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={KeyRound}
+            title="سجل الأكواد في قاعدة البيانات"
+            count={filteredCoupons.length}
+            hint="فعّل أو عطّل أو احذف أي كود مباشرة من الجدول"
+            actions={
+              <Button onClick={() => setActiveSubFeature("create_codes")} variant="primary" size="sm">
+                <Plus size={14} /> توليد أكواد جديدة
+              </Button>
+            }
+          />
+          <AdminTable
+            columns={couponColumns}
+            rows={filteredCoupons}
+            rowPending={(c) => pendingIds.has(`coupon-${c.id}`)}
+            emptyTitle="لا توجد أكواد"
+            emptyHint="ولّد دفعة أكواد جديدة لتظهر هنا."
+            emptyAction={
+              <Button onClick={() => setActiveSubFeature("create_codes")} variant="primary" size="sm">
+                <Plus size={14} /> توليد أكواد
+              </Button>
+            }
+          />
         </Card>
       )}
 
-      {/* Billing: Manual Payment */}
       {activeCategory === "billing_codes" && activeSubFeature === "manual_payment" && (
-        <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <CreditCard size={18} className="text-brand" /> تفعيل اشتراك ودفع يدوي (سنتر / فودافون كاش)
-            </h3>
-            <Button onClick={() => setActiveSubFeature("subscriptions_table")} variant="ghost" size="sm">
-              عرض الاشتراكات
-            </Button>
-          </div>
+        <Card className="mx-auto max-w-xl space-y-4 p-6">
+          <SectionHeader
+            icon={CreditCard}
+            title="تفعيل اشتراك ودفع يدوي (سنتر / فودافون كاش)"
+            actions={
+              <Button onClick={() => setActiveSubFeature("subscriptions_table")} variant="ghost" size="sm">
+                عرض الاشتراكات
+              </Button>
+            }
+          />
           <form onSubmit={handleManualEnroll} className="space-y-4">
             <Field label="البريد الإلكتروني للطالب المسجل">
-              <Input
-                required
-                type="email"
-                dir="ltr"
-                value={mpStudentEmail}
-                onChange={(e) => setMpStudentEmail(e.target.value)}
-                placeholder="student@example.com"
-              />
+              <Input required type="email" dir="ltr" value={mpStudentEmail} onChange={(e) => setMpStudentEmail(e.target.value)} placeholder="student@example.com" />
             </Field>
             <Field label="المقرر المراد تفعيله">
               <Select
@@ -2147,20 +3374,14 @@ export function AdminConsole({
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="طريقة الدفع">
-                <Select value={mpMethod} onChange={(e) => setMpMethod(e.target.value as any)}>
+                <Select value={mpMethod} onChange={(e) => setMpMethod(e.target.value as typeof mpMethod)}>
                   <option value="center_cash">نقداً بالسنتر</option>
-                  <option value="vodafone_cash">فودافون كاش (Vodafone Cash)</option>
-                  <option value="instapay">إنستاباي (InstaPay)</option>
+                  <option value="vodafone_cash">فودافون كاش</option>
+                  <option value="instapay">إنستاباي</option>
                 </Select>
               </Field>
               <Field label="المبلغ المحصل (ج.م)">
-                <Input
-                  required
-                  type="number"
-                  dir="ltr"
-                  value={mpAmount}
-                  onChange={(e) => setMpAmount(e.target.value)}
-                />
+                <Input required type="number" dir="ltr" min="0" value={mpAmount} onChange={(e) => setMpAmount(e.target.value)} />
               </Field>
             </div>
             <Button type="submit" disabled={busy} variant="primary" className="w-full">
@@ -2171,238 +3392,319 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Billing: Subscriptions Table */}
-      {activeCategory === "billing_codes" && activeSubFeature === "subscriptions_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <Receipt size={18} className="text-brand" /> سجل الاشتراكات الفعالة ({filteredSubscriptions.length})
-            </h3>
-            <Button onClick={() => setActiveSubFeature("manual_payment")} variant="primary" size="sm">
-              <Plus size={14} /> تفعيل اشتراك يدوي
-            </Button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">الطالب</th>
-                  <th className="p-3">المقرر المشترك به</th>
-                  <th className="p-3">الحالة</th>
-                  <th className="p-3">تاريخ البدء</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredSubscriptions.map((s) => (
-                  <tr key={s.id} className="hover:bg-surface2/50">
-                    <td className="p-3">
-                      <p className="font-bold text-ink">{s.studentName}</p>
-                      <span className="text-[10px] text-muted">{s.studentEmail}</span>
-                    </td>
-                    <td className="p-3 font-semibold text-ink">{s.courseTitle}</td>
-                    <td className="p-3">
-                      <Badge tone={s.status === "active" ? "success" : "muted"}>
-                        {STATUS_LABEL[s.status]?.label ?? s.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-muted" dir="ltr">
-                      {formatDate(s.startsAt)}
-                    </td>
-                  </tr>
+      {activeCategory === "billing_codes" && activeSubFeature === "payment_requests" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Receipt}
+            title="طلبات شحن الرصيد"
+            count={paymentRequests.filter((r) => r.status === "pending").length}
+            hint="راجع إيصال التحويل ثم أصدر كود شحن رصيد أو كود تفعيل كورس — يصل الطالب عبر الإشعارات"
+            actions={
+              <div className="flex gap-1.5">
+                {(["pending", "approved", "rejected", "all"] as const).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setPrFilter(f)}
+                    className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                      prFilter === f ? "bg-brand text-white" : "bg-surface2 text-muted hover:text-ink"
+                    }`}
+                  >
+                    {f === "pending" ? "معلقة" : f === "approved" ? "مقبولة" : f === "rejected" ? "مرفوضة" : "الكل"}
+                  </button>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
+              </div>
+            }
+          />
 
-      {/* Billing: Invoices Table */}
-      {activeCategory === "billing_codes" && activeSubFeature === "invoices_table" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Receipt size={18} className="text-brand" /> الفواتير والإيصالات المالية ({invoices.length})
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">رقم الفاتورة</th>
-                  <th className="p-3">إجمالي المبلغ</th>
-                  <th className="p-3">تاريخ الإصدار</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {invoices.map((i) => (
-                  <tr key={i.id} className="hover:bg-surface2/50">
-                    <td className="p-3 font-mono font-bold text-brand" dir="ltr">
-                      {i.number}
-                    </td>
-                    <td className="p-3 font-bold text-ink">{formatEGP(i.totalCents)}</td>
-                    <td className="p-3 text-muted" dir="ltr">
-                      {formatDate(i.issuedAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 5. CATEGORY: USERS & STUDENTS                                      */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {activeCategory === "users" && activeSubFeature === "users_table" && (
-        <Card className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-base font-bold text-ink flex items-center gap-2">
-                <Users size={18} className="text-brand" /> مستخدمو وطلاب المنصة ({filteredUsers.length})
-              </h3>
-              <p className="text-xs text-muted mt-0.5">
-                تعديل الرتب، تجميد/تفعيل الحسابات، وشحن وتعديل رصيد المحفظة
-              </p>
+          {!prLoaded ? (
+            <p className="py-10 text-center text-sm text-muted">جارِ التحميل…</p>
+          ) : paymentRequests.filter((r) => prFilter === "all" || r.status === prFilter).length === 0 ? (
+            <div className="space-y-2 py-12 text-center text-muted">
+              <Receipt size={32} className="mx-auto text-brand opacity-30" />
+              <p className="text-sm">لا توجد طلبات في هذه القائمة.</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Select
-                value={userRoleFilter}
-                onChange={(e) => setUserRoleFilter(e.target.value)}
-                className="text-xs h-9 w-28"
-              >
-                <option value="all">كل الرتب</option>
-                <option value="student">طلاب</option>
-                <option value="teacher">معلمون</option>
-                <option value="admin">مديرون</option>
-                <option value="assistant">مشرفون</option>
-              </Select>
-              <Select
-                value={userStatusFilter}
-                onChange={(e) => setUserStatusFilter(e.target.value)}
-                className="text-xs h-9 w-28"
-              >
-                <option value="all">كل الحالات</option>
-                <option value="active">نشط فقط</option>
-                <option value="inactive">مجمد فقط</option>
-              </Select>
-              <Button onClick={() => setActiveSubFeature("add_student")} variant="primary" size="sm">
-                <UserPlus size={14} /> إضافة طالب
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-right text-xs">
-              <thead className="border-b border-line text-muted bg-surface2">
-                <tr>
-                  <th className="p-3">المستخدم</th>
-                  <th className="p-3">الرتبة والدور</th>
-                  <th className="p-3">رصيد المحفظة</th>
-                  <th className="p-3">حالة الحساب</th>
-                  <th className="p-3 text-center">إجراءات المحفظة</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-surface2/50">
-                    <td className="p-3">
-                      <p className="font-bold text-ink">{u.name}</p>
-                      <span className="text-[10px] text-muted">{u.email}</span>
-                    </td>
-                    <td className="p-3">
-                      {canManageUsers ? (
-                        <select
-                          value={u.role}
-                          onChange={(e) => handleChangeUserRole(u, e.target.value as Role)}
-                          className="text-xs font-semibold bg-surface border border-line rounded-lg px-2 py-1 cursor-pointer"
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {paymentRequests
+                .filter((r) => prFilter === "all" || r.status === prFilter)
+                .map((r) => {
+                  const kind = prIssueKind[r.id] ?? "wallet_balance";
+                  const busy = prBusyId === r.id;
+                  return (
+                    <div key={r.id} className="space-y-3 rounded-2xl border border-line bg-surface2/40 p-4">
+                      {/* student + request meta */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-extrabold text-ink">{r.studentName}</p>
+                          <p className="truncate font-mono text-[11px] text-muted" dir="ltr">
+                            {r.studentEmail}
+                            {r.studentPhone ? ` · ${r.studentPhone}` : ""}
+                          </p>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                            r.status === "pending"
+                              ? "bg-amber-500/15 text-amber-600"
+                              : r.status === "approved"
+                                ? "bg-success/10 text-success"
+                                : "bg-danger/10 text-danger"
+                          }`}
                         >
-                          <option value="student">طالب (Student)</option>
-                          <option value="teacher">معلم (Teacher)</option>
-                          <option value="assistant">مساعد (Assistant)</option>
-                          <option value="admin">مدير (Admin)</option>
-                        </select>
-                      ) : (
-                        <Badge tone="brand">{ROLE_LABELS[u.role]}</Badge>
-                      )}
-                    </td>
-                    <td className="p-3 font-bold text-brand">{formatEGP(u.balanceCents)}</td>
-                    <td className="p-3">
-                      <button
-                        onClick={() => handleToggleUserStatus(u)}
-                        className={cn(
-                          "px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer",
-                          u.isActive
-                            ? "bg-success/10 border-success/30 text-success hover:bg-danger/10 hover:border-danger/30 hover:text-danger"
-                            : "bg-danger/10 border-danger/30 text-danger hover:bg-success/10 hover:border-success/30 hover:text-success"
-                        )}
+                          {r.status === "pending" ? "معلق" : r.status === "approved" ? "مقبول" : "مرفوض"}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-muted">
+                        <span>
+                          المبلغ: <span className="font-mono font-bold text-ink">{r.amountEgp} ج.م</span>
+                        </span>
+                        <span>الطريقة: {r.method}</span>
+                        {r.senderName ? <span>المحوّل: {r.senderName}</span> : null}
+                        <span className="font-mono text-[10px]">{new Date(r.createdAt).toLocaleString("ar-EG")}</span>
+                      </div>
+
+                      {/* proof screenshot */}
+                      <a
+                        href={`/api/v1/admin/payment-requests/${r.id}/screenshot`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
                       >
-                        {u.isActive ? "نشط ومفعل" : "مجمد / معطل"}
-                      </button>
-                    </td>
-                    <td className="p-3 text-center">
-                      <Button
-                        onClick={() => setWalletModalUser(u)}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-7 gap-1"
-                      >
-                        <Wallet size={13} className="text-brand" /> تعديل المحفظة
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <ImageIcon size={13} /> عرض إيصال التحويل
+                      </a>
+
+                      {r.status === "approved" && r.issuedCode ? (
+                        <div className="flex items-center justify-between gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2">
+                          <span className="select-all font-mono text-xs font-bold text-success" dir="ltr">
+                            {r.issuedCode}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(r.issuedCode ?? "");
+                              setPrCopiedId(r.id);
+                              setTimeout(() => setPrCopiedId(null), 1500);
+                            }}
+                            className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-bold text-success hover:underline"
+                          >
+                            {prCopiedId === r.id ? <Check size={12} /> : <Copy size={12} />} نسخ
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {r.status === "rejected" && r.adminNote ? (
+                        <p className="text-[11px] text-muted">سبب الرفض: {r.adminNote}</p>
+                      ) : null}
+
+                      {/* actions for pending */}
+                      {r.status === "pending" ? (
+                        prRejectOpen === r.id ? (
+                          <div className="space-y-2 rounded-xl border border-danger/30 bg-danger/5 p-3">
+                            <Input
+                              placeholder="سبب الرفض (يظهر للطالب)"
+                              value={prRejectNote}
+                              onChange={(e) => setPrRejectNote(e.target.value)}
+                              maxLength={500}
+                            />
+                            <div className="flex gap-2">
+                              <Button variant="danger" size="sm" disabled={busy} onClick={() => handleRejectRequest(r.id)}>
+                                {busy ? <Loader2 size={14} className="animate-spin" /> : null} تأكيد الرفض
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setPrRejectOpen(null)}>
+                                إلغاء
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2.5 border-t border-line pt-3">
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setPrIssueKind({ ...prIssueKind, [r.id]: "wallet_balance" })}
+                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-[11px] font-bold transition-colors ${
+                                  kind === "wallet_balance"
+                                    ? "border-brand bg-neon-lime-soft text-brand"
+                                    : "border-line text-muted hover:text-ink"
+                                }`}
+                              >
+                                كود شحن رصيد
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPrIssueKind({ ...prIssueKind, [r.id]: "course_access" })}
+                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-[11px] font-bold transition-colors ${
+                                  kind === "course_access"
+                                    ? "border-brand bg-neon-lime-soft text-brand"
+                                    : "border-line text-muted hover:text-ink"
+                                }`}
+                              >
+                                كود تفعيل كورس
+                              </button>
+                            </div>
+
+                            {kind === "wallet_balance" ? (
+                              <Input
+                                type="number"
+                                min={1}
+                                placeholder="مبلغ الرصيد ج.م"
+                                value={prIssueAmount[r.id] ?? String(r.amountEgp)}
+                                onChange={(e) => setPrIssueAmount({ ...prIssueAmount, [r.id]: e.target.value })}
+                              />
+                            ) : (
+                              <Select
+                                value={prIssueCourse[r.id] ?? ""}
+                                onChange={(e) => setPrIssueCourse({ ...prIssueCourse, [r.id]: e.target.value })}
+                              >
+                                <option value="">— اختر الكورس —</option>
+                                {courses.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.title}
+                                  </option>
+                                ))}
+                              </Select>
+                            )}
+
+                            <div className="flex gap-2">
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                className="flex-1"
+                                disabled={busy}
+                                onClick={() => handleIssueRequestCode(r.id)}
+                              >
+                                {busy ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+                                إصدار الكود وإشعار الطالب
+                              </Button>
+                              <Button variant="danger" size="sm" disabled={busy} onClick={() => setPrRejectOpen(r.id)}>
+                                رفض
+                              </Button>
+                            </div>
+                          </div>
+                        )
+                      ) : null}
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </Card>
       )}
 
-      {/* Users: Add Student Form */}
+      {activeCategory === "billing_codes" && activeSubFeature === "orders_table" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={Receipt} title="جدول الطلبات والمدفوعات" count={filteredOrders.length} hint="جميع عمليات الشراء عبر البوابة الإلكترونية" />
+          <AdminTable
+            columns={orderColumns}
+            rows={filteredOrders}
+            emptyTitle="لا توجد طلبات بعد"
+            emptyHint="ستظهر عمليات الشراء الإلكترونية هنا فور حدوثها."
+          />
+        </Card>
+      )}
+
+      {activeCategory === "billing_codes" && activeSubFeature === "subscriptions_table" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Receipt}
+            title="سجل الاشتراكات"
+            count={filteredSubscriptions.length}
+            actions={
+              <Button onClick={() => setActiveSubFeature("manual_payment")} variant="primary" size="sm">
+                <Plus size={14} /> تفعيل اشتراك يدوي
+              </Button>
+            }
+          />
+          <AdminTable
+            columns={subscriptionColumns}
+            rows={filteredSubscriptions}
+            emptyTitle="لا توجد اشتراكات"
+            emptyHint="فعّل اشتراكاً يدوياً أو انتظر اشتراكات الطلاب الإلكترونية."
+          />
+        </Card>
+      )}
+
+      {activeCategory === "billing_codes" && activeSubFeature === "invoices_table" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={Receipt} title="الفواتير والإيصالات المالية" count={invoices.length} />
+          <AdminTable
+            columns={invoiceColumns}
+            rows={invoices}
+            emptyTitle="لا توجد فواتير"
+            emptyHint="تُصدر الفواتير تلقائياً مع كل عملية اشتراك."
+          />
+        </Card>
+      )}
+
+      {/* ═══ 5. USERS & STUDENTS ═══ */}
+      {activeCategory === "users" && activeSubFeature === "users_table" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Users}
+            title="مستخدمو وطلاب المنصة"
+            count={filteredUsers.length}
+            hint="تعديل الرتب، تجميد/تفعيل الحسابات، وشحن وتعديل رصيد المحفظة"
+            actions={
+              <>
+                <Select value={userRoleFilter} onChange={(e) => setUserRoleFilter(e.target.value)} className="h-9 w-28 text-xs">
+                  <option value="all">كل الرتب</option>
+                  <option value="student">طلاب</option>
+                  <option value="teacher">معلمون</option>
+                  <option value="admin">مديرون</option>
+                  <option value="assistant">مشرفون</option>
+                </Select>
+                <Select value={userStatusFilter} onChange={(e) => setUserStatusFilter(e.target.value)} className="h-9 w-28 text-xs">
+                  <option value="all">كل الحالات</option>
+                  <option value="active">نشط فقط</option>
+                  <option value="inactive">مجمد فقط</option>
+                </Select>
+                <Button onClick={() => setActiveSubFeature("add_student")} variant="primary" size="sm">
+                  <UserPlus size={14} /> إضافة طالب
+                </Button>
+              </>
+            }
+          />
+          <AdminTable
+            columns={userColumns}
+            rows={filteredUsers}
+            rowPending={(u) => pendingIds.has(`user-${u.id}`)}
+            mobileTitle={(u) => (
+              <div>
+                <p className="font-semibold text-ink">{u.name}</p>
+                <span className="text-[11px] text-muted" dir="ltr">{u.email}</span>
+              </div>
+            )}
+            emptyTitle="لا يوجد مستخدمون مطابقون"
+            emptyHint="جرّب تعديل البحث أو عوامل التصفية."
+          />
+        </Card>
+      )}
+
       {activeCategory === "users" && activeSubFeature === "add_student" && (
-        <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              <UserPlus size={18} className="text-brand" /> تسجيل حساب طالب جديد يدوياً
-            </h3>
-            <Button onClick={() => setActiveSubFeature("users_table")} variant="ghost" size="sm">
-              العودة للجدول
-            </Button>
-          </div>
+        <Card className="mx-auto max-w-xl space-y-4 p-6">
+          <SectionHeader
+            icon={UserPlus}
+            title="تسجيل حساب طالب جديد يدوياً"
+            actions={
+              <Button onClick={() => setActiveSubFeature("users_table")} variant="ghost" size="sm">
+                العودة للجدول
+              </Button>
+            }
+          />
           <form onSubmit={handleAddStudent} className="space-y-4">
             <Field label="الاسم الرباعي للطالب">
-              <Input
-                required
-                value={newStudentName}
-                onChange={(e) => setNewStudentName(e.target.value)}
-                placeholder="أحمد محمد السيد علي"
-              />
+              <Input required value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} placeholder="أحمد محمد السيد علي" />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="البريد الإلكتروني">
-                <Input
-                  required
-                  type="email"
-                  dir="ltr"
-                  value={newStudentEmail}
-                  onChange={(e) => setNewStudentEmail(e.target.value)}
-                  placeholder="student@gmail.com"
-                />
+                <Input required type="email" dir="ltr" value={newStudentEmail} onChange={(e) => setNewStudentEmail(e.target.value)} placeholder="student@gmail.com" />
               </Field>
               <Field label="رقم الموبايل / واتساب">
-                <Input
-                  dir="ltr"
-                  value={newStudentPhone}
-                  onChange={(e) => setNewStudentPhone(e.target.value)}
-                  placeholder="01012345678"
-                />
+                <Input dir="ltr" value={newStudentPhone} onChange={(e) => setNewStudentPhone(e.target.value)} placeholder="01012345678" />
               </Field>
             </div>
-            <Field label="كلمة المرور الافتراضية">
-              <Input
-                required
-                dir="ltr"
-                value={newStudentPass}
-                onChange={(e) => setNewStudentPass(e.target.value)}
-              />
+            <Field label="كلمة المرور الافتراضية" hint="يُنصح بأن يغيّر الطالب كلمة المرور بعد أول دخول">
+              <Input required dir="ltr" value={newStudentPass} onChange={(e) => setNewStudentPass(e.target.value)} />
             </Field>
             <Button type="submit" disabled={busy} variant="primary" className="w-full">
               {busy ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
@@ -2412,146 +3714,184 @@ export function AdminConsole({
         </Card>
       )}
 
-      {/* Users: Manage Staff */}
       {activeCategory === "users" && activeSubFeature === "manage_admin" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <ShieldCheck size={18} className="text-brand" /> المسؤولون والمشرفون
-          </h3>
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={ShieldCheck} title="المسؤولون والمشرفون" hint="الفريق الذي يملك صلاحيات الدخول إلى لوحة الإدارة" />
           <div className="divide-y divide-line">
-            {localUsers
-              .filter((u) => u.role !== "student")
-              .map((admin) => (
-                <div key={admin.id} className="py-3 flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-bold text-ink">{admin.name}</p>
-                    <p className="text-muted">{admin.email}</p>
+            {localUsers.filter((u) => u.role !== "student").length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted">لا يوجد حسابات إدارية بعد.</p>
+            ) : (
+              localUsers
+                .filter((u) => u.role !== "student")
+                .map((admin) => (
+                  <div key={admin.id} className="flex items-center justify-between py-3 text-xs">
+                    <div>
+                      <p className="font-semibold text-ink">{admin.name}</p>
+                      <p className="text-muted" dir="ltr">{admin.email}</p>
+                    </div>
+                    <Badge tone="gold">{ROLE_LABELS[admin.role]}</Badge>
                   </div>
-                  <Badge tone="gold">{ROLE_LABELS[admin.role]}</Badge>
-                </div>
-              ))}
+                ))
+            )}
           </div>
         </Card>
       )}
 
-      {/* Users: Stats */}
       {activeCategory === "users" && activeSubFeature === "users_stats" && (
-        <div className="grid sm:grid-cols-3 gap-4">
-          <Card className="p-5 text-center space-y-1">
-            <Users size={24} className="mx-auto text-brand mb-2" />
-            <p className="text-xs text-muted">إجمالي الطلاب</p>
-            <p className="text-2xl font-black text-ink">{localUsers.length}</p>
-          </Card>
-          <Card className="p-5 text-center space-y-1">
-            <UserCheck size={24} className="mx-auto text-success mb-2" />
-            <p className="text-xs text-muted">الحسابات النشطة</p>
-            <p className="text-2xl font-black text-success">
-              {localUsers.filter((u) => u.isActive).length}
-            </p>
-          </Card>
-          <Card className="p-5 text-center space-y-1">
-            <Wallet size={24} className="mx-auto text-gold mb-2" />
-            <p className="text-xs text-muted">إجمالي أرصدة المحافظ</p>
-            <p className="text-2xl font-black text-ink">
-              {formatEGP(localUsers.reduce((sum, u) => sum + u.balanceCents, 0))}
-            </p>
-          </Card>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <KpiCard icon={Users} label="إجمالي الطلاب" value={localUsers.length} hint="جميع الحسابات المسجلة" />
+          <KpiCard
+            icon={UserCheck}
+            label="الحسابات النشطة"
+            value={localUsers.filter((u) => u.isActive).length}
+            hint="غير مجمدة"
+            hintTone="success"
+            iconTone="success"
+          />
+          <KpiCard
+            icon={Wallet}
+            label="إجمالي أرصدة المحافظ"
+            value={formatEGP(localUsers.reduce((sum, u) => sum + u.balanceCents, 0))}
+            hint="أرصدة قابلة للاستخدام"
+            hintTone="brand"
+            iconTone="gold"
+          />
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* 6. CATEGORY: COMMUNICATIONS & FORUM                                */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 6. COMMUNICATIONS & FORUM ═══ */}
       {activeCategory === "communications" && activeSubFeature === "sms_messages" && (
-        <Card className="p-6 max-w-xl mx-auto space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <Send size={18} className="text-brand" /> إرسال رسائل وتنبيهات نصية (SMS)
-          </h3>
+        <Card className="mx-auto max-w-xl space-y-4 p-6">
+          <SectionHeader icon={Send} title="إرسال تنبيه جماعي" hint="يصل التنبيه كإشعار داخلي داخل منصة الطالب فوراً" />
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setNote({ kind: "ok", text: "تم جدولة إرسال حملة الرسائل بنجاح لجميع الطلاب المحددين." });
-              setSmsText("");
-            }}
+            onSubmit={handleSendBroadcast}
             className="space-y-4"
           >
             <Field label="الشريحة المستهدفة">
               <Select value={smsTarget} onChange={(e) => setSmsTarget(e.target.value)}>
-                <option value="all">جميع الطلاب المسجلين بالمنصة</option>
-                <option value="active_subs">الطلاب المشتركون في كورسات حالياً</option>
-                <option value="grade3">طلاب الصف الثالث الثانوي فقط</option>
+                <option value="all">جميع المستخدمين المسجلين</option>
+                <option value="students">الطلاب فقط</option>
+                <option value="parents">أولياء الأمور</option>
+                <option value="centers">السناتر</option>
               </Select>
             </Field>
-            <Field label="نص الرسالة">
+            <Field label="عنوان التنبيه">
+              <Input required value={smsTitle} onChange={(e) => setSmsTitle(e.target.value)} maxLength={120} placeholder="تم رفع امتحان التفاضل الشامل" />
+            </Field>
+            <Field label="نص التنبيه">
               <Textarea
                 required
                 rows={4}
                 value={smsText}
                 onChange={(e) => setSmsText(e.target.value)}
+                maxLength={500}
                 placeholder="تنبيه: تم رفع امتحان التفاضل والتكامل الشامل على المنصة، يرجى الدخول والحل قبل نهاية الأسبوع..."
               />
             </Field>
-            <Button type="submit" variant="primary" className="w-full">
-              <Send size={16} /> إرسال الحملة النصية
+            <Button type="submit" disabled={busy} variant="primary" className="w-full">
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              إرسال التنبيه الآن
             </Button>
           </form>
         </Card>
       )}
 
-      {/* Communications: Forum Moderation */}
       {activeCategory === "communications" && activeSubFeature === "forum_pending_topics" && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-ink flex items-center gap-2">
-            <MessageSquare size={18} className="text-brand" /> منشورات ومجتمع الطلاب ({communityPosts.length})
-          </h3>
-          <div className="divide-y divide-line">
-            {communityPosts.map((p) => (
-              <div key={p.id} className="py-4 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-ink">{p.authorName}</span>
-                  <span className="text-muted" dir="ltr">
-                    {formatDate(p.createdAt)}
-                  </span>
-                </div>
-                <p className="text-xs text-ink leading-relaxed bg-surface2 p-3 rounded-xl">{p.body}</p>
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span>👍 {p.likesCount} إعجاب</span>
-                  <Badge tone="brand">{p.courseTitle ?? "منتدى عام"}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+        <Card className="space-y-4 p-6">
+          <SectionHeader icon={MessageSquare} title="منشورات ومجتمع الطلاب" count={communityPosts.length} hint="راجع المنشورات واحذف أي محتوى غير لائق" />
+          {communityPosts.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted">لا توجد منشورات بعد.</p>
+          ) : (
+            <div className="divide-y divide-line">
+              {communityPosts.map((p) => {
+                const key = `post-${p.id}`;
+                return (
+                  <div key={p.id} className={cn("space-y-2 py-4", pendingIds.has(key) && "opacity-50")}>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-ink">{p.authorName}</span>
+                      <span className="tabular-nums text-muted" dir="ltr">{formatDate(p.createdAt)}</span>
+                    </div>
+                    <p className="rounded-xl bg-surface2 p-3 text-[13px] leading-relaxed text-ink">{p.body}</p>
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span className="tabular-nums">👍 {p.likesCount} إعجاب</span>
+                      <div className="flex items-center gap-2">
+                        <Badge tone="brand">{p.courseTitle ?? "منتدى عام"}</Badge>
+                        <button
+                          type="button"
+                          onClick={() => requestDeletePost(p)}
+                          disabled={pendingIds.has(key)}
+                          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1 transition-colors hover:border-danger/50 hover:text-danger"
+                        >
+                          <Trash2 size={12} /> حذف
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* MODAL: WALLET ADJUSTMENT                                            */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ MODAL: WALLET ADJUSTMENT ═══ */}
       {walletModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <Card className="w-full max-w-md p-6 space-y-4 shadow-lift animate-in fade-in zoom-in-95">
+        <div
+          className="no-print fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setWalletModalUser(null);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setWalletModalUser(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wallet-modal-title"
+            className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
+          >
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="font-bold text-base text-ink flex items-center gap-2">
+              <h3 id="wallet-modal-title" className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
                 <Wallet size={18} className="text-brand" /> تعديل رصيد محفظة الطالب
               </h3>
               <button
+                type="button"
                 onClick={() => setWalletModalUser(null)}
-                className="p-1 text-muted hover:text-ink cursor-pointer"
+                aria-label="إغلاق"
+                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:text-ink"
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="p-3 bg-surface2 rounded-xl text-xs space-y-1">
+            <div className="space-y-1 rounded-xl bg-surface2 p-3 text-xs">
               <p>
                 <strong>اسم الطالب:</strong> {walletModalUser.name}
               </p>
               <p>
                 <strong>الرصيد الحالي:</strong>{" "}
-                <span className="text-brand font-bold">{formatEGP(walletModalUser.balanceCents)}</span>
+                <span className="font-semibold tabular-nums text-brand">{formatEGP(walletModalUser.balanceCents)}</span>
               </p>
             </div>
+            <div className="flex flex-wrap gap-1.5">
+              {["50", "100", "200", "-50"].map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setWalletAdjustAmount(amt)}
+                  className={cn(
+                    "cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-semibold tabular-nums transition-colors",
+                    walletAdjustAmount === amt
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-line bg-surface text-muted hover:text-ink"
+                  )}
+                >
+                  {Number(amt) > 0 ? `+${amt}` : amt} ج.م
+                </button>
+              ))}
+            </div>
             <form onSubmit={handleAdjustWallet} className="space-y-4">
-              <Field label="المبلغ المراد إضافته أو خصمه (ج.م) [استخدم - للخصم]">
+              <Field label="المبلغ المراد إضافته أو خصمه (ج.م) — استخدم السالب للخصم">
                 <Input
                   required
                   type="number"
@@ -2562,90 +3902,72 @@ export function AdminConsole({
                 />
               </Field>
               <Field label="سبب التعديل">
-                <Input
-                  required
-                  value={walletAdjustReason}
-                  onChange={(e) => setWalletAdjustReason(e.target.value)}
-                  placeholder="مكافأة أو شحن يدوي بالسنتر"
-                />
+                <Input required value={walletAdjustReason} onChange={(e) => setWalletAdjustReason(e.target.value)} placeholder="مكافأة أو شحن يدوي بالسنتر" />
               </Field>
               <div className="flex items-center gap-2 pt-2">
                 <Button type="submit" disabled={busy} variant="primary" className="flex-1">
                   {busy ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                   حفظ وتعديل الرصيد
                 </Button>
-                <Button
-                  type="button"
-                  onClick={() => setWalletModalUser(null)}
-                  variant="ghost"
-                  className="flex-initial"
-                >
+                <Button type="button" onClick={() => setWalletModalUser(null)} variant="ghost" className="flex-initial">
                   إلغاء
                 </Button>
               </div>
             </form>
-          </Card>
+          </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* MODAL: PRINTABLE CENTER VOUCHER CARDS                               */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══ MODAL: PRINTABLE CENTER VOUCHER CARDS ═══ */}
       {printVouchersModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
-          <div className="w-full max-w-4xl bg-surface rounded-2xl border border-line p-6 space-y-4 shadow-lift my-8 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-line pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-xs">
+          <div className="my-8 flex max-h-[90vh] w-full max-w-4xl flex-col space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift">
+            <div className="no-print flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h3 className="font-bold text-base text-ink flex items-center gap-2">
+                <h3 className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
                   <Printer size={18} className="text-brand" /> بطاقات كروت السنتر الجاهزة للطباعة والقص
                 </h3>
-                <p className="text-xs text-muted">
-                  يمكنك طباعة هذه الكروت وتوزيعها على الطلاب للشحن الفوري في المنصة
-                </p>
+                <p className="text-xs text-muted">ستُطبع البطاقات فقط دون باقي عناصر الصفحة</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => window.print()}
-                  variant="primary"
-                  size="sm"
-                  className="text-xs gap-1.5"
-                >
-                  <Printer size={14} /> طباعة البطاقات الآن
+                <Button onClick={printVouchers} variant="primary" size="sm" className="gap-1.5 text-xs">
+                  <Printer size={14} /> طباعة البطاقات
                 </Button>
                 <button
+                  type="button"
                   onClick={() => setPrintVouchersModal(null)}
-                  className="p-1 text-muted hover:text-ink cursor-pointer"
+                  aria-label="إغلاق"
+                  className="cursor-pointer p-1 text-muted transition-colors hover:text-ink"
                 >
                   <X size={20} />
                 </button>
               </div>
             </div>
 
-            {/* Printable Cards Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto p-2">
+            <div className="print-area custom-scrollbar grid gap-4 overflow-y-auto p-2 sm:grid-cols-2 lg:grid-cols-3">
               {printVouchersModal.map((code, idx) => (
                 <div
-                  key={idx}
-                  className="border-2 border-dashed border-line rounded-2xl p-4 bg-surface2/60 space-y-3 relative overflow-hidden"
+                  key={`${code}-${idx}`}
+                  className="relative space-y-3 overflow-hidden rounded-2xl border-2 border-dashed border-line bg-surface2/60 p-4"
                 >
                   <div className="flex items-center justify-between border-b border-line/60 pb-2">
                     <div className="flex items-center gap-1.5">
                       <span className="size-2 rounded-full bg-brand" />
-                      <span className="font-bold text-xs text-ink">دروس ماث Dros Math</span>
+                      <span className="text-xs font-semibold text-ink">دروس ماث Dros Math</span>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand">
+                    <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
                       كارت تفعيل كورس
                     </span>
                   </div>
 
-                  <div className="text-center py-2 space-y-1">
+                  <div className="space-y-1 py-2 text-center">
                     <p className="text-[10px] text-muted">كود التفعيل والشحن</p>
-                    <div className="font-mono text-base font-black tracking-wider text-brand bg-surface py-1.5 px-2 rounded-lg border border-line select-all">
+                    <div className="select-all rounded-lg border border-line bg-surface px-2 py-1.5 font-mono text-base font-bold tracking-wider text-brand">
                       {code}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[9px] text-muted pt-1 border-t border-line/40">
+                  <div className="flex items-center justify-between border-t border-line/40 pt-1 text-[9px] text-muted">
                     <span>صالح لكورس واحد كامل</span>
                     <span>www.dros-math.com</span>
                   </div>
@@ -2655,6 +3977,23 @@ export function AdminConsole({
           </div>
         </div>
       )}
+
+      {/* ── Global overlays ── */}
+      <StudentProfileModal
+        student={profileUser}
+        subscriptions={localSubscriptions}
+        orders={orders}
+        attempts={attempts}
+        onClose={() => setProfileUser(null)}
+        onAdjustWallet={(s) => {
+          setProfileUser(null);
+          setWalletModalUser(s);
+        }}
+      />
+      <ConfirmDialog request={confirmReq} onDone={() => setConfirmReq(null)} />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} commands={paletteCommands} />
+      <ToastViewport toasts={toasts} onDismiss={dismissToast} />
     </div>
+    </TablePrefsProvider>
   );
 }

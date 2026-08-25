@@ -1,8 +1,9 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+﻿import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   courses,
   coupons,
+  couponRedemptions,
   walletAccounts,
   walletTransactions,
   orders,
@@ -70,7 +71,7 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
       throw new ServiceError(409, "ALREADY_ENROLLED", "أنت مشترك في هذا الكورس بالفعل");
     }
 
-    // coupon
+    // coupon (percent-off course coupons only — balance codes are redeemed in the wallet)
     let discountCents = 0;
     let couponId: string | null = null;
     if (code) {
@@ -78,6 +79,7 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
       const coupon = cRows[0];
       const valid =
         coupon &&
+        coupon.kind === "course_percent" &&
         coupon.isActive &&
         coupon.usedCount < coupon.maxUses &&
         (!coupon.expiresAt || coupon.expiresAt > new Date());
@@ -231,4 +233,110 @@ export async function listInvoices(userId: string, limit = 12) {
     .where(eq(orders.userId, userId))
     .orderBy(desc(invoices.issuedAt))
     .limit(limit);
+}
+
+/**
+ * Redeems an admin-issued code (coupons table):
+ *  - kind 'wallet_balance'  → credits the student's wallet (paid via InstaPay/digital wallets).
+ *  - kind 'course_access'   → unlocks a full course subscription (center/physical payment).
+ * Atomic: validation + redemption marker + side effects in one transaction.
+ */
+export async function redeemCode(userId: string, rawCode: string) {
+  const code = rawCode.trim().toUpperCase();
+
+  return db.transaction(async (tx) => {
+    const cRows = await tx.select().from(coupons).where(eq(coupons.code, code)).limit(1);
+    const coupon = cRows[0];
+    if (!coupon || coupon.kind === "course_percent") {
+      throw new ServiceError(404, "CODE_NOT_FOUND", "كود الشحن غير صالح");
+    }
+    if (!coupon.isActive) throw new ServiceError(422, "CODE_INACTIVE", "هذا الكود غير مفعل");
+    if (coupon.expiresAt && coupon.expiresAt <= new Date()) {
+      throw new ServiceError(422, "CODE_EXPIRED", "انتهت صلاحية هذا الكود");
+    }
+    if (coupon.usedCount >= coupon.maxUses) {
+      throw new ServiceError(422, "CODE_EXHAUSTED", "تم استنفاد عدد استخدامات هذا الكود");
+    }
+
+    const dup = await tx
+      .select({ id: couponRedemptions.id })
+      .from(couponRedemptions)
+      .where(and(eq(couponRedemptions.couponId, coupon.id), eq(couponRedemptions.userId, userId)))
+      .limit(1);
+    if (dup[0]) {
+      throw new ServiceError(409, "CODE_ALREADY_USED", "لقد استخدمت هذا الكود من قبل");
+    }
+
+    /* ── wallet balance code ── */
+    if (coupon.kind === "wallet_balance") {
+      if (coupon.amountCents == null || coupon.amountCents <= 0) {
+        throw new ServiceError(422, "CODE_INVALID_AMOUNT", "قيمة هذا الكود غير صالحة");
+      }
+      const existing = await tx.select().from(walletAccounts).where(eq(walletAccounts.userId, userId)).limit(1);
+      let wallet = existing[0];
+      if (!wallet) {
+        [wallet] = await tx.insert(walletAccounts).values({ userId, balanceCents: 0 }).returning();
+      }
+      await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
+      await tx
+        .update(coupons)
+        .set({ usedCount: sql`${coupons.usedCount} + 1` })
+        .where(eq(coupons.id, coupon.id));
+      await tx.insert(walletTransactions).values({
+        walletId: wallet.id,
+        amountCents: coupon.amountCents,
+        kind: "grant",
+        note: `شحن بكود ${coupon.code}`,
+      });
+      const [updated] = await tx
+        .update(walletAccounts)
+        .set({ balanceCents: sql`${walletAccounts.balanceCents} + ${coupon.amountCents}` })
+        .where(eq(walletAccounts.id, wallet.id))
+        .returning({ balanceCents: walletAccounts.balanceCents });
+      return { type: "wallet" as const, amountCents: coupon.amountCents, balanceCents: updated.balanceCents };
+    }
+
+    /* ── course access code (center-paid full course access) ── */
+    if (!coupon.courseId) {
+      throw new ServiceError(422, "CODE_INVALID", "هذا الكود غير مرتبط بكورس");
+    }
+    const courseRows = await tx
+      .select({ id: courses.id, title: courses.title, slug: courses.slug, status: courses.status })
+      .from(courses)
+      .where(eq(courses.id, coupon.courseId))
+      .limit(1);
+    const course = courseRows[0];
+    if (!course || course.status !== "published") {
+      throw new ServiceError(422, "CODE_COURSE_UNAVAILABLE", "الكورس المرتبط بهذا الكود غير متاح حاليًا");
+    }
+
+    const subExisting = await tx
+      .select({ id: subscriptions.id })
+      .from(subscriptions)
+      .where(and(eq(subscriptions.userId, userId), eq(subscriptions.courseId, course.id)))
+      .limit(1);
+    if (subExisting[0]) {
+      throw new ServiceError(409, "ALREADY_ENROLLED", "أنت مسجل بالفعل في هذا الكورس");
+    }
+
+    await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
+    await tx
+      .update(coupons)
+      .set({ usedCount: sql`${coupons.usedCount} + 1` })
+      .where(eq(coupons.id, coupon.id));
+    await tx.insert(subscriptions).values({
+      userId,
+      courseId: course.id,
+      status: "active",
+      startsAt: new Date(),
+      endsAt: null, // full-duration access — no expiry
+    });
+    await tx.insert(notifications).values({
+      userId,
+      title: "تم تفعيل اشتراكك",
+      body: `تم تفعيل اشتراكك في كورس «${course.title}» عبر الكود ${coupon.code}. بالتوفيق!`,
+      kind: "system",
+    });
+    return { type: "course" as const, courseTitle: course.title, courseSlug: course.slug };
+  });
 }
