@@ -4,14 +4,11 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Activity,
-  ArrowLeft,
   BarChart3,
   BookOpen,
   Check,
   CheckCircle2,
   Clock,
-  Command,
   Copy,
   CreditCard,
   Download,
@@ -27,7 +24,6 @@ import {
   ListChecks,
   Loader2,
   MessageSquare,
-  Pencil,
   Plus,
   PlusCircle,
   Printer,
@@ -40,7 +36,6 @@ import {
   Timer,
   Trash2,
   UserCheck,
-  UserCircle,
   UserPlus,
   Users,
   Wallet,
@@ -48,6 +43,8 @@ import {
   Zap,
 } from "lucide-react";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
+import { CATEGORIES, type CategoryId } from "./admin/nav-config";
+import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { formatDate, formatEGP } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -83,106 +80,6 @@ import type {
   UserRow,
   VideoRow,
 } from "./admin/types";
-
-/* ── Primary Functional Hubs ── */
-export type CategoryId =
-  | "overview"
-  | "academic"
-  | "exams"
-  | "users"
-  | "billing_codes"
-  | "communications";
-
-interface SubFeatureDef {
-  id: string;
-  label: string;
-}
-
-interface CategoryDef {
-  id: CategoryId;
-  label: string;
-  icon: typeof BarChart3;
-  description: string;
-  subFeatures: SubFeatureDef[];
-}
-
-const CATEGORIES: CategoryDef[] = [
-  {
-    id: "overview",
-    label: "الرئيسية والتقارير",
-    icon: BarChart3,
-    description: "إحصائيات المنصة، آخر التحديثات، وتقارير النشاط العام",
-    subFeatures: [
-      { id: "home", label: "نظرة عامة" },
-      { id: "statistics", label: "الإحصائيات الشاملة" },
-      { id: "updates", label: "سجل العمليات والتدقيق" },
-    ],
-  },
-  {
-    id: "academic",
-    label: "المناهج والمقررات",
-    icon: BookOpen,
-    description: "الكورسات، الفيديوهات، المذكرات، والمراحل الدراسية",
-    subFeatures: [
-      { id: "courses_table", label: "جدول الكورسات" },
-      { id: "courses_manage", label: "إضافة مقرر جديد" },
-      { id: "videos_manage", label: "الفيديوهات والمحاضرات" },
-      { id: "booklets_manage", label: "المذكرات والملازم" },
-      { id: "sections_manage", label: "المراحل الدراسية" },
-    ],
-  },
-  {
-    id: "exams",
-    label: "الامتحانات وبنك الأسئلة",
-    icon: GraduationCap,
-    description: "إنشاء الاختبارات، بنوك الأسئلة، واستيراد وتصحيح النتائج",
-    subFeatures: [
-      { id: "exams_table", label: "جدول الامتحانات" },
-      { id: "exams_manage", label: "إنشاء امتحان جديد" },
-      { id: "questions_table", label: "بنك الأسئلة" },
-      { id: "questions_manage", label: "إضافة سؤال فردي" },
-      { id: "bulk_questions_add", label: "إضافة أكثر من سؤال" },
-      { id: "exam_results_table", label: "نتائج الامتحانات" },
-    ],
-  },
-  {
-    id: "billing_codes",
-    label: "الأكواد والشحن والمالية",
-    icon: KeyRound,
-    description: "توليد أكواد التفعيل، الدفع اليدوي، الفواتير، والاشتراكات",
-    subFeatures: [
-      { id: "create_codes", label: "إنشاء وتوليد أكواد" },
-      { id: "codes_table", label: "جدول الأكواد النشطة" },
-      { id: "payment_requests", label: "طلبات شحن الرصيد" },
-      { id: "manual_payment", label: "الدفع اليدوي (سنتر/كاش)" },
-      { id: "orders_table", label: "جدول الطلبات" },
-      { id: "subscriptions_table", label: "جداول الاشتراكات" },
-      { id: "invoices_table", label: "جداول الفواتير" },
-    ],
-  },
-  {
-    id: "users",
-    label: "المستخدمون والطلاب",
-    icon: Users,
-    description: "إدارة الطلاب، تعيين المسؤولين، وتعديل المحافظ",
-    subFeatures: [
-      { id: "users_table", label: "جدول المستخدمين" },
-      { id: "add_student", label: "إضافة طالب جديد" },
-      { id: "manage_admin", label: "إدارة المسؤولين والمشرفين" },
-      { id: "users_stats", label: "إحصائيات الطلاب" },
-    ],
-  },
-  {
-    id: "communications",
-    label: "التنبيهات والمجتمع",
-    icon: MessageSquare,
-    description: "تنبيهات جماعية للطلاب، وإشراف ومتابعة منشورات المجتمع",
-    subFeatures: [
-      { id: "sms_messages", label: "إرسال تنبيه جماعي" },
-      { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب" },
-    ],
-  },
-];
 
 /* ── Arabic UTF-8 CSV exporter utility ── */
 function downloadCSV(filename: string, rows: Record<string, unknown>[], headers: { key: string; label: string }[]) {
@@ -445,9 +342,14 @@ export function AdminConsole({
   const [localSubscriptions, setLocalSubscriptions] = useSyncedState(subscriptions);
   const [localStages, setLocalStages] = useSyncedState(stages);
 
-  /* Navigation */
-  const [activeCategory, setActiveCategory] = useState<CategoryId>("overview");
-  const [activeSubFeature, setActiveSubFeature] = useState<string>("home");
+  /* Navigation — state lives in AdminNavProvider so the sidebar, topbar and
+     palette all share it (and the URL mirrors the active view). */
+  const {
+    category: activeCategory,
+    setCategory: setActiveCategory,
+    subFeature: activeSubFeature,
+    setSubFeature: setActiveSubFeature,
+  } = useAdminNav();
   const [globalSearch, setGlobalSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
@@ -1389,8 +1291,6 @@ export function AdminConsole({
     return { byDifficulty, topTopics, total: questions.length };
   }, [questions, questionTopics]);
 
-  const currentCategory = CATEGORIES.find((c) => c.id === activeCategory)!;
-
   /* ── Feature: command palette (Ctrl+K / "/"/ "?") ── */
   const paletteCommands = useMemo<PaletteCommand[]>(() => {
     const navCommands: PaletteCommand[] = CATEGORIES.flatMap((cat) =>
@@ -1399,7 +1299,7 @@ export function AdminConsole({
         label: sub.label,
         group: cat.label,
         keywords: cat.description,
-        icon: <cat.icon size={16} />,
+        icon: <sub.icon size={16} />,
         run: () => selectSubFeature(cat.id, sub.id),
       }))
     );
@@ -2420,68 +2320,6 @@ export function AdminConsole({
             </Button>
           )}
         </div>
-      </div>
-
-      {/* ── CATEGORY TABS ── */}
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-        {CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.id;
-          const Icon = cat.icon;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                setActiveCategory(cat.id);
-                setActiveSubFeature(cat.subFeatures[0].id);
-              }}
-              aria-pressed={isActive}
-              className={cn(
-                "relative flex cursor-pointer flex-col items-start gap-2 overflow-hidden rounded-2xl border p-3.5 text-right transition-all",
-                isActive
-                  ? "border-brand bg-surface shadow-card ring-1 ring-brand"
-                  : "border-line bg-surface/60 hover:border-brand/40 hover:bg-surface"
-              )}
-            >
-              <div
-                className={cn(
-                  "grid size-8 place-items-center rounded-xl transition-colors",
-                  isActive ? "bg-brand text-white shadow-xs" : "bg-surface2 text-muted"
-                )}
-              >
-                <Icon size={16} />
-              </div>
-              <div>
-                <p className={cn("text-xs font-bold", isActive ? "text-brand" : "text-ink")}>{cat.label}</p>
-                <p className="mt-0.5 text-[10px] tabular-nums text-muted">{cat.subFeatures.length} أدوات فرعية</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* ── SUB-FEATURE PILLS ── */}
-      <div className="custom-scrollbar flex items-center gap-2 overflow-x-auto pb-1" role="tablist" aria-label={currentCategory.label}>
-        {currentCategory.subFeatures.map((sub) => {
-          const isSubActive = activeSubFeature === sub.id;
-          return (
-            <button
-              key={sub.id}
-              type="button"
-              role="tab"
-              aria-selected={isSubActive}
-              onClick={() => setActiveSubFeature(sub.id)}
-              className={cn(
-                "shrink-0 cursor-pointer whitespace-nowrap rounded-xl border px-4 py-2 text-xs font-semibold transition-all",
-                isSubActive
-                  ? "border-brand bg-brand text-white shadow-xs"
-                  : "border-line bg-surface text-muted hover:border-brand/30 hover:text-ink"
-              )}
-            >
-              {sub.label}
-            </button>
-          );
-        })}
       </div>
 
       {/* ═══ 1. OVERVIEW & REPORTS ═══ */}
