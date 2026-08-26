@@ -44,3 +44,5 @@ test-results/
 
 # runtime uploads (payment proofs, files)
 public/uploads/
+.vercel
+.env*

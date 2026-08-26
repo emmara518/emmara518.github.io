@@ -470,6 +470,9 @@ export function AdminConsole({
   const [codePercent, setCodePercent] = useState("100");
   const [codeMaxUses, setCodeMaxUses] = useState("1");
   const [codeDaysValid, setCodeDaysValid] = useState("30");
+  const [codeKind, setCodeKind] = useState<"course_access" | "wallet_balance" | "course_percent">("course_access");
+  const [codeCourseId, setCodeCourseId] = useState(courses[0]?.id || "");
+  const [codeAmount, setCodeAmount] = useState("150");
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
@@ -718,6 +721,9 @@ export function AdminConsole({
         percentOff: Number(codePercent) || 100,
         maxUses: Number(codeMaxUses) || 1,
         daysValid: Number(codeDaysValid) || 30,
+        kind: codeKind,
+        amountEgp: codeKind === "wallet_balance" ? Number(codeAmount) || undefined : undefined,
+        courseId: codeKind === "course_access" ? codeCourseId || undefined : undefined,
       }),
     });
     if (data) {
@@ -3572,8 +3578,29 @@ export function AdminConsole({
       {activeCategory === "billing_codes" && activeSubFeature === "create_codes" && (
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="space-y-4 p-6">
-            <SectionHeader icon={Sparkles} title="توليد وحفظ أكواد تفعيل" hint="تُحفظ الأكواد تلقائياً في قاعدة البيانات مع نسبة الخصم والصلاحية" />
+            <SectionHeader icon={Sparkles} title="توليد وحفظ أكواد" hint="أكواد تفعيل كورس للسنتر، أو شحن محفظة، أو كوبونات خصم — تُحفظ تلقائياً في قاعدة البيانات" />
             <form onSubmit={handleBatchGenerateCodes} className="space-y-4">
+              <Field label="نوع الكود">
+                <Select value={codeKind} onChange={(e) => setCodeKind(e.target.value as typeof codeKind)} className="h-10 text-xs">
+                  <option value="course_access">كود تفعيل كورس (للسنتر)</option>
+                  <option value="wallet_balance">كود شحن محفظة</option>
+                  <option value="course_percent">كوبون خصم نسبة</option>
+                </Select>
+              </Field>
+              {codeKind === "course_access" && (
+                <Field label="الكورس الذي يفعّله الكود">
+                  <Select value={codeCourseId} onChange={(e) => setCodeCourseId(e.target.value)} className="h-10 text-xs">
+                    {localCourses.map((c) => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+              {codeKind === "wallet_balance" && (
+                <Field label="قيمة الشحن (ج.م)">
+                  <Input required type="number" dir="ltr" min="5" value={codeAmount} onChange={(e) => setCodeAmount(e.target.value)} placeholder="150" />
+                </Field>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <Field label="بادئة الكود (Prefix)">
                   <Input required dir="ltr" value={codePrefix} onChange={(e) => setCodePrefix(e.target.value.toUpperCase())} placeholder="MATH" />
@@ -3583,9 +3610,11 @@ export function AdminConsole({
                 </Field>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <Field label="نسبة الخصم %">
-                  <Input required type="number" dir="ltr" min="1" max="100" value={codePercent} onChange={(e) => setCodePercent(e.target.value)} />
-                </Field>
+                {codeKind === "course_percent" && (
+                  <Field label="نسبة الخصم %">
+                    <Input required type="number" dir="ltr" min="1" max="100" value={codePercent} onChange={(e) => setCodePercent(e.target.value)} />
+                  </Field>
+                )}
                 <Field label="أقصى استخدام">
                   <Input required type="number" dir="ltr" min="1" value={codeMaxUses} onChange={(e) => setCodeMaxUses(e.target.value)} />
                 </Field>

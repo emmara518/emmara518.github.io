@@ -7,7 +7,7 @@ import { toEnvelope } from "@/lib/errors";
 export async function GET() {
   const auth = await requireApiUser(["parent", "admin"]);
   if (!("user" in auth)) {
-    return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "هذه المنطقة لأولياء الأمور");
+    return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "بوابة أولياء الأمور");
   }
   try {
     const data = await getChildren(auth.user.id);

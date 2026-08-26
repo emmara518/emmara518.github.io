@@ -389,4 +389,11 @@ CREATE TABLE IF NOT EXISTS "community_replies" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 CREATE INDEX IF NOT EXISTS "replies_post_idx" ON "community_replies" ("post_id");
+
+/* -- v2.1 integrity: uniqueness guarantees required by the drizzle schema -- */
+CREATE UNIQUE INDEX IF NOT EXISTS "subs_user_course_unique" ON "subscriptions" ("user_id","course_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "wallet_accounts_user_unique" ON "wallet_accounts" ("user_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "invoices_order_unique" ON "invoices" ("order_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "parent_child_unique" ON "parent_links" ("parent_id","student_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "progress_user_video_unique" ON "student_progress" ("user_id","video_id");
 `;

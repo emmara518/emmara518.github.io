@@ -141,61 +141,6 @@ export async function listUsersAdmin() {
   return rows;
 }
 
-/** Advanced filtered search over users — used by the sidebar "البحث المتقدم" hub. */
-export async function searchUsersAdvanced(filters: {
-  q?: string;
-  role?: string;
-  status?: string;
-  courseId?: string;
-  createdFrom?: string;
-  createdTo?: string;
-}) {
-  const where = [];
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    where.push(
-      sql`(${users.name} ILIKE ${like} OR ${users.email} ILIKE ${like} OR COALESCE(${users.phone}, '') ILIKE ${like})`,
-    );
-  }
-  if (filters.role && filters.role !== "all") {
-    where.push(sql`${users.role}::text = ${filters.role}`);
-  }
-  if (filters.status === "active") where.push(eq(users.isActive, true));
-  if (filters.status === "frozen") where.push(eq(users.isActive, false));
-  if (filters.createdFrom) where.push(sql`${users.createdAt} >= ${filters.createdFrom}::date`);
-  if (filters.createdTo) where.push(sql`${users.createdAt} < (${filters.createdTo}::date + interval '1 day')`);
-
-  const rows = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      phone: users.phone,
-      role: users.role,
-      isActive: users.isActive,
-      createdAt: users.createdAt,
-      balanceCents: sql<number>`COALESCE(${walletAccounts.balanceCents}, 0)`,
-      enrolledCourseIds: sql<
-        string[]
-      >`COALESCE(array_agg(${subscriptions.courseId}) FILTER (WHERE ${subscriptions.courseId} IS NOT NULL), '{}')`,
-    })
-    .from(users)
-    .leftJoin(walletAccounts, eq(walletAccounts.userId, users.id))
-    .leftJoin(
-      subscriptions,
-      and(eq(subscriptions.userId, users.id), eq(subscriptions.status, "active")),
-    )
-    .where(where.length ? and(...where) : undefined)
-    .groupBy(users.id, walletAccounts.balanceCents)
-    .orderBy(desc(users.createdAt))
-    .limit(400);
-
-  if (filters.courseId && filters.courseId !== "all") {
-    return rows.filter((r) => Array.isArray(r.enrolledCourseIds) && r.enrolledCourseIds.includes(filters.courseId!));
-  }
-  return rows;
-}
-
 export async function setUserRole(actor: SessionUser, userId: string, role: Role) {
   if (actor.id === userId) throw new ServiceError(422, "SELF_ROLE", "لا يمكنك تغيير دورك بنفسك");
   await db.update(users).set({ role }).where(eq(users.id, userId));
@@ -331,13 +276,6 @@ export async function listOrdersAdmin() {
     .innerJoin(courses, eq(orders.courseId, courses.id))
     .orderBy(desc(orders.createdAt))
     .limit(50);
-}
-
-export async function countPaidCouponsUnderUse() {
-  return db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(coupons)
-    .where(and(eq(coupons.isActive, true)));
 }
 
 export async function listExamsAdmin() {
