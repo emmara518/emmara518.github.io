@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { Button, Card, Input, Select } from "./ui";
 import { formatEGP, timeAgo } from "@/lib/format";
-import { PAYMENT_CHANNELS, channelLabel } from "@/lib/platform-payments";
 import type { WalletTxnView } from "./wallet-card";
 
 export type PaymentRequestView = {
@@ -33,6 +32,14 @@ export type PaymentRequestView = {
 type RedeemResult =
   | { type: "wallet"; amountCents: number; balanceCents: number }
   | { type: "course"; courseTitle: string; courseSlug: string };
+
+interface PaymentChannel {
+  id: string;
+  label: string;
+  account: string;
+  owner: string;
+  hint?: string;
+}
 
 const TXN_LABELS: Record<string, string> = {
   topup: "شحن رصيد",
@@ -71,13 +78,37 @@ export function WalletOps({
   /* ── transfer request ── */
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [reqAmount, setReqAmount] = useState("");
-  const [reqMethod, setReqMethod] = useState(PAYMENT_CHANNELS[0]?.id ?? "instapay");
+  const [channels, setChannels] = useState<PaymentChannel[]>([]);
+  const [reqMethod, setReqMethod] = useState("");
   const [reqSender, setReqSender] = useState("");
   const [reqFile, setReqFile] = useState<File | null>(null);
   const [reqBusy, setReqBusy] = useState(false);
   const [reqError, setReqError] = useState<string | null>(null);
   const [reqDone, setReqDone] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Load payment channels on mount
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/v1/payment-channels")
+      .then(r => r.json())
+      .then(json => {
+        if (!cancelled && json.ok && Array.isArray(json.data)) {
+          setChannels(json.data);
+          if (json.data.length > 0) {
+            setReqMethod(prev => prev || json.data[0].id);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function channelLabel(id: string): string {
+    return channels.find(c => c.id === id)?.label ?? id;
+  }
 
   /* ── my requests ── */
   const [requests, setRequests] = useState<PaymentRequestView[]>([]);
@@ -292,7 +323,7 @@ export function WalletOps({
           </h2>
 
           <ul className="space-y-1.5">
-            {PAYMENT_CHANNELS.map((ch) => (
+            {channels.map((ch) => (
               <li
                 key={ch.id}
                 className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface2/50 px-3 py-2"
@@ -336,7 +367,7 @@ export function WalletOps({
                   aria-label="مبلغ التحويل"
                 />
                 <Select value={reqMethod} onChange={(e) => setReqMethod(e.target.value)} aria-label="طريقة التحويل">
-                  {PAYMENT_CHANNELS.map((ch) => (
+                  {channels.map((ch) => (
                     <option key={ch.id} value={ch.id}>
                       {ch.label}
                     </option>

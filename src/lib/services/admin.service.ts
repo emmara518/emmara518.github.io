@@ -20,6 +20,8 @@ import {
   communityReplies,
   academicStages,
   auditLogs,
+  paymentChannels,
+  paymentChannelTypeEnum,
 } from "@/db/schema";
 import { ServiceError } from "../errors";
 import type { SessionUser } from "../auth";
@@ -599,5 +601,101 @@ export async function listStagesAdmin() {
     })
     .from(academicStages)
     .orderBy(academicStages.sortOrder);
+}
+
+/* ── payment channels ── */
+
+export async function listPaymentChannels() {
+  return db
+    .select({
+      id: paymentChannels.id,
+      type: paymentChannels.type,
+      label: paymentChannels.label,
+      account: paymentChannels.account,
+      owner: paymentChannels.owner,
+      hint: paymentChannels.hint,
+      isActive: paymentChannels.isActive,
+      sortOrder: paymentChannels.sortOrder,
+      createdAt: paymentChannels.createdAt,
+      updatedAt: paymentChannels.updatedAt,
+    })
+    .from(paymentChannels)
+    .orderBy(paymentChannels.sortOrder);
+}
+
+export async function upsertPaymentChannel(
+  actor: SessionUser,
+  input: {
+    id: string;
+    type?: "instapay" | "vodafone_cash" | "etisalat_cash" | "orange_cash" | "bank_transfer" | "other";
+    label?: string;
+    account?: string;
+    owner?: string;
+    hint?: string | null;
+    isActive?: boolean;
+    sortOrder?: number;
+  }
+) {
+  const existing = await db
+    .select()
+    .from(paymentChannels)
+    .where(eq(paymentChannels.id, input.id))
+    .limit(1);
+  
+  const current = existing[0];
+  const set: Record<string, unknown> = {
+    updatedAt: new Date(),
+  };
+  if (input.type !== undefined) set.type = input.type;
+  if (input.label !== undefined) set.label = input.label;
+  if (input.account !== undefined) set.account = input.account;
+  if (input.owner !== undefined) set.owner = input.owner;
+  if (input.hint !== undefined) set.hint = input.hint;
+  if (input.isActive !== undefined) set.isActive = input.isActive;
+  if (input.sortOrder !== undefined) set.sortOrder = input.sortOrder;
+
+  if (current) {
+    // Update existing
+    await db
+      .update(paymentChannels)
+      .set(set)
+      .where(eq(paymentChannels.id, input.id));
+  } else {
+    // Insert new - need required fields
+    if (!input.type || !input.label || !input.account || !input.owner) {
+      throw new ServiceError(422, "MISSING_FIELDS", "جميع الحقول مطلوبة عند إنشاء قناة جديدة");
+    }
+    await db.insert(paymentChannels).values({
+      id: input.id,
+      type: input.type,
+      label: input.label,
+      account: input.account,
+      owner: input.owner,
+      hint: input.hint ?? null,
+      isActive: input.isActive ?? true,
+      sortOrder: input.sortOrder ?? 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+  await audit(actor, "payment_channels.upsert", "payment_channels", input.id, input);
+  return { id: input.id };
+}
+
+export async function deletePaymentChannel(actor: SessionUser, id: string) {
+  await db.delete(paymentChannels).where(eq(paymentChannels.id, id));
+  await audit(actor, "payment_channels.delete", "payment_channels", id);
+  return { id };
+}
+
+export async function reorderPaymentChannels(actor: SessionUser, ids: string[]) {
+  for (let i = 0; i < ids.length; i++) {
+    await db
+      .update(paymentChannels)
+      .set({ sortOrder: i + 1, updatedAt: new Date() })
+      .where(eq(paymentChannels.id, ids[i]));
+  }
+  await audit(actor, "payment_channels.reorder", "payment_channels", null, { count: ids.length });
+  return { count: ids.length };
 }
 

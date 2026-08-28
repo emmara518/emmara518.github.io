@@ -405,6 +405,33 @@ export const paymentRequests = pgTable(
   (t) => [index("payment_requests_user_idx").on(t.userId), index("payment_requests_status_idx").on(t.status)],
 );
 
+/* ── payment channels (configurable by admin) ── */
+export const paymentChannelTypeEnum = pgEnum("payment_channel_type", [
+  "instapay",
+  "vodafone_cash",
+  "etisalat_cash",
+  "orange_cash",
+  "bank_transfer",
+  "other",
+]);
+
+export const paymentChannels = pgTable(
+  "payment_channels",
+  {
+    id: text("id").primaryKey(),
+    type: paymentChannelTypeEnum("type").notNull(),
+    label: text("label").notNull(),
+    account: text("account").notNull(),
+    owner: text("owner").notNull(),
+    hint: text("hint"),
+    isActive: boolean("is_active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("payment_channels_type_idx").on(t.type)],
+);
+
 /* ── wallet (append-only ledger) ── */
 export const walletAccounts = pgTable("wallet_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -555,3 +582,4 @@ export type Order = typeof orders.$inferSelect;
 export type Coupon = typeof coupons.$inferSelect;
 export type WalletAccount = typeof walletAccounts.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type PaymentChannel = typeof paymentChannels.$inferSelect;

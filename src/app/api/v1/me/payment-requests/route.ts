@@ -4,7 +4,7 @@ import { promises as fsp } from "node:fs";
 import { requireApiUser } from "@/lib/auth";
 import { can } from "@/lib/rbac";
 import { err, ok } from "@/lib/http";
-import { PAYMENT_METHOD_IDS } from "@/lib/platform-payments";
+import { getValidPaymentMethodIds } from "@/lib/platform-payments";
 import { createPaymentRequest, listMyPaymentRequests } from "@/lib/services/payment-requests.service";
 import { toEnvelope } from "@/lib/errors";
 
@@ -40,8 +40,9 @@ export async function POST(request: Request) {
   if (!Number.isFinite(amountEgp) || amountEgp < MIN_AMOUNT || amountEgp > MAX_AMOUNT) {
     return err(422, "INVALID_AMOUNT", `المبلغ يجب أن يكون بين ${MIN_AMOUNT} و ${MAX_AMOUNT} ج.م`);
   }
-  if (!PAYMENT_METHOD_IDS.includes(method)) {
-    return err(422, "INVALID_METHOD", "طريقة الدفع غير معروفة");
+  const validMethods = await getValidPaymentMethodIds();
+  if (!validMethods.includes(method)) {
+    return err(422, "INVALID_METHOD", "طريقة الدفع غير معروفة أو غير مفعّلة");
   }
   if (!(screenshot instanceof File) || screenshot.size === 0) {
     return err(422, "SCREENSHOT_REQUIRED", "أرفق صورة إيصال التحويل");
