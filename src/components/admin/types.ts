@@ -44,6 +44,9 @@ export type CouponRow = {
   isActive: boolean;
   createdAt: string;
   expiresAt: string | null;
+  amountCents: number | null;
+  courseId: string | null;
+  kind: "course_percent" | "wallet_balance" | "course_access";
 };
 
 export type OrderRow = {

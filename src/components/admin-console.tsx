@@ -23,6 +23,7 @@ import {
   FileText,
   GraduationCap,
   HelpCircle,
+  Hourglass,
   Image as ImageIcon,
   ImagePlus,
   KeyRound,
@@ -43,6 +44,7 @@ import {
   ShieldCheck,
   Sparkles,
   Timer,
+  Ticket,
   Trash2,
   UserCheck,
   UserPlus,
@@ -2253,19 +2255,50 @@ export function AdminConsole({
     },
     {
       key: "percent",
-      header: "الخصم",
+      header: "القيمة",
       sortValue: (c) => c.percentOff,
-      render: (c) => <span className="font-semibold tabular-nums text-brand">{c.percentOff}%</span>,
+      render: (c) => {
+        if (c.percentOff && c.percentOff > 0) {
+          return <span className="font-semibold tabular-nums text-brand">{c.percentOff}%</span>;
+        }
+        if (c.amountCents && c.amountCents > 0) {
+          return <span className="font-semibold tabular-nums text-brand">{formatEGP(c.amountCents)}</span>;
+        }
+        return <span className="text-muted text-xs">—</span>;
+      },
     },
     {
       key: "usage",
-      header: "الاستخدام",
+      header: "حالة الاستخدام",
       sortValue: (c) => c.usedCount,
-      render: (c) => <span className="tabular-nums text-muted">{c.usedCount} / {c.maxUses}</span>,
+      render: (c) => {
+        if (c.usedCount >= c.maxUses) {
+          return (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
+              <CheckCircle2 size={11} />
+              تم الاستخدام
+            </span>
+          );
+        }
+        if (c.usedCount > 0) {
+          return (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+              <Hourglass size={11} />
+              {c.usedCount} / {c.maxUses} (جزئي)
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-2.5 py-1 text-[11px] font-bold text-muted">
+            <Ticket size={11} />
+            {c.usedCount} / {c.maxUses} (متاح)
+          </span>
+        );
+      },
     },
     {
       key: "status",
-      header: "الحالة",
+      header: "حالة الكود",
       render: (c) => (
         <button
           type="button"

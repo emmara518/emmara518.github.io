@@ -280,7 +280,10 @@ export async function redeemCode(userId: string, rawCode: string) {
       await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
       await tx
         .update(coupons)
-        .set({ usedCount: sql`${coupons.usedCount} + 1` })
+        .set({
+          usedCount: sql`${coupons.usedCount} + 1`,
+          isActive: coupon.usedCount + 1 >= coupon.maxUses ? false : undefined,
+        })
         .where(eq(coupons.id, coupon.id));
       await tx.insert(walletTransactions).values({
         walletId: wallet.id,
@@ -322,7 +325,10 @@ export async function redeemCode(userId: string, rawCode: string) {
     await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
     await tx
       .update(coupons)
-      .set({ usedCount: sql`${coupons.usedCount} + 1` })
+      .set({
+        usedCount: sql`${coupons.usedCount} + 1`,
+        isActive: coupon.usedCount + 1 >= coupon.maxUses ? false : undefined,
+      })
       .where(eq(coupons.id, coupon.id));
     await tx.insert(subscriptions).values({
       userId,
