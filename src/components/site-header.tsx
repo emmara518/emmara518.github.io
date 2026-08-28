@@ -20,8 +20,6 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
   const links = [
     { href: "/", label: "الرئيسية" },
     { href: "/courses", label: "الكورسات" },
-    { href: "/dashboard/arena", label: "بنك الاختبارات" },
-    { href: "/about", label: "عن المنصة" },
   ];
 
   async function logout() {

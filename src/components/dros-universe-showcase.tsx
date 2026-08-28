@@ -168,11 +168,8 @@ export function DrosUniverseShowcase() {
             <Link href="/courses" className="hover:text-ink transition-colors">
               المناهج والكورسات
             </Link>
-            <Link href="/dashboard/arena" className="hover:text-ink transition-colors">
+            <Link href="/dashboard/exams" className="hover:text-ink transition-colors">
               بنك الاختبارات
-            </Link>
-            <Link href="/about" className="hover:text-ink transition-colors">
-              عن مستر محمد سعيد
             </Link>
           </nav>
 

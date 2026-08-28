@@ -351,6 +351,44 @@ export async function updateLessonTitle(actor: SessionUser, lessonId: string, ti
   return updated;
 }
 
+export async function createLesson(actor: SessionUser, input: { courseId: string; title: string; description?: string; isFreePreview?: boolean }) {
+  const [created] = await db
+    .insert(lessons)
+    .values({
+      courseId: input.courseId,
+      title: input.title,
+      description: input.description ?? "",
+      isFreePreview: input.isFreePreview ?? false,
+      sortOrder: await db
+        .select({ max: sql<number>`COALESCE(max(sort_order), 0)` })
+        .from(lessons)
+        .where(eq(lessons.courseId, input.courseId))
+        .then((r) => (r[0]?.max ?? 0) + 1),
+    })
+    .returning({ id: lessons.id, title: lessons.title, courseId: lessons.courseId, sortOrder: lessons.sortOrder });
+  await audit(actor, "lessons.create", "lessons", created.id, input);
+  return created;
+}
+
+export async function createVideo(actor: SessionUser, input: { lessonId: string; youtubeVideoId: string; title: string; durationSec?: number }) {
+  const [created] = await db
+    .insert(videos)
+    .values({
+      lessonId: input.lessonId,
+      youtubeVideoId: input.youtubeVideoId,
+      title: input.title,
+      durationSec: input.durationSec ?? 0,
+      sortOrder: await db
+        .select({ max: sql<number>`COALESCE(max(sort_order), 0)` })
+        .from(videos)
+        .where(eq(videos.lessonId, input.lessonId))
+        .then((r) => (r[0]?.max ?? 0) + 1),
+    })
+    .returning({ id: videos.id, title: videos.title, lessonId: videos.lessonId, sortOrder: videos.sortOrder });
+  await audit(actor, "videos.create", "videos", created.id, input);
+  return created;
+}
+
 export async function setPostStatus(actor: SessionUser, postId: string, status: string) {
   const [updated] = await db
     .update(communityPosts)

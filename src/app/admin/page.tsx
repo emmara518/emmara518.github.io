@@ -35,8 +35,20 @@ export default async function AdminPage() {
 
   // Security gate / actor resolution:
   let sessionUser = await getSessionUser();
+
+  // Production: anonymous visitors must go through the login page — never expose
+  // the live admin console to unauthenticated traffic. Development keeps the
+  // legacy teacher-fallback so the dev loop on Vercel previews still works.
+  if (!sessionUser && process.env.NODE_ENV === "production") {
+    redirect("/login?next=/admin");
+  }
+
   if (!sessionUser || !isAdminRole(sessionUser.role)) {
-    // Resolve existing teacher or admin account to allow direct access without loop on Vercel
+    // Development-only fallback: resolve an existing teacher/admin to avoid
+    // a redirect loop on preview deploys where the cookie may not survive.
+    if (process.env.NODE_ENV === "production") {
+      redirect("/login?next=/admin");
+    }
     const adminRows = await db
       .select({
         id: users.id,

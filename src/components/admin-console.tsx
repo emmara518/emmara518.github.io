@@ -579,9 +579,13 @@ export function AdminConsole({
   const [newStudentPass, setNewStudentPass] = useState("12345678");
 
   /* Broadcast */
-  const [smsTarget, setSmsTarget] = useState("students");
+  const [smsTarget, setSmsTarget] = useState<"all" | "students" | "parents" | "centers" | "specific_students" | "course_students">("students");
+  const setSmsTargetTyped = (val: string) => setSmsTarget(val as "all" | "students" | "parents" | "centers" | "specific_students" | "course_students");
   const [smsTitle, setSmsTitle] = useState("");
   const [smsText, setSmsText] = useState("");
+  const [smsStudentIds, setSmsStudentIds] = useState("");
+  const [smsStudentEmails, setSmsStudentEmails] = useState("");
+  const [smsCourseId, setSmsCourseId] = useState("");
 
   /* Exam creator */
   const [examTitle, setExamTitle] = useState("");
@@ -1390,14 +1394,26 @@ export function AdminConsole({
 
   async function handleSendBroadcast(e: FormEvent) {
     e.preventDefault();
+    const body: Record<string, unknown> = { target: smsTarget, title: smsTitle, body: smsText };
+    if (smsTarget === "specific_students") {
+      if (smsStudentIds.trim()) body.studentIds = smsStudentIds.split(",").map((s) => s.trim()).filter(Boolean);
+      if (smsStudentEmails.trim()) body.studentEmails = smsStudentEmails.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+    if (smsTarget === "course_students") {
+      if (!smsCourseId) { pushToast("err", "اختر الكورس أولاً"); return; }
+      body.courseId = smsCourseId;
+    }
     const data = await api("/api/v1/admin/communications/broadcast", {
       method: "POST",
-      body: JSON.stringify({ target: smsTarget, title: smsTitle, body: smsText }),
+      body: JSON.stringify(body),
     });
     if (data) {
       pushToast("ok", data.message ?? "تم إرسال التنبيه بنجاح.");
       setSmsTitle("");
       setSmsText("");
+      setSmsStudentIds("");
+      setSmsStudentEmails("");
+      setSmsCourseId("");
     }
   }
 
@@ -4145,13 +4161,49 @@ export function AdminConsole({
             className="space-y-4"
           >
             <Field label="الشريحة المستهدفة">
-              <Select value={smsTarget} onChange={(e) => setSmsTarget(e.target.value)}>
+              <Select value={smsTarget} onChange={(e) => setSmsTargetTyped(e.target.value)} className="h-10 text-xs">
                 <option value="all">جميع المستخدمين المسجلين</option>
                 <option value="students">الطلاب فقط</option>
                 <option value="parents">أولياء الأمور</option>
                 <option value="centers">السناتر</option>
+                <option value="specific_students">طلاب محددون (بالمعرف/الإيميل)</option>
+                <option value="course_students">طلاب كورس محدد</option>
               </Select>
             </Field>
+            {smsTarget === "specific_students" && (
+              <>
+                <Field label="معرفات الطلاب (اختياري)">
+                  <Textarea
+                    rows={3}
+                    value={smsStudentIds}
+                    onChange={(e) => setSmsStudentIds(e.target.value)}
+                    placeholder="معرفات مفصولة بفواصل: uuid1,uuid2,uuid3..."
+                    className="font-mono text-xs"
+                  />
+                </Field>
+                <Field label="إيميلات الطلاب (اختياري)">
+                  <Textarea
+                    rows={3}
+                    value={smsStudentEmails}
+                    onChange={(e) => setSmsStudentEmails(e.target.value)}
+                    placeholder="إيميلات مفصولة بفواصل: email1@test.com,email2@test.com"
+                    className="font-mono text-xs"
+                  />
+                </Field>
+              </>
+            )}
+            {smsTarget === "course_students" && (
+              <Field label="اختر الكورس">
+                <Select value={smsCourseId} onChange={(e) => setSmsCourseId(e.target.value)} className="h-10 text-xs">
+                  <option value="">اختر كورس...</option>
+                  {localCourses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            )}
             <Field label="عنوان التنبيه">
               <Input required value={smsTitle} onChange={(e) => setSmsTitle(e.target.value)} maxLength={120} placeholder="تم رفع امتحان التفاضل الشامل" />
             </Field>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { LoaderCircle as Loader2, LogIn, UserPlus } from "lucide-react";
 import { Button, Field, Input } from "./ui";
 import { isAdminRole, type Role } from "@/lib/rbac";
+import { safeNext } from "@/lib/safe-next";
 
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
@@ -17,7 +18,7 @@ function ErrorNote({ message }: { message: string | null }) {
 export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) {
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get("next");
+  const next = safeNext(search.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,8 +39,11 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         return;
       }
       const role = json.data.user.role as Role;
+      const safeOverride = safeNext(redirectPath ?? null);
       const target =
-        redirectPath ?? next ?? (isAdminRole(role) ? "/admin" : role === "parent" ? "/parent" : "/dashboard");
+        safeOverride ??
+        next ??
+        (isAdminRole(role) ? "/admin" : role === "parent" ? "/parent" : "/dashboard");
       router.push(target);
       router.refresh();
     } catch {

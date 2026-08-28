@@ -613,3 +613,12 @@ export async function markAllNotificationsRead(userId: string) {
     .returning({ id: notifications.id });
   return { marked: rows.length };
 }
+
+export async function getUserNotifications(userId: string, limit = 50) {
+  return db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
+}
