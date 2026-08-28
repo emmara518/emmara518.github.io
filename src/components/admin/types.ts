@@ -112,8 +112,9 @@ export type CourseFileRow = {
   kind: string;
   sizeBytes: number;
   storageKey: string;
+  courseId: string;
+  courseTitle?: string;
   isFreePreview: boolean;
-  courseTitle: string;
   createdAt: string;
 };
 

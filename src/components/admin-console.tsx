@@ -19,9 +19,10 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  Film,
   FileText,
+  Film,
   GraduationCap,
+  GripVertical,
   HelpCircle,
   Hourglass,
   Image as ImageIcon,
@@ -46,6 +47,7 @@ import {
   Timer,
   Ticket,
   Trash2,
+  Upload,
   UserCheck,
   UserPlus,
   Users,
@@ -63,6 +65,7 @@ import { AdminTable, TablePrefsProvider, type Column, type Density } from "./adm
 import { ToastViewport, useToasts } from "./admin/toast";
 import { ConfirmDialog, type ConfirmRequest } from "./admin/confirm-dialog";
 import { CommandPalette, useCommandPalette, type PaletteCommand } from "./admin/command-palette";
+import { DraggableList } from "./admin/draggable-list";
 import { StudentProfileModal } from "./admin/student-profile";
 import {
   ExpiryBadge,
@@ -356,6 +359,7 @@ export function AdminConsole({
   const [localSubscriptions, setLocalSubscriptions] = useSyncedState(subscriptions);
   const [localStages, setLocalStages] = useSyncedState(stages);
   const [localLessons, setLocalLessons] = useSyncedState(lessons);
+  const [localCourseFiles, setLocalCourseFiles] = useSyncedState(courseFiles);
 
   /* Navigation — state lives in AdminNavProvider so the sidebar, topbar and
      palette all share it (and the URL mirrors the active view). */
@@ -555,6 +559,27 @@ export function AdminConsole({
 
   /* Course content management dialog (videos manager) */
   const [contentCourseId, setContentCourseId] = useState<string | null>(null);
+
+  /* Add lesson / video / file forms in content manager */
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
+  const [addVideoForLesson, setAddVideoForLesson] = useState<string | null>(null);
+  const [nlTitle, setNlTitle] = useState("");
+  const [nlDescription, setNlDescription] = useState("");
+  const [nlFree, setNlFree] = useState(false);
+  const [nvTitle, setNvTitle] = useState("");
+  const [nvYoutubeId, setNvYoutubeId] = useState("");
+  const [nvDuration, setNvDuration] = useState("0");
+  const [nlBusy, setNlBusy] = useState(false);
+  const [nvBusy, setNvBusy] = useState(false);
+
+  /* Add file dialog (booklets etc.) */
+  const [addFileOpen, setAddFileOpen] = useState(false);
+  const [nfTitle, setNfTitle] = useState("");
+  const [nfKind, setNfKind] = useState<"book" | "worksheet" | "exam_paper" | "attachment">("book");
+  const [nfFree, setNfFree] = useState(false);
+  const [nfFile, setNfFile] = useState<File | null>(null);
+  const [nfBusy, setNfBusy] = useState(false);
+  const [nfError, setNfError] = useState<string | null>(null);
 
   /* Question creator */
   const [qSubjectId, setQSubjectId] = useState(subjects[0]?.id || "");
@@ -1303,6 +1328,73 @@ export function AdminConsole({
     pushToast("ok", "تم حفظ التعديل بنجاح.");
     setRenameTarget(null);
     router.refresh();
+  }
+
+  async function createNewLesson(e: FormEvent) {
+    e.preventDefault();
+    if (!contentCourseId) return;
+    const title = nlTitle.trim();
+    if (title.length < 2) { pushToast("err", "أدخل عنواناً صحيحاً"); return; }
+    setNlBusy(true);
+    const data = await api("/api/v1/admin/lessons", {
+      method: "POST",
+      body: JSON.stringify({ courseId: contentCourseId, title, description: nlDescription, isFreePreview: nlFree }),
+    }, { noRefresh: true, silent: true });
+    setNlBusy(false);
+    if (!data) { pushToast("err", "فشل إنشاء الدرس"); return; }
+    setLocalLessons((prev) => [...prev, data.lesson]);
+    setNlTitle(""); setNlDescription(""); setNlFree(false); setAddLessonOpen(false);
+    pushToast("ok", "تم إضافة الدرس بنجاح");
+  }
+
+  async function createNewVideo(e: FormEvent) {
+    e.preventDefault();
+    if (!addVideoForLesson) return;
+    const title = nvTitle.trim();
+    const ytId = nvYoutubeId.trim();
+    if (title.length < 2) { pushToast("err", "أدخل عنواناً"); return; }
+    if (!/^[A-Za-z0-9_-]{6,20}$/.test(ytId)) { pushToast("err", "معرف يوتيوب غير صالح (8-24 حرف)"); return; }
+    setNvBusy(true);
+    const data = await api("/api/v1/admin/videos", {
+      method: "POST",
+      body: JSON.stringify({ lessonId: addVideoForLesson, title, youtubeVideoId: ytId, durationSec: Number(nvDuration) || 0 }),
+    }, { noRefresh: true, silent: true });
+    setNvBusy(false);
+    if (!data) { pushToast("err", "فشل إضافة الفيديو"); return; }
+    router.refresh();
+    setNvTitle(""); setNvYoutubeId(""); setNvDuration("0"); setAddVideoForLesson(null);
+    pushToast("ok", "تم إضافة الفيديو بنجاح");
+  }
+
+  async function deleteCourseFile(fileId: string) {
+    const done = await api(`/api/v1/admin/course-files/${fileId}`, { method: "DELETE" }, { noRefresh: true, silent: true });
+    if (done) {
+      setLocalCourseFiles((prev) => prev.filter((f) => f.id !== fileId));
+      pushToast("ok", "تم حذف الملف");
+    } else {
+      pushToast("err", "فشل الحذف");
+    }
+  }
+
+  async function uploadCourseFileAction(e: FormEvent) {
+    e.preventDefault();
+    if (!contentCourseId) return;
+    if (!nfFile) { setNfError("اختر ملفاً أولاً"); return; }
+    if (!nfTitle.trim()) { setNfError("أدخل عنواناً"); return; }
+    setNfBusy(true); setNfError(null);
+    const form = new FormData();
+    form.append("courseId", contentCourseId);
+    form.append("title", nfTitle);
+    form.append("kind", nfKind);
+    form.append("isFreePreview", String(nfFree));
+    form.append("file", nfFile);
+    const res = await fetch("/api/v1/admin/course-files", { method: "POST", body: form });
+    const json = await res.json().catch(() => null);
+    setNfBusy(false);
+    if (!json?.ok) { setNfError(json?.error?.message ?? "فشل الرفع"); return; }
+    router.refresh();
+    setAddFileOpen(false); setNfTitle(""); setNfFile(null); setNfFree(false);
+    pushToast("ok", "تم رفع الملف بنجاح");
   }
 
   async function handleAddStudent(e: FormEvent) {
@@ -3285,43 +3377,61 @@ export function AdminConsole({
             {localStages.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">لا توجد مراحل بعد — أضف أول مرحلة من النموذج أعلاه.</p>
             ) : (
-              <div className="divide-y divide-line">
-                {[...localStages]
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map((s) => (
-                    <div key={s.id} className="flex flex-wrap items-center gap-3 py-3">
-                      <input
-                        defaultValue={s.name}
-                        onBlur={(e) => {
-                          const v = e.target.value.trim();
-                          if (v && v !== s.name) handleUpdateStage(s, { name: v });
-                        }}
-                        aria-label={`اسم المرحلة ${s.name}`}
-                        className="h-10 flex-1 rounded-xl border border-line bg-surface px-3 text-sm font-semibold text-ink outline-none transition-colors focus:border-brand"
-                      />
-                      <span className="font-mono text-[11px] text-muted" dir="ltr">/{s.slug}</span>
-                      <input
-                        type="number"
-                        min={0}
-                        defaultValue={s.sortOrder}
-                        onBlur={(e) => {
-                          const v = Number(e.target.value);
-                          if (!isNaN(v) && v !== s.sortOrder) handleUpdateStage(s, { sortOrder: v });
-                        }}
-                        aria-label={`ترتيب المرحلة ${s.name}`}
-                        className="h-10 w-20 rounded-xl border border-line bg-surface px-3 text-center text-sm tabular-nums text-ink outline-none transition-colors focus:border-brand"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => requestDeleteStage(s)}
-                        aria-label={`حذف المرحلة ${s.name}`}
-                        className="inline-flex cursor-pointer items-center rounded-lg border border-line px-2.5 py-2 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-              </div>
+              <DraggableList
+                items={[...localStages].sort((a, b) => a.sortOrder - b.sortOrder)}
+                onReorder={(newOrder) => {
+                  const ids = newOrder.map((s) => s.id);
+                  setLocalStages((prev) =>
+                    prev.map((s) => {
+                      const idx = ids.indexOf(s.id);
+                      return idx >= 0 ? { ...s, sortOrder: idx + 1 } : s;
+                    })
+                  );
+                  // The stages reorder endpoint isn't defined; persist via PATCH for each affected
+                  ids.forEach((id, idx) => {
+                    void api(`/api/v1/admin/stages/${id}`, {
+                      method: "PATCH",
+                      body: JSON.stringify({ sortOrder: idx + 1 }),
+                    }, { noRefresh: true, silent: true });
+                  });
+                }}
+                renderItem={(s, handleProps) => (
+                  <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-2">
+                    <button type="button" {...handleProps} aria-label="اسحب لإعادة الترتيب" title="اسحب">
+                      <GripVertical size={14} />
+                    </button>
+                    <input
+                      defaultValue={s.name}
+                      onBlur={(e) => {
+                        const v = e.target.value.trim();
+                        if (v && v !== s.name) handleUpdateStage(s, { name: v });
+                      }}
+                      aria-label={`اسم المرحلة ${s.name}`}
+                      className="h-9 flex-1 rounded-lg border border-line bg-surface px-2.5 text-sm font-semibold text-ink outline-none transition-colors focus:border-brand"
+                    />
+                    <span className="font-mono text-[11px] text-muted" dir="ltr">/{s.slug}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      defaultValue={s.sortOrder}
+                      onBlur={(e) => {
+                        const v = Number(e.target.value);
+                        if (!isNaN(v) && v !== s.sortOrder) handleUpdateStage(s, { sortOrder: v });
+                      }}
+                      aria-label={`ترتيب المرحلة ${s.name}`}
+                      className="h-9 w-16 rounded-lg border border-line bg-surface px-2 text-center text-sm tabular-nums text-ink outline-none transition-colors focus:border-brand"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => requestDeleteStage(s)}
+                      aria-label={`حذف المرحلة ${s.name}`}
+                      className="inline-flex cursor-pointer items-center rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                )}
+              />
             )}
           </Card>
 
@@ -4636,206 +4746,332 @@ export function AdminConsole({
 
                 {/* dialog body */}
                 <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-5">
+                  {/* Tabs: Lessons | Videos | Files */}
+                  <div className="flex items-center gap-2 border-b border-line pb-3">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
+                      <Layers size={12} /> الدروس ({courseLessons.length})
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
+                      <Film size={12} /> الفيديوهات ({videos.filter((v) => courseLessons.some((l) => l.id === v.lessonId)).length})
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface2 px-3 py-1.5 text-xs font-bold text-ink">
+                      <FileText size={12} /> الملازم ({localCourseFiles.filter((f) => f.courseId === contentCourseId).length})
+                    </span>
+                    <div className="ms-auto flex items-center gap-1.5">
+                      <Button onClick={() => setAddLessonOpen((v) => !v)} variant="primary" size="sm">
+                        <Plus size={13} /> إضافة درس
+                      </Button>
+                      <Button onClick={() => setAddFileOpen((v) => !v)} variant="outline" size="sm">
+                        <Upload size={13} /> رفع ملزم
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Add lesson form */}
+                  {addLessonOpen && (
+                    <form onSubmit={createNewLesson} className="space-y-2 rounded-xl border border-brand/40 bg-brand/5 p-3">
+                      <Input
+                        placeholder="عنوان الدرس"
+                        value={nlTitle}
+                        onChange={(e) => setNlTitle(e.target.value)}
+                        autoFocus
+                        className="h-9 text-sm"
+                      />
+                      <Input
+                        placeholder="وصف اختياري"
+                        value={nlDescription}
+                        onChange={(e) => setNlDescription(e.target.value)}
+                        className="h-9 text-xs"
+                      />
+                      <label className="flex items-center gap-2 text-[11px] font-semibold text-ink">
+                        <input
+                          type="checkbox"
+                          checked={nlFree}
+                          onChange={(e) => setNlFree(e.target.checked)}
+                          className="rounded accent-[var(--brand)]"
+                        />
+                        معاينة مجانية (متاح بدون اشتراك)
+                      </label>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" onClick={() => setAddLessonOpen(false)} variant="ghost" size="sm">إلغاء</Button>
+                        <Button type="submit" disabled={nlBusy} variant="primary" size="sm">
+                          {nlBusy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
+                          حفظ الدرس
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Add file form */}
+                  {addFileOpen && (
+                    <form onSubmit={uploadCourseFileAction} className="space-y-2 rounded-xl border border-brand/40 bg-brand/5 p-3">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input
+                          placeholder="عنوان الملف"
+                          value={nfTitle}
+                          onChange={(e) => setNfTitle(e.target.value)}
+                          className="h-9 text-sm"
+                        />
+                        <Select value={nfKind} onChange={(e) => setNfKind(e.target.value as typeof nfKind)} className="h-9 text-xs">
+                          <option value="book">كتاب/منهج</option>
+                          <option value="worksheet">ورقة عمل</option>
+                          <option value="exam_paper">ورقة امتحان</option>
+                          <option value="attachment">مرفق عام</option>
+                        </Select>
+                      </div>
+                      <input
+                        type="file"
+                        onChange={(e) => setNfFile(e.target.files?.[0] ?? null)}
+                        className="block w-full cursor-pointer rounded-xl border border-line bg-surface text-xs text-muted file:me-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
+                      />
+                      <label className="flex items-center gap-2 text-[11px] font-semibold text-ink">
+                        <input
+                          type="checkbox"
+                          checked={nfFree}
+                          onChange={(e) => setNfFree(e.target.checked)}
+                          className="rounded accent-[var(--brand)]"
+                        />
+                        معاينة مجانية
+                      </label>
+                      {nfError && <p className="text-[11px] text-danger">{nfError}</p>}
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" onClick={() => setAddFileOpen(false)} variant="ghost" size="sm">إلغاء</Button>
+                        <Button type="submit" disabled={nfBusy || !nfFile} variant="primary" size="sm">
+                          {nfBusy ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                          رفع الملف
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Files list (booklets, worksheets, etc.) */}
+                  {(() => {
+                    const courseFilesList = localCourseFiles.filter((f) => f.courseId === contentCourseId);
+                    if (courseFilesList.length === 0) return null;
+                    return (
+                      <details className="rounded-xl border border-line bg-surface2/30 p-3" open>
+                        <summary className="cursor-pointer text-xs font-bold text-ink">
+                          الملفات والملازم ({courseFilesList.length})
+                        </summary>
+                        <ul className="mt-2 space-y-1.5">
+                          {courseFilesList.map((f) => (
+                            <li key={f.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-[11px]">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <FileText size={12} className="text-brand" />
+                                <div className="min-w-0">
+                                  <p className="truncate font-bold text-ink">{f.title}</p>
+                                  <p className="text-muted">
+                                    {f.kind === "book" ? "كتاب" : f.kind === "worksheet" ? "ورقة عمل" : f.kind === "exam_paper" ? "امتحان" : "مرفق"} ·{" "}
+                                    {(f.sizeBytes / 1024 / 1024).toFixed(1)} MB
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {f.isFreePreview && <Badge tone="success">مجاني</Badge>}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`حذف الملف "${f.title}"؟`)) void deleteCourseFile(f.id);
+                                  }}
+                                  aria-label={`حذف ${f.title}`}
+                                  className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:text-danger"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    );
+                  })()}
+
+                  {/* Lessons & videos with drag-and-drop */}
                   {courseLessons.length === 0 ? (
-                    <div className="grid place-items-center gap-2 py-14 text-center">
+                    <div className="grid place-items-center gap-2 py-10 text-center">
                       <Layers size={22} className="text-muted" />
-                      <p className="text-sm font-bold">لا توجد دروس في هذا الكورس بعد</p>
+                      <p className="text-sm font-bold">لا توجد دروس بعد</p>
                       <p className="max-w-sm text-xs leading-relaxed text-muted">
-                        تُضاف الدروس والفيديوهات ضمن استيراد المحتوى، وستظهر هنا فور توفرها لتتمكن من ترتيبها وتخصيصها.
+                        ابدأ بإضافة أول درس للكورس، ثم أضف الفيديوهات والملازم من نفس اللوحة.
                       </p>
                     </div>
                   ) : (
-                    courseLessons.map((lesson, li) => {
-                      const lessonVideos = videos.filter((v) => v.lessonId === lesson.id);
-                      return (
-                        <section key={lesson.id} className="space-y-2.5 rounded-xl border border-line bg-surface2/30 p-4">
-                          {/* lesson header with reorder + rename */}
-                          <div className="flex flex-wrap items-center gap-2 border-b border-line pb-2.5">
-                            <div className="flex items-center">
-                              <button
-                                type="button"
-                                onClick={() => moveLesson(lesson, -1)}
-                                disabled={li === 0}
-                                aria-label={`تحريك الدرس ${lesson.title} لأعلى`}
-                                title="تحريك الدرس لأعلى"
-                                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
-                              >
-                                <ArrowUp size={13} />
+                    <DraggableList
+                      items={courseLessons}
+                      onReorder={(newOrder) => {
+                        const ids = newOrder.map((l) => l.id);
+                        setLocalLessons((prev) =>
+                          prev.map((l) => {
+                            const idx = ids.indexOf(l.id);
+                            return idx >= 0 ? { ...l, sortOrder: idx + 1 } : l;
+                          })
+                        );
+                        void api("/api/v1/admin/reorder", {
+                          method: "POST",
+                          body: JSON.stringify({ entity: "lessons", ids }),
+                        }, { noRefresh: true, silent: true });
+                      }}
+                      className="space-y-3"
+                      renderItem={(lesson, handleProps) => {
+                        const lessonVideos = videos.filter((v) => v.lessonId === lesson.id);
+                        const isRenaming = renameTarget?.kind === "lesson" && renameTarget.id === lesson.id;
+                        return (
+                          <section className="rounded-xl border border-line bg-surface2/30 p-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button type="button" {...handleProps} title="اسحب لإعادة الترتيب" aria-label="اسحب">
+                                <GripVertical size={14} />
                               </button>
-                              <span className="grid size-6 place-items-center rounded-md bg-surface text-[11px] font-bold tabular-nums text-muted">
-                                {li + 1}
+                              {isRenaming ? (
+                                <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                                  <Input
+                                    value={renameTarget.title}
+                                    onChange={(e) => updateRename({ title: e.target.value })}
+                                    onKeyDown={(e) => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setRenameTarget(null); }}
+                                    autoFocus
+                                    className="h-8 flex-1 text-xs"
+                                  />
+                                  <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">حفظ</Button>
+                                  <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]"><X size={11} /></Button>
+                                </div>
+                              ) : (
+                                <p className="min-w-0 flex-1 truncate text-xs font-bold text-ink">{lesson.title}</p>
+                              )}
+                              {lesson.isFreePreview && <Badge tone="success">مجاني</Badge>}
+                              <span className="rounded-md bg-surface px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                                {lessonVideos.length} فيديو
                               </span>
                               <button
                                 type="button"
-                                onClick={() => moveLesson(lesson, 1)}
-                                disabled={li === courseLessons.length - 1}
-                                aria-label={`تحريك الدرس ${lesson.title} لأسفل`}
-                                title="تحريك الدرس لأسفل"
-                                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
+                                onClick={() => setRenameTarget({ kind: "lesson", id: lesson.id, title: lesson.title })}
+                                aria-label={`تعديل ${lesson.title}`}
+                                className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand"
                               >
-                                <ArrowDown size={13} />
+                                <Pencil size={11} />
                               </button>
                             </div>
-                            {renameTarget?.kind === "lesson" && renameTarget.id === lesson.id ? (
-                              <div className="flex min-w-0 flex-1 items-center gap-1.5">
-                                <Input
-                                  value={renameTarget.title}
-                                  onChange={(e) => updateRename({ title: e.target.value })}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") saveRename();
-                                    if (e.key === "Escape") setRenameTarget(null);
-                                  }}
-                                  autoFocus
-                                  aria-label="اسم الدرس الجديد"
-                                  className="h-8 flex-1 text-xs"
-                                />
-                                <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">
-                                  {renameBusy ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
-                                </Button>
-                                <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]">
-                                  <X size={11} />
-                                </Button>
-                              </div>
-                            ) : (
-                              <>
-                                <p className="min-w-0 flex-1 truncate text-xs font-bold text-ink">{lesson.title}</p>
+
+                            {/* Videos (draggable) */}
+                            <div className="mt-2 space-y-1.5 ms-5 border-s-2 border-line ps-3">
+                              {lessonVideos.length === 0 && addVideoForLesson !== lesson.id && (
+                                <p className="text-[11px] text-muted">لا توجد فيديوهات.</p>
+                              )}
+                              <DraggableList
+                                items={lessonVideos}
+                                onReorder={(newOrder) => {
+                                  const ids = newOrder.map((v) => v.id);
+                                  void api("/api/v1/admin/reorder", {
+                                    method: "POST",
+                                    body: JSON.stringify({ entity: "videos", ids }),
+                                  }, { noRefresh: true, silent: true });
+                                  router.refresh();
+                                }}
+                                renderItem={(v, vHandle) => {
+                                  const draft = maxViewsDraft[v.id] ?? (v.maxViews != null ? String(v.maxViews) : "");
+                                  const isV = renameTarget?.kind === "video" && renameTarget.id === v.id;
+                                  return (
+                                    <div key={v.id} className={cn("rounded-lg border border-line bg-surface px-2.5 py-1.5", pendingIds.has(`video-${v.id}`) && "opacity-50")}>
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <button type="button" {...vHandle} title="اسحب" aria-label="اسحب الفيديو">
+                                          <GripVertical size={12} />
+                                        </button>
+                                        {isV ? (
+                                          <div className="flex flex-1 flex-col gap-1">
+                                            <Input
+                                              value={renameTarget.title}
+                                              onChange={(e) => updateRename({ title: e.target.value })}
+                                              className="h-7 text-xs"
+                                            />
+                                            <div className="flex items-center gap-1" dir="ltr">
+                                              <Input
+                                                value={renameTarget.youtubeId}
+                                                onChange={(e) => updateRename({ youtubeId: e.target.value })}
+                                                placeholder="YouTube ID"
+                                                className="h-7 flex-1 font-mono text-[10px]"
+                                              />
+                                              <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-6 px-2 text-[10px]">حفظ</Button>
+                                              <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-6 px-2 text-[10px]"><X size={10} /></Button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <p className="min-w-0 flex-1 truncate text-xs font-semibold text-ink">{v.title}</p>
+                                            <p className="font-mono text-[10px] text-muted" dir="ltr">{v.youtubeVideoId}</p>
+                                            <Input
+                                              type="number"
+                                              min="1"
+                                              dir="ltr"
+                                              value={draft}
+                                              onChange={(e) => setMaxViewsDraft((prev) => ({ ...prev, [v.id]: e.target.value }))}
+                                              placeholder="∞"
+                                              aria-label="حد مشاهدات"
+                                              className="h-6 w-14 text-center text-[10px]"
+                                            />
+                                            <Button onClick={() => saveMaxViews(v)} variant="outline" size="sm" className="h-6 px-2 text-[10px]">حفظ</Button>
+                                            <button
+                                              type="button"
+                                              onClick={() => setRenameTarget({ kind: "video", id: v.id, title: v.title, youtubeId: v.youtubeVideoId })}
+                                              aria-label="تعديل"
+                                              className="cursor-pointer rounded p-1 text-muted hover:text-brand"
+                                            >
+                                              <Pencil size={10} />
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                }}
+                              />
+
+                              {/* Add video form (inline) */}
+                              {addVideoForLesson === lesson.id ? (
+                                <form onSubmit={createNewVideo} className="rounded-lg border border-brand/30 bg-brand/5 p-2 space-y-1.5">
+                                  <Input
+                                    placeholder="عنوان الفيديو"
+                                    value={nvTitle}
+                                    onChange={(e) => setNvTitle(e.target.value)}
+                                    autoFocus
+                                    className="h-7 text-xs"
+                                  />
+                                  <div className="flex items-center gap-1.5" dir="ltr">
+                                    <Input
+                                      value={nvYoutubeId}
+                                      onChange={(e) => setNvYoutubeId(e.target.value)}
+                                      placeholder="YouTube ID"
+                                      className="h-7 flex-1 font-mono text-[11px]"
+                                    />
+                                    <Input
+                                      type="number"
+                                      dir="ltr"
+                                      min="0"
+                                      value={nvDuration}
+                                      onChange={(e) => setNvDuration(e.target.value)}
+                                      placeholder="دقيقة"
+                                      className="h-7 w-16 text-center text-[11px]"
+                                    />
+                                  </div>
+                                  <div className="flex justify-end gap-1.5">
+                                    <Button type="button" onClick={() => setAddVideoForLesson(null)} variant="ghost" size="sm" className="h-6 px-2 text-[10px]">إلغاء</Button>
+                                    <Button type="submit" disabled={nvBusy} variant="primary" size="sm" className="h-6 px-2 text-[10px]">
+                                      {nvBusy ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+                                      إضافة
+                                    </Button>
+                                  </div>
+                                </form>
+                              ) : (
                                 <button
                                   type="button"
-                                  onClick={() => setRenameTarget({ kind: "lesson", id: lesson.id, title: lesson.title })}
-                                  title="إعادة تسمية الدرس"
-                                  aria-label={`إعادة تسمية ${lesson.title}`}
-                                  className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface hover:text-brand"
+                                  onClick={() => { setAddVideoForLesson(lesson.id); setNvTitle(""); setNvYoutubeId(""); }}
+                                  className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line py-1.5 text-[10px] font-bold text-muted transition-colors hover:border-brand hover:text-brand"
                                 >
-                                  <Pencil size={12} />
+                                  <Plus size={11} /> إضافة فيديو للدرس
                                 </button>
-                              </>
-                            )}
-                            {lesson.isFreePreview && <Badge tone="success">معاينة مجانية</Badge>}
-                            <span className="rounded-md bg-surface px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
-                              {lessonVideos.length} فيديو
-                            </span>
-                          </div>
-
-                          {/* videos of the lesson */}
-                          {lessonVideos.length === 0 ? (
-                            <p className="py-2 text-center text-[11px] text-muted">لا توجد فيديوهات في هذا الدرس بعد.</p>
-                          ) : (
-                            lessonVideos.map((v, vi) => {
-                              const draft = maxViewsDraft[v.id] ?? (v.maxViews != null ? String(v.maxViews) : "");
-                              return (
-                                <div
-                                  key={v.id}
-                                  className={cn(
-                                    "flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 transition-colors hover:border-brand/30",
-                                    pendingIds.has(`video-${v.id}`) && "opacity-50"
-                                  )}
-                                >
-                                  <div className="flex items-center">
-                                    <button
-                                      type="button"
-                                      onClick={() => moveVideo(v, -1)}
-                                      disabled={vi === 0}
-                                      aria-label={`تحريك ${v.title} لأعلى`}
-                                      title="تحريك لأعلى"
-                                      className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
-                                    >
-                                      <ArrowUp size={12} />
-                                    </button>
-                                    <span className="grid size-5 place-items-center rounded bg-surface2 text-[10px] font-bold tabular-nums text-muted">
-                                      {vi + 1}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => moveVideo(v, 1)}
-                                      disabled={vi === lessonVideos.length - 1}
-                                      aria-label={`تحريك ${v.title} لأسفل`}
-                                      title="تحريك لأسفل"
-                                      className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand disabled:cursor-not-allowed disabled:opacity-30"
-                                    >
-                                      <ArrowDown size={12} />
-                                    </button>
-                                  </div>
-                                  <div className="min-w-0 flex-1 basis-44">
-                                    {renameTarget?.kind === "video" && renameTarget.id === v.id ? (
-                                      <div className="space-y-1.5">
-                                        <Input
-                                          value={renameTarget.title}
-                                          onChange={(e) => updateRename({ title: e.target.value })}
-                                          autoFocus
-                                          aria-label="عنوان الفيديو الجديد"
-                                          className="h-7 text-xs"
-                                        />
-                                        <div className="flex items-center gap-1.5" dir="ltr">
-                                          <Input
-                                            value={renameTarget.youtubeId}
-                                            onChange={(e) => updateRename({ youtubeId: e.target.value })}
-                                            aria-label="معرف يوتيوب"
-                                            placeholder="YouTube ID"
-                                            className="h-7 flex-1 font-mono text-[11px]"
-                                          />
-                                          <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">
-                                            {renameBusy ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
-                                            حفظ
-                                          </Button>
-                                          <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]">
-                                            <X size={11} />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <p className="truncate text-xs font-semibold text-ink">{v.title}</p>
-                                        <p className="font-mono text-[10px] tabular-nums text-muted">
-                                          {Math.round(v.durationSec / 60)} دقيقة · <span dir="ltr">{v.youtubeVideoId}</span>
-                                        </p>
-                                      </>
-                                    )}
-                                  </div>
-                                  {!(renameTarget?.kind === "video" && renameTarget.id === v.id) && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          setRenameTarget({ kind: "video", id: v.id, title: v.title, youtubeId: v.youtubeVideoId })
-                                        }
-                                        title="تعديل العنوان ومعرف يوتيوب"
-                                        aria-label={`تعديل ${v.title}`}
-                                        className="cursor-pointer rounded-md p-1 text-muted transition-colors hover:bg-surface2 hover:text-brand"
-                                      >
-                                        <Pencil size={12} />
-                                      </button>
-                                      <div className="flex items-center gap-1.5">
-                                        <EyeOff size={12} className="text-muted" />
-                                        <Input
-                                          type="number"
-                                          min="1"
-                                          dir="ltr"
-                                          value={draft}
-                                          onChange={(e) =>
-                                            setMaxViewsDraft((prev) => ({ ...prev, [v.id]: e.target.value }))
-                                          }
-                                          placeholder="∞"
-                                          aria-label={`حد مشاهدات ${v.title}`}
-                                          className="h-7 w-16 border-line bg-surface2/50 text-center text-xs tabular-nums"
-                                        />
-                                        <Button
-                                          onClick={() => saveMaxViews(v)}
-                                          variant="outline"
-                                          size="sm"
-                                          className="h-7 px-2 text-[10px]"
-                                        >
-                                          حفظ
-                                        </Button>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              );
-                            })
-                          )}
-                        </section>
-                      );
-                    })
+                              )}
+                            </div>
+                          </section>
+                        );
+                      }}
+                    />
                   )}
                 </div>
 

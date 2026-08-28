@@ -508,6 +508,7 @@ export async function listCourseFilesAdmin() {
       kind: courseFiles.kind,
       sizeBytes: courseFiles.sizeBytes,
       storageKey: courseFiles.storageKey,
+      courseId: courseFiles.courseId,
       isFreePreview: courseFiles.isFreePreview,
       courseTitle: courses.title,
       createdAt: courseFiles.createdAt,

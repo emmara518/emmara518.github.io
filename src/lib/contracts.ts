@@ -111,6 +111,13 @@ export const adminLessonPatchSchema = z.object({
   title: z.string().trim().min(2, "العنوان قصير جداً").max(160),
 });
 
+export const adminLessonCreateSchema = z.object({
+  courseId: uuid,
+  title: z.string().trim().min(2, "العنوان قصير جداً").max(160),
+  description: z.string().trim().max(500).optional(),
+  isFreePreview: z.boolean().optional(),
+});
+
 export const adminReorderSchema = z.object({
   entity: z.enum(["videos", "lessons", "exams"]),
   ids: z.array(uuid).min(1).max(500),
@@ -122,6 +129,13 @@ export const adminPostStatusSchema = z.object({
 
 export const adminCourseStatusSchema = z.object({
   status: z.enum(["draft", "published", "archived"]),
+});
+
+export const adminVideoCreateSchema = z.object({
+  lessonId: uuid,
+  title: z.string().trim().min(2, "العنوان قصير جداً").max(200),
+  youtubeVideoId: z.string().trim().min(6).max(20).regex(/^[A-Za-z0-9_-]+$/, "معرف يوتيوب غير صالح"),
+  durationSec: z.number().int().min(0).max(86400).optional(),
 });
 
 export const couponSchema = z.object({
