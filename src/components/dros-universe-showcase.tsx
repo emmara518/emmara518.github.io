@@ -149,7 +149,7 @@ export function DrosUniverseShowcase() {
       {/* ─────────────────────────────────────────────────────────────
           1. EDITORIAL TOP NAVIGATION
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-bg/90 dark:bg-[#050505]/95 backdrop-blur-md border-b border-line px-4 sm:px-8 py-3.5 transition-colors">
+      <header className="sticky top-0 z-50 bg-bg/90 dark:bg-[#0F1413]/95 backdrop-blur-md border-b border-line px-4 sm:px-8 py-3.5 transition-colors">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
           
           {/* Brand Identity */}
@@ -254,7 +254,7 @@ export function DrosUniverseShowcase() {
             <div className="flex flex-wrap items-center gap-3.5 pt-1 font-ui">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2.5 rounded-xl bg-neon-lime px-7 py-3.5 text-sm font-bold text-black hover:bg-lime-400 transition-all cursor-pointer shadow-[0_4px_20px_rgba(184,255,0,0.3)] active:scale-[0.98]"
+                className="inline-flex items-center gap-2.5 rounded-xl bg-neon-lime px-7 py-3.5 text-sm font-bold text-black hover:bg-yellow-300 transition-all cursor-pointer shadow-[0_4px_20px_rgba(255,196,0,0.3)] active:scale-[0.98]"
               >
                 <span>ابدأ رحلتك</span>
                 <ArrowLeft size={16} />
@@ -342,7 +342,7 @@ export function DrosUniverseShowcase() {
                 transform: `translate(${mouseOffset.x * 0.7}px, ${mouseOffset.y * 0.7}px)`,
               }}
               className={cn(
-                "math-entity-node absolute top-3 left-1 sm:left-4 lg:left-6 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute top-3 left-1 sm:left-4 lg:left-6 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-pi"
               )}
               title="π — النسبة التقريبية وحساب المثلثات"
@@ -355,7 +355,7 @@ export function DrosUniverseShowcase() {
                   alt="π Symbol 3D"
                   width={128}
                   height={128}
-                  className="object-contain filter drop-shadow-[0_0_22px_rgba(184,255,0,0.32)] group-hover:drop-shadow-[0_0_32px_rgba(184,255,0,0.65)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_22px_rgba(255,196,0,0.32)] group-hover:drop-shadow-[0_0_32px_rgba(255,196,0,0.65)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -376,7 +376,7 @@ export function DrosUniverseShowcase() {
                 transform: `translate(${-mouseOffset.x * 0.9}px, ${-mouseOffset.y * 0.9}px)`,
               }}
               className={cn(
-                "math-entity-node absolute top-1 right-0 sm:right-2 lg:right-4 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute top-1 right-0 sm:right-2 lg:right-4 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-sigma"
               )}
               title="Σ — رمز المجموع والمتسلسلات"
@@ -389,7 +389,7 @@ export function DrosUniverseShowcase() {
                   alt="Sigma Symbol 3D"
                   width={144}
                   height={144}
-                  className="object-contain filter drop-shadow-[0_0_28px_rgba(184,255,0,0.42)] group-hover:drop-shadow-[0_0_38px_rgba(184,255,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_28px_rgba(255,196,0,0.42)] group-hover:drop-shadow-[0_0_38px_rgba(255,196,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -410,7 +410,7 @@ export function DrosUniverseShowcase() {
                 transform: `translate(${-mouseOffset.x * 0.6}px, ${mouseOffset.y * 0.6}px)`,
               }}
               className={cn(
-                "math-entity-node absolute top-[34%] -left-3 sm:left-0 lg:left-2 z-[6] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute top-[34%] -left-3 sm:left-0 lg:left-2 z-[6] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-fx"
               )}
               title="f(x) — الدوال والنهايات والتحليل"
@@ -423,7 +423,7 @@ export function DrosUniverseShowcase() {
                   alt="f(x) Symbol 3D"
                   width={96}
                   height={96}
-                  className="object-contain filter drop-shadow-[0_0_16px_rgba(184,255,0,0.28)] group-hover:drop-shadow-[0_0_26px_rgba(184,255,0,0.6)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_16px_rgba(255,196,0,0.28)] group-hover:drop-shadow-[0_0_26px_rgba(255,196,0,0.6)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -432,13 +432,13 @@ export function DrosUniverseShowcase() {
             <div className="relative z-[10] w-72 sm:w-88 lg:w-[27rem] h-88 sm:h-[28rem] lg:h-[34rem] flex items-end justify-center">
               
               {/* Volumetric Radiant Backlight Halo System (Illuminating from Behind the Teacher) */}
-              <div className="absolute -inset-6 sm:-inset-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(184,255,0,0.42)_0%,rgba(184,255,0,0.18)_42%,transparent_72%)] animate-teacher-glow pointer-events-none -z-10" />
+              <div className="absolute -inset-6 sm:-inset-12 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(255,196,0,0.42)_0%,rgba(255,196,0,0.18)_42%,transparent_72%)] animate-teacher-glow pointer-events-none -z-10" />
               
               {/* Secondary Concentrated Core Backlight Beam */}
-              <div className="absolute inset-x-6 top-8 bottom-6 rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(184,255,0,0.65)_0%,rgba(184,255,0,0.25)_40%,transparent_70%)] filter blur-2xl pointer-events-none -z-10" />
+              <div className="absolute inset-x-6 top-8 bottom-6 rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,196,0,0.65)_0%,rgba(255,196,0,0.25)_40%,transparent_70%)] filter blur-2xl pointer-events-none -z-10" />
               
               {/* Rotating Luminous Coordinate Geometry Ring */}
-              <div className="absolute size-[320px] sm:size-[380px] lg:size-[440px] rounded-full border border-[#B8FF00]/30 shadow-[0_0_60px_rgba(184,255,0,0.25)] animate-teacher-halo pointer-events-none -z-10" />
+              <div className="absolute size-[320px] sm:size-[380px] lg:size-[440px] rounded-full border border-[#FFC400]/30 shadow-[0_0_60px_rgba(255,196,0,0.25)] animate-teacher-halo pointer-events-none -z-10" />
 
               <Image
                 src="/images/assets/teacher.webp"
@@ -470,7 +470,7 @@ export function DrosUniverseShowcase() {
                 transform: `translate(${mouseOffset.x * 1.1}px, ${-mouseOffset.y * 1.1}px)`,
               }}
               className={cn(
-                "math-entity-node absolute bottom-4 sm:bottom-8 left-1 sm:left-5 lg:left-8 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute bottom-4 sm:bottom-8 left-1 sm:left-5 lg:left-8 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-integral"
               )}
               title="∫ — حساب التكامل والتطبيقات"
@@ -483,7 +483,7 @@ export function DrosUniverseShowcase() {
                   alt="Integral Symbol 3D"
                   width={128}
                   height={128}
-                  className="object-contain filter drop-shadow-[0_0_24px_rgba(184,255,0,0.4)] group-hover:drop-shadow-[0_0_34px_rgba(184,255,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_24px_rgba(255,196,0,0.4)] group-hover:drop-shadow-[0_0_34px_rgba(255,196,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -504,7 +504,7 @@ export function DrosUniverseShowcase() {
                 transform: `translate(${-mouseOffset.x * 0.8}px, ${mouseOffset.y * 0.8}px)`,
               }}
               className={cn(
-                "math-entity-node absolute top-[32%] -right-2 sm:right-2 lg:right-5 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute top-[32%] -right-2 sm:right-2 lg:right-5 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-sqrt"
               )}
               title="√ — الجذور والأعداد المركبة"
@@ -517,7 +517,7 @@ export function DrosUniverseShowcase() {
                   alt="Square Root Symbol 3D"
                   width={104}
                   height={104}
-                  className="object-contain filter drop-shadow-[0_0_20px_rgba(184,255,0,0.32)] group-hover:drop-shadow-[0_0_30px_rgba(184,255,0,0.65)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_20px_rgba(255,196,0,0.32)] group-hover:drop-shadow-[0_0_30px_rgba(255,196,0,0.65)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -535,7 +535,7 @@ export function DrosUniverseShowcase() {
                 }
               }}
               className={cn(
-                "math-entity-node absolute bottom-24 sm:bottom-28 right-6 sm:right-12 lg:right-18 z-[6] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute bottom-24 sm:bottom-28 right-6 sm:right-12 lg:right-18 z-[6] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-x2"
               )}
               title="x² — المعادلات والقوى والجبر"
@@ -548,7 +548,7 @@ export function DrosUniverseShowcase() {
                   alt="x² Symbol 3D"
                   width={104}
                   height={104}
-                  className="object-contain filter drop-shadow-[0_0_20px_rgba(184,255,0,0.35)] group-hover:drop-shadow-[0_0_30px_rgba(184,255,0,0.68)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_20px_rgba(255,196,0,0.35)] group-hover:drop-shadow-[0_0_30px_rgba(255,196,0,0.68)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -566,7 +566,7 @@ export function DrosUniverseShowcase() {
                 }
               }}
               className={cn(
-                "math-entity-node absolute bottom-2 sm:bottom-4 right-1 sm:right-4 lg:right-7 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8FF00] rounded-3xl",
+                "math-entity-node absolute bottom-2 sm:bottom-4 right-1 sm:right-4 lg:right-7 z-[5] cursor-pointer group transition-transform duration-300 hover:scale-115 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC400] rounded-3xl",
                 !reducedMotion && "animate-math-delta"
               )}
               title="Δ — المميز والهندسة الفراغية"
@@ -579,7 +579,7 @@ export function DrosUniverseShowcase() {
                   alt="Delta Symbol 3D"
                   width={120}
                   height={120}
-                  className="object-contain filter drop-shadow-[0_0_24px_rgba(184,255,0,0.38)] group-hover:drop-shadow-[0_0_34px_rgba(184,255,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
+                  className="object-contain filter drop-shadow-[0_0_24px_rgba(255,196,0,0.38)] group-hover:drop-shadow-[0_0_34px_rgba(255,196,0,0.7)] transition-all pointer-events-none transform-gpu group-hover:scale-105"
                 />
               </div>
             </div>
@@ -613,7 +613,7 @@ export function DrosUniverseShowcase() {
               type="button"
               onClick={() => setSelectedStage(stage)}
               aria-label={`عرض تفاصيل ${stage.title}`}
-              className="group relative block w-full overflow-hidden rounded-2xl bg-surface2 border border-line hover:border-neon-lime/70 shadow-card hover:shadow-[0_20px_50px_rgba(184,255,0,0.16)] transition-all duration-500 ease-out hover:-translate-y-1.5 transform-gpu cursor-pointer text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-lime"
+              className="group relative block w-full overflow-hidden rounded-2xl bg-surface2 border border-line hover:border-neon-lime/70 shadow-card hover:shadow-[0_20px_50px_rgba(255,196,0,0.16)] transition-all duration-500 ease-out hover:-translate-y-1.5 transform-gpu cursor-pointer text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-lime"
             >
               {/* Full-Bleed Stage Image */}
               <div className="relative w-full aspect-[4/3] overflow-hidden">
@@ -688,7 +688,7 @@ export function DrosUniverseShowcase() {
               ].map((pillar, pIndex) => (
                 <div 
                   key={pIndex} 
-                  className="w-[260px] sm:w-[290px] shrink-0 p-4 sm:p-5 rounded-2xl bg-surface2 hover:bg-surface border border-line hover:border-neon-lime/60 space-y-3 transition-all duration-300 shadow-sm hover:shadow-[0_0_20px_rgba(184,255,0,0.12)] flex flex-col justify-between"
+                  className="w-[260px] sm:w-[290px] shrink-0 p-4 sm:p-5 rounded-2xl bg-surface2 hover:bg-surface border border-line hover:border-neon-lime/60 space-y-3 transition-all duration-300 shadow-sm hover:shadow-[0_0_20px_rgba(255,196,0,0.12)] flex flex-col justify-between"
                   dir="rtl"
                 >
                   <div className="flex items-center justify-between font-mono text-xs font-semibold">
@@ -728,7 +728,7 @@ export function DrosUniverseShowcase() {
                     alt={selectedSymbol.label}
                     width={44}
                     height={44}
-                    className="object-contain drop-shadow-[0_0_10px_rgba(184,255,0,0.5)]"
+                    className="object-contain drop-shadow-[0_0_10px_rgba(255,196,0,0.5)]"
                   />
                 </div>
                 <div>
@@ -761,7 +761,7 @@ export function DrosUniverseShowcase() {
               </button>
               <Link
                 href="/courses"
-                className="px-4 py-2 rounded-xl bg-neon-lime text-[13px] font-bold text-black hover:bg-lime-400 shadow-sm"
+                className="px-4 py-2 rounded-xl bg-neon-lime text-[13px] font-bold text-black hover:bg-yellow-300 shadow-sm"
               >
                 استعراض الدروس المرتبطة
               </Link>
@@ -918,7 +918,7 @@ export function DrosUniverseShowcase() {
                 <Link
                   href="/courses"
                   onClick={() => setSelectedStage(null)}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-neon-lime hover:bg-lime-400 text-[13px] font-bold text-black shadow-[0_0_20px_rgba(184,255,0,0.25)] transition-all flex items-center justify-center gap-1.5"
+                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-neon-lime hover:bg-yellow-300 text-[13px] font-bold text-black shadow-[0_0_20px_rgba(255,196,0,0.25)] transition-all flex items-center justify-center gap-1.5"
                 >
                   <span>استعراض المقررات والاشتراك</span>
                   <ChevronLeft size={16} />

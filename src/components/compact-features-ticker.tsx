@@ -10,7 +10,7 @@ const FEATURES = [
     icon: Layers,
     title: "منهج منظّم كالبرهان",
     text: "تسلسل منطقي صارم: مفهوم ← مثال محلول ← تدريب مكثف ← اختبار قياسي.",
-    accent: "#B8FF00",
+    accent: "#FFC400",
   },
   {
     id: "f2",
@@ -43,8 +43,8 @@ export function CompactFeaturesSection() {
 
   return (
     <section className="relative border-t border-line bg-surface2 py-8 sm:py-10 overflow-hidden">
-      {/* Background Subtle Cyber Glow */}
-      <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(184,255,0,0.06),transparent_60%)]" />
+      {/* Background Subtle Teal Glow */}
+      <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_center,rgba(40,127,131,0.06),transparent_60%)]" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10 space-y-5">
         {/* Compact Header Bar */}
@@ -99,7 +99,7 @@ export function CompactFeaturesSection() {
                   onMouseLeave={() => setActiveFeature(null)}
                   className={`group relative w-[270px] sm:w-[300px] shrink-0 rounded-xl border p-3.5 sm:p-4 transition-all duration-300 cursor-pointer select-none flex flex-col justify-between ${
                     isSelected
-                      ? "border-neon-lime bg-surface shadow-[0_0_20px_rgba(184,255,0,0.15)] -translate-y-1"
+                      ? "border-neon-lime bg-surface shadow-[0_0_20px_rgba(255,196,0,0.18)] -translate-y-1"
                       : "border-line bg-surface hover:border-neon-lime/60 shadow-sm"
                   }`}
                   dir="rtl"

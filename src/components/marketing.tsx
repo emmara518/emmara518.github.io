@@ -181,7 +181,7 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
 
   return (
     <Link href={`/courses/${course.slug}`} className="group block">
-      <div className="overflow-hidden rounded-2xl border border-line bg-surface hover:border-neon-lime transition-all duration-300 shadow-card hover:shadow-[0_0_30px_rgba(184,255,0,0.12)] flex flex-col justify-between h-full">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface hover:border-neon-lime transition-all duration-300 shadow-card hover:shadow-[0_0_30px_rgba(255,196,0,0.12)] flex flex-col justify-between h-full">
         {/* Visual Course AI Cover: Mr. Mohamed Saeed & Mathematical Topic */}
         <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-surface2 border-b border-line">
           <Image
@@ -206,7 +206,7 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
           </div>
 
           {owned ? (
-            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-black text-black shadow-[0_0_12px_rgba(184,255,0,0.4)]">
+            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-black text-black shadow-[0_0_12px_rgba(255,196,0,0.4)]">
               مشترك ✓
             </span>
           ) : (

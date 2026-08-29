@@ -69,7 +69,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
   return (
     <section className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 overflow-hidden">
       {/* 3D Coordinate Ambient Glow */}
-      <div className="pointer-events-none absolute -top-20 start-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(ellipse_at_top,rgba(184,255,0,0.08),transparent_70%)] blur-2xl -z-10" />
+      <div className="pointer-events-none absolute -top-20 start-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(ellipse_at_top,rgba(255,196,0,0.08),transparent_70%)] blur-2xl -z-10" />
       
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-line">
@@ -94,7 +94,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? "bg-neon-lime text-black shadow-[0_0_18px_rgba(184,255,0,0.3)] font-bold scale-105"
+                    ? "bg-neon-lime text-black shadow-[0_0_18px_rgba(255,196,0,0.3)] font-bold scale-105"
                     : "bg-surface text-muted border border-line hover:border-neon-lime/50 hover:text-ink shadow-sm"
                 }`}
               >
@@ -147,7 +147,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                   <div
                     className={`relative overflow-hidden rounded-2xl border transition-all duration-500 flex flex-col justify-between h-full bg-surface shadow-card ${
                       isHero
-                        ? "border-neon-lime shadow-[0_20px_60px_-10px_rgba(184,255,0,0.3),0_0_30px_rgba(184,255,0,0.15)] bg-surface2"
+                        ? "border-neon-lime shadow-[0_20px_60px_-10px_rgba(255,196,0,0.3),0_0_30px_rgba(255,196,0,0.15)] bg-surface2"
                         : "border-line hover:border-neon-lime/50"
                     }`}
                   >
@@ -185,7 +185,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
 
                       {/* Hero Spotlight Indicator Badge */}
                       {isHero ? (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-extrabold text-black shadow-[0_0_15px_rgba(184,255,0,0.6)] animate-bounce font-mono tracking-tag">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-extrabold text-black shadow-[0_0_15px_rgba(255,196,0,0.6)] animate-bounce font-mono tracking-tag">
                           HERO FOCUS ★
                         </span>
                       ) : (
@@ -238,7 +238,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                           <div
                             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm ${
                               isHero
-                                ? "bg-neon-lime text-black shadow-[0_0_20px_rgba(184,255,0,0.35)] translate-x-[-4px]"
+                                ? "bg-neon-lime text-black shadow-[0_0_20px_rgba(255,196,0,0.35)] translate-x-[-4px]"
                                 : "bg-surface2 text-ink border border-line group-hover:bg-neon-lime group-hover:text-black group-hover:border-neon-lime"
                             }`}
                           >

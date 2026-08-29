@@ -48,7 +48,7 @@ export type LearningRoomData = {
   };
   enrolled: boolean;
   lessons: RoomLesson[];
-  exams: { id: string; title: string; durationMin: number; mode: string; questionsCount: number }[];
+  exams: { id: string; title: string; durationMin: number; type: string; questionsCount: number }[];
   files: { id: string; title: string; kind: string; storageKey: string; sizeBytes: number; isFreePreview: boolean }[];
   stats: { totalVideos: number; completedVideos: number; percent: number };
 };

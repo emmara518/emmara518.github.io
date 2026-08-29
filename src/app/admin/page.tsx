@@ -129,7 +129,12 @@ export default async function AdminPage() {
       orders={(orderRows || []).map((o) => ({ ...o, createdAt: new Date(o.createdAt).toISOString() }))}
       grades={(gradeRows || []).map((g) => ({ id: g.id, name: g.name }))}
       subjects={(subjectRows || []).map((s) => ({ id: s.id, name: s.name }))}
-      exams={(examRows || []).map((e) => ({ ...e, createdAt: new Date(e.createdAt).toISOString() }))}
+      exams={(examRows || []).map((e) => ({
+        ...e,
+        createdAt: new Date(e.createdAt).toISOString(),
+        availableFrom: e.availableFrom ? new Date(e.availableFrom).toISOString() : null,
+        availableUntil: e.availableUntil ? new Date(e.availableUntil).toISOString() : null,
+      }))}
       attempts={(attemptRows || []).map((a) => ({ ...a, submittedAt: new Date(a.submittedAt).toISOString() }))}
         videos={(videoRows || []).map((v) => ({ ...v }))}
         lessons={(lessonRows || []).map((l) => ({ ...l }))}

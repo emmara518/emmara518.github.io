@@ -9,7 +9,7 @@ const STAGES = [
     name: "التأسيس",
     english: "Foundation",
     shapeSvg: (
-      <svg viewBox="0 0 40 40" className="size-8 stroke-[#B8FF00]" fill="none" strokeWidth="1.8">
+      <svg viewBox="0 0 40 40" className="size-8 stroke-[#FFC400]" fill="none" strokeWidth="1.8">
         <polygon points="20,4 36,34 4,34" />
         <line x1="20" y1="4" x2="20" y2="34" />
         <line x1="36" y1="34" x2="20" y2="22" />
@@ -37,10 +37,10 @@ const STAGES = [
     name: "الثانوي",
     english: "Secondary",
     shapeSvg: (
-      <svg viewBox="0 0 40 40" className="size-8 stroke-[#B8FF00]" fill="none" strokeWidth="1.8">
+      <svg viewBox="0 0 40 40" className="size-8 stroke-[#FFC400]" fill="none" strokeWidth="1.8">
         <ellipse cx="20" cy="20" rx="16" ry="7" transform="rotate(-25 20 20)" />
         <ellipse cx="20" cy="20" rx="16" ry="7" transform="rotate(25 20 20)" />
-        <circle cx="20" cy="20" r="3" fill="#B8FF00" />
+        <circle cx="20" cy="20" r="3" fill="#FFC400" />
       </svg>
     ),
   },
@@ -59,10 +59,10 @@ const STAGES = [
     name: "الاختبارات",
     english: "Exams",
     shapeSvg: (
-      <svg viewBox="0 0 40 40" className="size-8 stroke-[#B8FF00]" fill="none" strokeWidth="1.8">
+      <svg viewBox="0 0 40 40" className="size-8 stroke-[#FFC400]" fill="none" strokeWidth="1.8">
         <circle cx="20" cy="20" r="15" />
         <circle cx="20" cy="20" r="9" strokeDasharray="3 2" />
-        <circle cx="20" cy="20" r="3" fill="#B8FF00" />
+        <circle cx="20" cy="20" r="3" fill="#FFC400" />
       </svg>
     ),
   },
@@ -74,9 +74,9 @@ export function AcademicMapRoadmap() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-black text-white tracking-tight">خريطة التعلم والمسارات الدراسية</h2>
-          <p className="text-xs font-semibold text-[#8E98A5]">اختر مرحلتك الدراسية للوصول المباشر لكورساتك المنظمة</p>
+          <p className="text-xs font-semibold text-[#A9B3B0]">اختر مرحلتك الدراسية للوصول المباشر لكورساتك المنظمة</p>
         </div>
-        <Link href="/courses" className="text-xs font-bold text-[#B8FF00] hover:underline">
+        <Link href="/courses" className="text-xs font-bold text-[#FFC400] hover:underline">
           عرض جميع المراحل ←
         </Link>
       </div>
@@ -86,23 +86,23 @@ export function AcademicMapRoadmap() {
           <Link
             key={s.num}
             href={`/courses?stage=${encodeURIComponent(s.name)}`}
-            className="group relative flex flex-col items-center rounded-2xl border border-[#22262E] bg-[#0C0E10] p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#B8FF00] hover:shadow-lg"
+            className="group relative flex flex-col items-center rounded-2xl border border-[#2D3A38] bg-[#1A2422] p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#FFC400] hover:shadow-lg"
           >
             {/* Stage Number Badge */}
-            <span className="font-mono text-xs font-bold text-[#8E98A5] tracking-widest mb-3">
+            <span className="font-mono text-xs font-bold text-[#A9B3B0] tracking-widest mb-3">
               {s.num}
             </span>
 
             {/* Visual Geometric Icon */}
-            <div className="relative mb-3 flex size-12 items-center justify-center rounded-xl bg-[#15181C] border border-[#22262E] transition-transform duration-300 group-hover:scale-105">
+            <div className="relative mb-3 flex size-12 items-center justify-center rounded-xl bg-[#222E2B] border border-[#2D3A38] transition-transform duration-300 group-hover:scale-105">
               {s.shapeSvg}
             </div>
 
             {/* Stage Title & English subtitle */}
-            <h3 className="text-sm font-bold text-white group-hover:text-[#B8FF00] transition-colors">
+            <h3 className="text-sm font-bold text-white group-hover:text-[#FFC400] transition-colors">
               {s.name}
             </h3>
-            <span className="font-mono text-[10px] font-semibold text-[#8E98A5] uppercase tracking-wider mt-0.5">
+            <span className="font-mono text-[10px] font-semibold text-[#A9B3B0] uppercase tracking-wider mt-0.5">
               {s.english}
             </span>
           </Link>

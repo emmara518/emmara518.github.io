@@ -118,8 +118,8 @@ function PillarCard({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       className={cn(
-        "group relative flex flex-col justify-between rounded-2xl border border-line bg-surface p-3 sm:p-3.5 text-center select-none cursor-grab active:cursor-grabbing transition-all duration-300 hover:border-lime-400 hover:bg-surface2 hover:shadow-[0_15px_35px_rgba(132,204,22,0.25)] overflow-hidden",
-        isDragging && "border-lime-400 bg-surface2 shadow-2xl scale-[1.03]"
+        "group relative flex flex-col justify-between rounded-2xl border border-line bg-surface p-3 sm:p-3.5 text-center select-none cursor-grab active:cursor-grabbing transition-all duration-300 hover:border-yellow-400 hover:bg-surface2 hover:shadow-[0_15px_35px_rgba(255,196,0,0.25)] overflow-hidden",
+        isDragging && "border-yellow-400 bg-surface2 shadow-2xl scale-[1.03]"
       )}
       style={{
         perspective: 900,
@@ -156,7 +156,7 @@ function PillarCard({
           }}
         >
           {/* Glowing aura under the symbol */}
-          <div className="absolute inset-2 rounded-full bg-lime-400/25 blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="absolute inset-2 rounded-full bg-yellow-400/25 blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
           <div className="relative size-full flex items-center justify-center p-1">
             <Image
@@ -164,14 +164,14 @@ function PillarCard({
               alt={item.label}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 180px"
-              className="object-contain drop-shadow-[0_12px_24px_rgba(132,204,22,0.35)] pointer-events-none rounded-xl"
+              className="object-contain drop-shadow-[0_12px_24px_rgba(255,196,0,0.35)] pointer-events-none rounded-xl"
               priority={false}
             />
           </div>
         </div>
 
         {/* Drag Helper Tip on Hover */}
-        <div className="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-lime-400/90 font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-yellow-400/90 font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           اسحب للتدوير 3D
         </div>
       </div>
@@ -192,7 +192,7 @@ function PillarCard({
             e.stopPropagation();
             onSelect(item);
           }}
-          className="mt-1.5 flex items-center justify-center gap-1 w-full rounded-lg bg-slate-900/70 border border-slate-700/60 px-2 py-1.5 text-[10px] font-mono font-semibold text-slate-200 hover:text-neon-lime hover:border-lime-400/80 transition-colors cursor-pointer"
+          className="mt-1.5 flex items-center justify-center gap-1 w-full rounded-lg bg-slate-900/70 border border-slate-700/60 px-2 py-1.5 text-[10px] font-mono font-semibold text-slate-200 hover:text-neon-lime hover:border-yellow-400/80 transition-colors cursor-pointer"
         >
           <Sparkles className="size-2.5 text-neon-lime shrink-0" />
           <span className="truncate">{item.formula.split("·")[0]}</span>
@@ -216,7 +216,7 @@ export function MathPillarsInteractive() {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs font-bold text-neon-lime">3D MATHEMATICAL PILLARS</span>
-            <span className="inline-flex items-center rounded-full bg-lime-500/15 border border-lime-400/40 px-2.5 py-0.5 text-[11px] font-black text-neon-lime">
+            <span className="inline-flex items-center rounded-full bg-yellow-500/15 border border-yellow-400/40 px-2.5 py-0.5 text-[11px] font-black text-neon-lime">
               تفاعلي 3D حر
             </span>
           </div>
@@ -240,12 +240,12 @@ export function MathPillarsInteractive() {
       {selectedSymbol && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div
-            className="relative w-full max-w-lg rounded-3xl border border-lime-500/50 bg-slate-950 p-6 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg rounded-3xl border border-yellow-500/50 bg-slate-950 p-6 shadow-2xl overflow-hidden"
             style={{ perspective: 1000 }}
           >
             {/* Ambient Background Lights */}
-            <div className="absolute top-0 right-0 size-60 rounded-full bg-lime-500/15 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 size-60 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 size-60 rounded-full bg-yellow-500/15 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 size-60 rounded-full bg-teal-500/15 blur-3xl pointer-events-none" />
 
             {/* Close Button */}
             <button
@@ -279,13 +279,13 @@ export function MathPillarsInteractive() {
                 transition: "transform 0.08s ease-out",
               }}
             >
-              <div className="absolute inset-4 rounded-full bg-lime-400/25 blur-2xl pointer-events-none" />
+              <div className="absolute inset-4 rounded-full bg-yellow-400/25 blur-2xl pointer-events-none" />
               <Image
                 src={selectedSymbol.imageSrc}
                 alt={selectedSymbol.label}
                 fill
                 sizes="208px"
-                className="object-contain drop-shadow-[0_20px_35px_rgba(132,204,22,0.45)] pointer-events-none"
+                className="object-contain drop-shadow-[0_20px_35px_rgba(255,196,0,0.45)] pointer-events-none"
               />
             </div>
 
@@ -322,7 +322,7 @@ export function MathPillarsInteractive() {
               <button
                 type="button"
                 onClick={() => setSelectedSymbol(null)}
-                className="flex-1 rounded-xl bg-neon-lime px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-lime-300 flex items-center justify-center transition-colors cursor-pointer"
+                className="flex-1 rounded-xl bg-neon-lime px-4 py-2.5 text-xs font-black text-slate-950 hover:bg-yellow-300 flex items-center justify-center transition-colors cursor-pointer"
               >
                 حسناً، فهمت
               </button>

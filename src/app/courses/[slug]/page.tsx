@@ -82,7 +82,7 @@ export default async function CourseDetailPage({
   return (
     <main>
       {/* header with AI Teacher Visual Canvas */}
-      <section className="relative overflow-hidden border-b border-[#22262E] bg-[#0C0E10]">
+      <section className="relative overflow-hidden border-b border-[#2D3A38] bg-[#131D1B]">
         {/* Ambient AI Teacher Background Artwork */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <Image
@@ -94,8 +94,8 @@ export default async function CourseDetailPage({
             className="object-cover object-center opacity-25 filter blur-[1px]"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0C0E10] via-[#0C0E10]/85 to-[#0C0E10]/60" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(184,255,0,0.15),transparent_70%)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#131D1B] via-[#131D1B]/85 to-[#131D1B]/60" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(40,127,131,0.18),transparent_70%)]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6">
@@ -116,7 +116,7 @@ export default async function CourseDetailPage({
           </h1>
           <p className="mt-3 max-w-2xl leading-8 text-[#9DA8B6]">{course.summary}</p>
           <div className="mt-5 flex flex-wrap items-center gap-5 text-sm text-[#D0D5DD]">
-            <span className="inline-flex items-center gap-1.5 font-bold text-[#B8FF00] bg-[#14181E] px-3 py-1 rounded-full border border-[#B8FF00]/30">
+            <span className="inline-flex items-center gap-1.5 font-bold text-[#FFC400] bg-[#1A2422] px-3 py-1 rounded-full border border-[#FFC400]/30">
               <User size={15} /> {course.teacherName}
             </span>
             <span className="inline-flex items-center gap-1.5 font-mono">

@@ -91,6 +91,7 @@ export const CATEGORIES: CategoryDef[] = [
     description: "إنشاء الاختبارات، بنوك الأسئلة، واستيراد وتصحيح النتائج",
     subFeatures: [
       { id: "exams_table", label: "جدول الامتحانات", icon: ClipboardList },
+      { id: "exam_groups_table", label: "مجموعات الامتحانات", icon: Layers },
       { id: "exams_manage", label: "إنشاء امتحان جديد", icon: FilePlus2 },
       { id: "questions_table", label: "بنك الأسئلة", icon: Database },
       { id: "questions_manage", label: "إضافة سؤال فردي", icon: HelpCircle },

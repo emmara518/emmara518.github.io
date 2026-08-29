@@ -21,7 +21,7 @@ export async function getExamRoom(examId: string, userId: string) {
     .select({
       id: exams.id,
       title: exams.title,
-      mode: exams.mode,
+      type: exams.type,
       durationMin: exams.durationMin,
       courseId: exams.courseId,
       courseTitle: courses.title,
@@ -60,7 +60,7 @@ export async function getExamRoom(examId: string, userId: string) {
     exam: {
       id: exam.id,
       title: exam.title,
-      mode: exam.mode,
+      type: exam.type,
       durationMin: exam.durationMin,
       courseTitle: exam.courseTitle,
       courseSlug: exam.courseSlug,

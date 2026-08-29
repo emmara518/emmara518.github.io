@@ -138,7 +138,7 @@ export function HeroMath3DUniverse() {
       <div className="mb-3 flex items-center justify-between gap-2 px-2">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md">
           <span className="relative flex size-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-neon-lime" />
           </span>
           <span className="font-mono text-xs font-black text-neon-lime">3D MATH ORBIT SYSTEM</span>
@@ -188,8 +188,8 @@ export function HeroMath3DUniverse() {
       >
         {/* Background Coordinate Hologram Grid */}
         <div className="absolute inset-0 math-grid-pattern opacity-25 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full bg-lime-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full bg-yellow-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-72 rounded-full bg-yellow-500/10 blur-3xl pointer-events-none" />
 
         {/* Orbit Rings (3D Ellipses in Background) */}
         <div
@@ -201,8 +201,8 @@ export function HeroMath3DUniverse() {
             transformStyle: "preserve-3d",
           }}
         >
-          <div className="size-full rounded-full border border-lime-400/20 shadow-[0_0_20px_rgba(132,204,22,0.15)] border-dashed animate-spin-slow" />
-          <div className="absolute inset-4 rounded-full border border-cyan-400/15 border-dotted" />
+          <div className="size-full rounded-full border border-yellow-400/20 shadow-[0_0_20px_rgba(255,196,0,0.15)] border-dashed animate-spin-slow" />
+          <div className="absolute inset-4 rounded-full border border-teal-400/15 border-dotted" />
         </div>
 
         {/* 3D Transformed Center Stage */}
@@ -227,7 +227,7 @@ export function HeroMath3DUniverse() {
                   transform: `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${item.scale})`,
                   zIndex: item.zIndex,
                   opacity: item.opacity,
-                  filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(132,204,22,0.25))",
+                  filter: "drop-shadow(0 8px 16px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(255,196,0,0.25))",
                 }}
               >
                 <div className="relative size-14 sm:size-16 flex items-center justify-center pointer-events-none">
@@ -236,10 +236,10 @@ export function HeroMath3DUniverse() {
                     alt={item.label}
                     fill
                     sizes="64px"
-                    className="object-contain filter drop-shadow-[0_0_12px_rgba(184,255,0,0.3)] transition-all pointer-events-none"
+                    className="object-contain filter drop-shadow-[0_0_12px_rgba(255,196,0,0.3)] transition-all pointer-events-none"
                   />
                 </div>
-                <span className="mt-0.5 font-mono text-[9px] font-bold text-lime-300/80 drop-shadow">
+                <span className="mt-0.5 font-mono text-[9px] font-bold text-yellow-300/80 drop-shadow">
                   {item.glyph}
                 </span>
               </div>
@@ -254,10 +254,10 @@ export function HeroMath3DUniverse() {
             }}
           >
             {/* Holographic Glowing Base Pedestal */}
-            <div className="absolute -bottom-6 w-56 h-12 rounded-full bg-gradient-to-r from-lime-500/30 via-lime-400/50 to-cyan-500/30 blur-md pointer-events-none" />
+            <div className="absolute -bottom-6 w-56 h-12 rounded-full bg-gradient-to-r from-yellow-500/30 via-yellow-400/50 to-yellow-500/30 blur-md pointer-events-none" />
 
             {/* Teacher Image Container */}
-            <div className="relative size-56 sm:size-64 rounded-3xl border-2 border-lime-400/40 bg-gradient-to-b from-slate-800/80 via-slate-900 to-slate-950 p-1.5 shadow-[0_20px_50px_rgba(132,204,22,0.3)] overflow-hidden group">
+            <div className="relative size-56 sm:size-64 rounded-3xl border-2 border-yellow-400/40 bg-gradient-to-b from-slate-800/80 via-slate-900 to-slate-950 p-1.5 shadow-[0_20px_50px_rgba(255,196,0,0.3)] overflow-hidden group">
               <div className="relative size-full rounded-2xl overflow-hidden">
                 <Image
                   src="/images/assets/teacher.webp"
@@ -271,7 +271,7 @@ export function HeroMath3DUniverse() {
               </div>
 
               {/* Floating Verified Badge */}
-              <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-slate-950/90 border border-lime-400/50 px-2 py-0.5 shadow-lg backdrop-blur-md">
+              <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-slate-950/90 border border-yellow-400/50 px-2 py-0.5 shadow-lg backdrop-blur-md">
                 <CheckCircle2 size={12} className="text-neon-lime" />
                 <span className="text-[10px] font-black text-neon-lime">معتمد</span>
               </div>
@@ -279,7 +279,7 @@ export function HeroMath3DUniverse() {
 
             {/* Teacher Floating Name Plate */}
             <div
-              className="mt-2.5 rounded-2xl bg-slate-900/95 border border-lime-400/40 px-4 py-2 text-center backdrop-blur-md shadow-xl"
+              className="mt-2.5 rounded-2xl bg-slate-900/95 border border-yellow-400/40 px-4 py-2 text-center backdrop-blur-md shadow-xl"
               style={{ transform: "translateZ(30px)" }}
             >
               <div className="flex items-center justify-center gap-1.5">
@@ -305,22 +305,22 @@ export function HeroMath3DUniverse() {
                   transform: `translate3d(${item.x}px, ${item.y}px, ${item.z}px) scale(${item.scale})`,
                   zIndex: item.zIndex,
                   opacity: item.opacity,
-                  filter: "drop-shadow(0 15px 30px rgba(0,0,0,0.7)) drop-shadow(0 0 25px rgba(184,255,0,0.55))",
+                  filter: "drop-shadow(0 15px 30px rgba(0,0,0,0.7)) drop-shadow(0 0 25px rgba(255,196,0,0.55))",
                 }}
               >
                 {/* Pure 3D Floating Symbol (No Box/Card Background) */}
                 <div className="relative size-16 sm:size-20 flex items-center justify-center pointer-events-none">
                   {/* Atmospheric Glow behind the 3D symbol */}
-                  <div className="absolute inset-0 rounded-full bg-lime-400/20 blur-xl opacity-60 group-hover:opacity-100 group-hover:bg-lime-400/35 transition-all duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-full bg-yellow-400/20 blur-xl opacity-60 group-hover:opacity-100 group-hover:bg-yellow-400/35 transition-all duration-300 pointer-events-none" />
                   <Image
                     src={item.imageSrc}
                     alt={item.label}
                     fill
                     sizes="96px"
-                    className="object-contain filter drop-shadow-[0_0_16px_rgba(184,255,0,0.45)] group-hover:drop-shadow-[0_0_28px_rgba(184,255,0,0.85)] transition-all pointer-events-none transform-gpu group-hover:scale-110"
+                    className="object-contain filter drop-shadow-[0_0_16px_rgba(255,196,0,0.45)] group-hover:drop-shadow-[0_0_28px_rgba(255,196,0,0.85)] transition-all pointer-events-none transform-gpu group-hover:scale-110"
                   />
                 </div>
-                <span className="mt-0.5 font-mono text-[10px] font-black text-[#B8FF00] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-lime-400/30">
+                <span className="mt-0.5 font-mono text-[10px] font-black text-[#FFC400] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30">
                   {item.glyph}
                 </span>
               </div>
@@ -339,7 +339,7 @@ export function HeroMath3DUniverse() {
         {hoveredSymbol ? (
           <div className="flex items-center justify-between gap-3 animate-fade-in">
             <div className="flex items-center gap-3">
-              <div className="relative size-11 rounded-xl bg-slate-900 border border-lime-400/60 p-1 shrink-0">
+              <div className="relative size-11 rounded-xl bg-slate-900 border border-yellow-400/60 p-1 shrink-0">
                 <Image
                   src={hoveredSymbol.imageSrc}
                   alt={hoveredSymbol.label}

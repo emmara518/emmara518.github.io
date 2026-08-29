@@ -10,7 +10,7 @@ export type ExamRoomData = {
   exam: {
     id: string;
     title: string;
-    mode: string;
+    type: string;
     durationMin: number;
     courseTitle: string;
     courseSlug: string;

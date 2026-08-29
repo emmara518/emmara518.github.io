@@ -5,7 +5,7 @@
 /* ─────────────────────────────────────────────────────────────
    DROS MATH UNIVERSE — TYPOGRAPHY SYSTEM & DESIGN SYSTEM v2026
    Brand Display: Graphik Arabic · UI/Body: Cairo · Technical: IBM Plex Mono
-   Palette: Carbon #050505 · Chrome #F4F5F6 · Gunmetal #343940 · Neon Lime #B8FF00
+   Palette: Teal #287F83 + Yellow #FFC400 + Soft Light #F4F5F2 + Deep Teal Dark #0F1413
    Fonts are loaded via next/font/local in layout.tsx (variable --font-graphik-arabic).
    ───────────────────────────────────────────────────────────── */
 
@@ -13,57 +13,60 @@
 [data-theme="light"],
 html:not(.dark) {
   /* ─── LIGHT MODE DESIGN TOKENS (Default / Technical Paper) ─── */
-  --bg: #F8F9FA;
-  --background: #F8F9FA;
+  --bg: #F4F5F2;
+  --background: #F4F5F2;
   --surface: #FFFFFF;
   --surface-elevated: #FFFFFF;
-  --surface-secondary: #F1F3F5;
-  --surface-2: #F1F3F5;
-  --surface-3: #E9ECEF;
+  --surface-secondary: #E9F1EF;
+  --surface-2: #E9F1EF;
+  --surface-3: #F0FFF6;
 
-  --text-primary: #0F172A;
-  --text-secondary: #334155;
-  --text-muted: #64748B;
-  --ink: #0F172A;
-  --ink-secondary: #334155;
-  --muted: #64748B;
+  --text-primary: #18201F;
+  --text-secondary: #53605E;
+  --text-muted: #858F8D;
+  --ink: #18201F;
+  --ink-secondary: #53605E;
+  --muted: #858F8D;
 
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
-  --line: #E2E8F0;
-  --line-strong: #CBD5E1;
-  --line-soft: rgba(15, 23, 42, 0.06);
+  --border: #D5DDDA;
+  --border-strong: #B7C4C0;
+  --line: #D5DDDA;
+  --line-strong: #B7C4C0;
+  --line-soft: rgba(24, 32, 31, 0.06);
 
-  --accent: #4D7C0F;
-  --accent-strong: #3F6212;
-  --accent-soft: #ECFCCB;
+  /* Brand = TEAL (primary brand, structural highlights, links, nav, secondary buttons) */
+  --accent: #287F83;
+  --accent-strong: #1F6266;
+  --accent-soft: #E6F2F2;
 
-  --neon-lime: #4D7C0F;
-  --neon-lime-bright: #65A30D;
-  --neon-lime-glow: rgba(77, 124, 15, 0.2);
-  --neon-lime-soft: #ECFCCB;
+  /* Yellow token family = CTA / emphasis / highlights / important numbers */
+  --neon-lime: #FFC400;
+  --neon-lime-bright: #FFD64D;
+  --neon-lime-glow: rgba(255, 196, 0, 0.28);
+  --neon-lime-soft: #FFE7A3;
 
-  --brand: #4D7C0F;
-  --brand-strong: #3F6212;
-  --brand-soft: #ECFCCB;
-  --gold: #B45309;
-  --gold-soft: #FEF3C7;
+  --brand: #287F83;
+  --brand-strong: #1F6266;
+  --brand-soft: #E6F2F2;
+  --gold: #FFC400;
+  --gold-soft: #FFE7A3;
 
-  --chrome: #0F172A;
-  --gunmetal: #334155;
-  --graphite: #64748B;
+  --chrome: #18201F;
+  --gunmetal: #53605E;
+  --graphite: #858F8D;
 
-  --success: #15803D;
-  --danger: #DC2626;
-  --warning: #B45309;
+  --success: #2E9E7E;
+  --danger: #E74C3C;
+  --warning: #F5A623;
+  --info: #2A7CC7;
 
-  --grid-line: rgba(15, 23, 42, 0.05);
+  --grid-line: rgba(40, 127, 131, 0.06);
   --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: #E2E8F0;
-  --glass-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --glass-border: #D5DDDA;
+  --glass-shadow: 0 8px 30px rgba(24, 32, 31, 0.06);
 
-  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
-  --shadow-lift: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 20px 40px -10px rgba(15, 23, 42, 0.05);
+  --shadow-card: 0 1px 3px rgba(24, 32, 31, 0.04), 0 8px 24px -4px rgba(24, 32, 31, 0.06);
+  --shadow-lift: 0 10px 30px -5px rgba(24, 32, 31, 0.08), 0 20px 40px -10px rgba(24, 32, 31, 0.05);
 
   /* Typography Font Stacks (Graphik Arabic is registered by next/font — real weights: 400/500/600) */
   --font-brand-stack: var(--font-graphik-arabic), "Graphik Arabic", "Segoe UI", sans-serif;
@@ -74,57 +77,61 @@ html:not(.dark) {
 .dark,
 [data-theme="dark"],
 html.dark {
-  /* ─── DARK CARBON MASTER REFERENCE (Exact Approved Theme) ─── */
-  --bg: #050505;
-  --background: #050505;
-  --surface: #0C0E10;
-  --surface-elevated: #15181C;
-  --surface-secondary: #15181C;
-  --surface-2: #15181C;
-  --surface-3: #1C2025;
+  /* ─── DARK TEAL-BASED MASTER REFERENCE ─── */
+  --bg: #0F1413;
+  --background: #0F1413;
+  --surface: #1A2422;
+  --surface-elevated: #1A2422;
+  --surface-secondary: #131D1B;
+  --surface-2: #131D1B;
+  --surface-3: #222E2B;
 
-  --text-primary: #FFFFFF;
-  --text-secondary: #C8D1DC;
-  --text-muted: #8E98A5;
-  --ink: #FFFFFF;
-  --ink-secondary: #C8D1DC;
-  --muted: #8E98A5;
+  --text-primary: #E6ECEA;
+  --text-secondary: #A9B3B0;
+  --text-muted: #6F7A78;
+  --ink: #E6ECEA;
+  --ink-secondary: #A9B3B0;
+  --muted: #6F7A78;
 
-  --border: #22262E;
-  --border-strong: #343940;
-  --line: #22262E;
-  --line-strong: #343940;
-  --line-soft: rgba(255, 255, 255, 0.08);
+  --border: #2D3A38;
+  --border-strong: #3D4D4A;
+  --line: #2D3A38;
+  --line-strong: #3D4D4A;
+  --line-soft: rgba(230, 236, 234, 0.08);
 
-  --accent: #B8FF00;
-  --accent-strong: #86B800;
-  --accent-soft: rgba(184, 255, 0, 0.15);
-  --neon-lime: #B8FF00;
-  --neon-lime-bright: #D7FF3F;
-  --neon-lime-glow: rgba(184, 255, 0, 0.45);
-  --neon-lime-soft: rgba(184, 255, 0, 0.15);
+  /* Brand = TEAL (primary brand, structural highlights, links, nav, secondary buttons) */
+  --accent: #3FA4A7;
+  --accent-strong: #287F83;
+  --accent-soft: rgba(63, 164, 167, 0.18);
 
-  --brand: #B8FF00;
-  --brand-strong: #86B800;
-  --brand-soft: rgba(184, 255, 0, 0.15);
-  --gold: #B8FF00;
-  --gold-soft: rgba(184, 255, 0, 0.15);
+  /* Yellow token family = CTA / emphasis / highlights */
+  --neon-lime: #FFC400;
+  --neon-lime-bright: #FFD64D;
+  --neon-lime-glow: rgba(255, 196, 0, 0.32);
+  --neon-lime-soft: rgba(255, 231, 163, 0.14);
 
-  --chrome: #F4F5F6;
-  --gunmetal: #343940;
-  --graphite: #15181C;
+  --brand: #3FA4A7;
+  --brand-strong: #287F83;
+  --brand-soft: rgba(63, 164, 167, 0.18);
+  --gold: #FFC400;
+  --gold-soft: rgba(255, 231, 163, 0.14);
 
-  --success: #B8FF00;
-  --danger: #f87171;
-  --warning: #B8FF00;
+  --chrome: #E6ECEA;
+  --gunmetal: #A9B3B0;
+  --graphite: #222E2B;
 
-  --grid-line: rgba(184, 255, 0, 0.05);
-  --glass-bg: rgba(12, 14, 16, 0.9);
-  --glass-border: #22262E;
+  --success: #2E9E7E;
+  --danger: #E74C3C;
+  --warning: #F5A623;
+  --info: #2A7CC7;
+
+  --grid-line: rgba(63, 164, 167, 0.08);
+  --glass-bg: rgba(26, 36, 34, 0.9);
+  --glass-border: #2D3A38;
   --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85);
 
-  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.2), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
-  --shadow-lift: 0 10px 30px -5px rgba(184, 255, 0, 0.15), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 10px 30px -5px rgba(40, 127, 131, 0.18), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
 }
 
 @theme inline {
@@ -308,7 +315,7 @@ html.dark {
 /* ─────────────────────────────────────────────────────────────
    MATHEMATICAL NOTATION SYSTEM (π, Σ, √, f(x), ∫, x², Δ)
    Precision · Technical · Geometric · Scientific · Solid & Thin Outline
-   Supporting Colors: Chrome #F4F5F6 · Gunmetal #343940 · Neon Lime #B8FF00 · White
+   Supporting Colors: Chrome #E6ECEA · Gunmetal #A9B3B0 · Teal #287F83 · Yellow #FFC400 · White
    ───────────────────────────────────────────────────────────── */
 
 .math-display {
@@ -375,7 +382,7 @@ body {
 
 ::selection {
   background: var(--brand);
-  color: #050505;
+  color: #FFFFFF;
 }
 
 :focus-visible {
@@ -762,18 +769,18 @@ body {
   position: absolute;
   inset: -12%;
   border-radius: 9999px;
-  border: 1px dashed rgba(184, 255, 0, 0.25);
+  border: 1px dashed rgba(40, 127, 131, 0.25);
   transform: rotateX(68deg) rotateY(18deg) translateZ(-8px);
   pointer-events: none;
   transition: all 0.4s ease;
-  box-shadow: 0 0 15px rgba(184, 255, 0, 0.08), inset 0 0 12px rgba(184, 255, 0, 0.05);
+  box-shadow: 0 0 15px rgba(40, 127, 131, 0.08), inset 0 0 12px rgba(40, 127, 131, 0.05);
 }
 
 .group:hover .math-3d-orbit-ring {
-  border-color: rgba(184, 255, 0, 0.65);
+  border-color: rgba(40, 127, 131, 0.65);
   border-style: solid;
   transform: rotateX(68deg) rotateY(24deg) translateZ(-4px) scale(1.08);
-  box-shadow: 0 0 24px rgba(184, 255, 0, 0.3), inset 0 0 18px rgba(184, 255, 0, 0.15);
+  box-shadow: 0 0 24px rgba(40, 127, 131, 0.3), inset 0 0 18px rgba(40, 127, 131, 0.15);
 }
 
 /* Volumetric 3D Floor Shadow Anchor */
@@ -784,14 +791,14 @@ body {
   right: 15%;
   height: 20%;
   border-radius: 9999px;
-  background: radial-gradient(ellipse at center, rgba(184, 255, 0, 0.2) 0%, rgba(0, 0, 0, 0.8) 60%, transparent 80%);
+  background: radial-gradient(ellipse at center, rgba(40, 127, 131, 0.2) 0%, rgba(0, 0, 0, 0.8) 60%, transparent 80%);
   filter: blur(8px);
   transform: rotateX(75deg) translateZ(-25px);
   pointer-events: none;
 }
 
 .group:hover .math-3d-floor-depth {
-  background: radial-gradient(ellipse at center, rgba(184, 255, 0, 0.35) 0%, rgba(0, 0, 0, 0.9) 60%, transparent 80%);
+  background: radial-gradient(ellipse at center, rgba(40, 127, 131, 0.35) 0%, rgba(0, 0, 0, 0.9) 60%, transparent 80%);
   filter: blur(10px);
 }
 

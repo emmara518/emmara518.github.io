@@ -50,8 +50,8 @@ export function TeacherGeometricOrbitals() {
       category: "الهندسة الفراغية 3D",
       formula: "V = a³ | x² + y² + z² = r²",
       colorClass: "text-neon-lime",
-      glowColor: "rgba(163,230,53,0.95)",
-      glowDropShadow: "drop-shadow-[0_0_12px_rgba(163,230,53,0.95)] drop-shadow-[0_0_28px_rgba(163,230,53,0.6)]",
+      glowColor: "rgba(252,211,77,0.95)",
+      glowDropShadow: "drop-shadow-[0_0_12px_rgba(252,211,77,0.95)] drop-shadow-[0_0_28px_rgba(252,211,77,0.6)]",
       positionClass: "top-6 left-4 sm:left-12 lg:left-8",
       animationClass: "animate-cover-float-1",
       sizeClass: "size-12 sm:size-14",
@@ -59,25 +59,25 @@ export function TeacherGeometricOrbitals() {
         <svg viewBox="0 0 54 54" className="size-full">
           <defs>
             <linearGradient id="tessTopFull" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#a3e635" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#84cc16" stopOpacity="0.12" />
+              <stop offset="0%" stopColor="#FFD64D" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#FFC400" stopOpacity="0.12" />
             </linearGradient>
             <linearGradient id="tessFrontFull" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#0891b2" stopOpacity="0.12" />
+              <stop offset="0%" stopColor="#3FA4A7" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#1F6266" stopOpacity="0.12" />
             </linearGradient>
           </defs>
-          <polygon points="12,12 36,12 44,22 20,22" fill="url(#tessTopFull)" stroke="#a3e635" strokeWidth="1.8" />
-          <polygon points="20,22 44,22 44,44 20,44" fill="url(#tessFrontFull)" stroke="#a3e635" strokeWidth="1.8" />
-          <polygon points="12,12 20,22 20,44 12,34" fill="none" stroke="#84cc16" strokeWidth="1.6" />
-          <polygon points="24,19 36,19 40,24 28,24" fill="none" stroke="#22d3ee" strokeWidth="1.5" />
-          <polygon points="28,24 40,24 40,36 28,36" fill="rgba(6,182,212,0.25)" stroke="#22d3ee" strokeWidth="1.5" />
-          <line x1="12" y1="12" x2="24" y2="19" stroke="#67e8f9" strokeWidth="1.4" strokeDasharray="2,2" />
-          <line x1="36" y1="12" x2="36" y2="19" stroke="#67e8f9" strokeWidth="1.4" strokeDasharray="2,2" />
-          <line x1="44" y1="44" x2="40" y2="36" stroke="#67e8f9" strokeWidth="1.4" strokeDasharray="2,2" />
-          <line x1="20" y1="44" x2="28" y2="36" stroke="#67e8f9" strokeWidth="1.4" strokeDasharray="2,2" />
-          <circle cx="20" cy="22" r="2.5" fill="#bef264" className="drop-shadow-[0_0_8px_#a3e635]" />
-          <circle cx="44" cy="22" r="2" fill="#22d3ee" />
+          <polygon points="12,12 36,12 44,22 20,22" fill="url(#tessTopFull)" stroke="#FFD64D" strokeWidth="1.8" />
+          <polygon points="20,22 44,22 44,44 20,44" fill="url(#tessFrontFull)" stroke="#FFD64D" strokeWidth="1.8" />
+          <polygon points="12,12 20,22 20,44 12,34" fill="none" stroke="#FFC400" strokeWidth="1.6" />
+          <polygon points="24,19 36,19 40,24 28,24" fill="none" stroke="#3FA4A7" strokeWidth="1.5" />
+          <polygon points="28,24 40,24 40,36 28,36" fill="rgba(40,127,131,0.25)" stroke="#3FA4A7" strokeWidth="1.5" />
+          <line x1="12" y1="12" x2="24" y2="19" stroke="#3FA4A7" strokeWidth="1.4" strokeDasharray="2,2" />
+          <line x1="36" y1="12" x2="36" y2="19" stroke="#3FA4A7" strokeWidth="1.4" strokeDasharray="2,2" />
+          <line x1="44" y1="44" x2="40" y2="36" stroke="#3FA4A7" strokeWidth="1.4" strokeDasharray="2,2" />
+          <line x1="20" y1="44" x2="28" y2="36" stroke="#3FA4A7" strokeWidth="1.4" strokeDasharray="2,2" />
+          <circle cx="20" cy="22" r="2.5" fill="#FFE7A3" className="drop-shadow-[0_0_8px_#FFC400]" />
+          <circle cx="44" cy="22" r="2" fill="#3FA4A7" />
         </svg>
       ),
     },
@@ -88,9 +88,9 @@ export function TeacherGeometricOrbitals() {
       name: "المجسم الثماني الكريستالي (Octahedron 3D)",
       category: "الفراغية والمجسمات",
       formula: "A = 2√3 a² | V = (√2/3) a³",
-      colorClass: "text-cyan-400",
-      glowColor: "rgba(6,182,212,0.95)",
-      glowDropShadow: "drop-shadow-[0_0_12px_rgba(6,182,212,0.95)] drop-shadow-[0_0_28px_rgba(6,182,212,0.6)]",
+      colorClass: "text-teal-400",
+      glowColor: "rgba(45,212,191,0.95)",
+      glowDropShadow: "drop-shadow-[0_0_12px_rgba(45,212,191,0.95)] drop-shadow-[0_0_28px_rgba(45,212,191,0.6)]",
       positionClass: "top-8 right-6 sm:right-16 lg:right-10",
       animationClass: "animate-cover-float-2",
       sizeClass: "size-12 sm:size-14",
@@ -285,9 +285,9 @@ export function TeacherGeometricOrbitals() {
       id: "op-plus",
       char: "+",
       meaning: "الجمع والإضافة",
-      color: "text-lime-300",
-      glowColor: "rgba(190,242,100,0.95)",
-      bgAuraColor: "bg-lime-400/25",
+      color: "text-yellow-300",
+      glowColor: "rgba(252,211,77,0.95)",
+      bgAuraColor: "bg-yellow-400/25",
       positionClass: "top-12 left-1/4",
       animationClass: "animate-cover-float-1",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -296,9 +296,9 @@ export function TeacherGeometricOrbitals() {
       id: "op-paren-l",
       char: "(",
       meaning: "القوس الأيسر",
-      color: "text-cyan-300",
-      glowColor: "rgba(103,232,249,0.95)",
-      bgAuraColor: "bg-cyan-400/25",
+      color: "text-teal-300",
+      glowColor: "rgba(94,234,212,0.95)",
+      bgAuraColor: "bg-teal-400/25",
       positionClass: "top-28 left-8 sm:left-32",
       animationClass: "animate-cover-float-2",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -329,9 +329,9 @@ export function TeacherGeometricOrbitals() {
       id: "op-root",
       char: "√",
       meaning: "الجذر الرياضي",
-      color: "text-lime-400",
-      glowColor: "rgba(163,230,53,0.95)",
-      bgAuraColor: "bg-lime-500/25",
+      color: "text-yellow-400",
+      glowColor: "rgba(252,211,77,0.95)",
+      bgAuraColor: "bg-yellow-500/25",
       positionClass: "top-20 right-1/4",
       animationClass: "animate-cover-float-1",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -407,8 +407,8 @@ export function TeacherGeometricOrbitals() {
       char: "=",
       meaning: "علامة التساوي الرياضي",
       color: "text-neon-lime",
-      glowColor: "rgba(163,230,53,0.95)",
-      bgAuraColor: "bg-lime-400/25",
+      glowColor: "rgba(252,211,77,0.95)",
+      bgAuraColor: "bg-yellow-400/25",
       positionClass: "top-14 right-1/3",
       animationClass: "animate-cover-float-4",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -461,9 +461,9 @@ export function TeacherGeometricOrbitals() {
       id: "op-infinity",
       char: "∞",
       meaning: "اللانهاية الرياضية",
-      color: "text-cyan-400",
-      glowColor: "rgba(34,211,238,0.95)",
-      bgAuraColor: "bg-cyan-400/25",
+      color: "text-teal-400",
+      glowColor: "rgba(45,212,191,0.95)",
+      bgAuraColor: "bg-teal-400/25",
       positionClass: "bottom-20 right-1/2 translate-x-32",
       animationClass: "animate-cover-float-1",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -472,9 +472,9 @@ export function TeacherGeometricOrbitals() {
       id: "op-paren-r",
       char: ")",
       meaning: "القوس الأيمن",
-      color: "text-cyan-300",
-      glowColor: "rgba(103,232,249,0.95)",
-      bgAuraColor: "bg-cyan-400/25",
+      color: "text-teal-300",
+      glowColor: "rgba(94,234,212,0.95)",
+      bgAuraColor: "bg-teal-400/25",
       positionClass: "top-44 right-8 sm:right-20",
       animationClass: "animate-cover-float-2",
       fontSizeClass: "text-3xl sm:text-4xl",
@@ -489,8 +489,8 @@ export function TeacherGeometricOrbitals() {
       equation: "e^(iπ) + 1 = 0",
       positionClass: "top-4 left-1/3 hidden md:flex",
       animationClass: "animate-cover-float-1",
-      colorClass: "text-lime-300",
-      borderClass: "border-lime-400/40 bg-[#091207]/80",
+      colorClass: "text-yellow-300",
+      borderClass: "border-yellow-400/40 bg-[#1a1503]/80",
     },
     {
       id: "eq-gaussian",
@@ -498,8 +498,8 @@ export function TeacherGeometricOrbitals() {
       equation: "∫₋∞⁺∞ e^(-x²) dx = √π",
       positionClass: "bottom-6 left-1/4 hidden lg:flex",
       animationClass: "animate-cover-float-3",
-      colorClass: "text-cyan-300",
-      borderClass: "border-cyan-400/40 bg-[#041118]/80",
+      colorClass: "text-teal-300",
+      borderClass: "border-teal-400/40 bg-[#031a1a]/80",
     },
     {
       id: "eq-limit",
@@ -583,13 +583,13 @@ export function TeacherGeometricOrbitals() {
 
               {/* Interactive HUD Tooltip on Hover */}
               {isHovered && (
-                <div className="absolute z-50 bottom-full mb-3 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-slate-950/95 border border-lime-400/80 shadow-[0_12px_35px_rgba(0,0,0,0.95),0_0_25px_rgba(163,230,53,0.4)] backdrop-blur-2xl text-center pointer-events-none transition-all animate-in fade-in zoom-in-95">
+                <div className="absolute z-50 bottom-full mb-3 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-slate-950/95 border border-yellow-400/80 shadow-[0_12px_35px_rgba(0,0,0,0.95),0_0_25px_rgba(252,211,77,0.4)] backdrop-blur-2xl text-center pointer-events-none transition-all animate-in fade-in zoom-in-95">
                   <div className="text-[9px] font-bold text-slate-400 flex items-center justify-center gap-1">
-                    <span className="size-1.5 rounded-full bg-neon-lime shadow-[0_0_8px_#a3e635]" />
+                    <span className="size-1.5 rounded-full bg-neon-lime shadow-[0_0_8px_#FFC400]" />
                     <span>{solid.category}</span>
                   </div>
                   <div className="text-xs font-black text-white mt-1">{solid.name}</div>
-                  <div className="mt-1.5 px-2 py-0.5 rounded-md bg-[#0a101d] border border-[#1b2a42] font-mono text-[9px] font-black text-neon-lime truncate shadow-[0_0_10px_rgba(163,230,53,0.2)]">
+                  <div className="mt-1.5 px-2 py-0.5 rounded-md bg-[#0a101d] border border-[#1b2a42] font-mono text-[9px] font-black text-neon-lime truncate shadow-[0_0_10px_rgba(252,211,77,0.2)]">
                     {solid.formula}
                   </div>
                 </div>
@@ -640,8 +640,8 @@ export function TeacherGeometricOrbitals() {
 
               {/* Quick Badge Tooltip */}
               {isHovered && (
-                <div className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg bg-slate-950/95 border border-cyan-400/80 shadow-[0_6px_25px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.5)] backdrop-blur-xl whitespace-nowrap text-center pointer-events-none transition-all animate-in fade-in zoom-in-95">
-                  <span className="font-mono text-sm font-black text-cyan-300 mr-1.5 drop-shadow-[0_0_8px_#22d3ee]">{op.char}</span>
+                <div className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg bg-slate-950/95 border border-teal-400/80 shadow-[0_6px_25px_rgba(0,0,0,0.95),0_0_20px_rgba(45,212,191,0.5)] backdrop-blur-xl whitespace-nowrap text-center pointer-events-none transition-all animate-in fade-in zoom-in-95">
+                  <span className="font-mono text-sm font-black text-teal-300 mr-1.5 drop-shadow-[0_0_8px_#3FA4A7]">{op.char}</span>
                   <span className="text-xs font-bold text-slate-200">{op.meaning}</span>
                 </div>
               )}

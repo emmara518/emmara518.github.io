@@ -8,6 +8,7 @@ import { toEnvelope } from "@/lib/errors";
 
 const questionSchema = z.object({
   subjectId: z.string().uuid(),
+  courseId: z.string().uuid(),
   topic: z.string().trim().min(2).max(120),
   prompt: z.string().trim().min(3).max(4000),
   options: z.array(z.string().trim().min(1)).min(2).max(6),
@@ -26,19 +27,21 @@ export async function POST(request: Request) {
   if ("response" in parsed) return parsed.response;
 
   try {
+    const insertValues: typeof questionBank.$inferInsert = {
+      subjectId: parsed.data.subjectId,
+      courseId: parsed.data.courseId,
+      topic: parsed.data.topic,
+      kind: "mcq" as const,
+      prompt: parsed.data.prompt,
+      options: parsed.data.options,
+      correctIndex: parsed.data.correctIndex,
+      explanation: parsed.data.explanation,
+      marks: parsed.data.marks,
+      difficulty: parsed.data.difficulty,
+    };
     const [created] = await db
       .insert(questionBank)
-      .values({
-        subjectId: parsed.data.subjectId,
-        topic: parsed.data.topic,
-        kind: "mcq",
-        prompt: parsed.data.prompt,
-        options: parsed.data.options,
-        correctIndex: parsed.data.correctIndex,
-        explanation: parsed.data.explanation,
-        marks: parsed.data.marks,
-        difficulty: parsed.data.difficulty,
-      })
+      .values(insertValues)
       .returning({ id: questionBank.id });
 
     await db.insert(auditLogs).values({

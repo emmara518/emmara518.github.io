@@ -583,6 +583,8 @@ export function AdminConsole({
 
   /* Question creator */
   const [qSubjectId, setQSubjectId] = useState(subjects[0]?.id || "");
+const [qCourseId, setQCourseId] = useState(courses[0]?.id || "");
+const [qCourseFilter, setQCourseFilter] = useState("all");
   const [qTopic, setQTopic] = useState("الهندسة والتحليل");
   const [qPrompt, setQPrompt] = useState("");
   const [qOpt1, setQOpt1] = useState("");
@@ -615,11 +617,45 @@ export function AdminConsole({
   const [smsCourseId, setSmsCourseId] = useState("");
 
   /* Exam creator */
-  const [examTitle, setExamTitle] = useState("");
-  const [examCourseId, setExamCourseId] = useState(courses[0]?.id || "");
-  const [examDuration, setExamDuration] = useState("60");
-  const [examMode, setExamMode] = useState<"practice" | "graded">("graded");
-  const [examIsPublished, setExamIsPublished] = useState(true);
+const [examTitle, setExamTitle] = useState("");
+const [examCourseId, setExamCourseId] = useState(courses[0]?.id || "");
+const [examDuration, setExamDuration] = useState("60");
+const [examType, setExamType] = useState<"graded" | "practice" | "quiz" | "surprise" | "final" | "diagnostic">("graded");
+const [examIsPublished, setExamIsPublished] = useState(true);
+const [examGroupId, setExamGroupId] = useState("");
+const [examPassingScore, setExamPassingScore] = useState("50");
+const [examMaxAttempts, setExamMaxAttempts] = useState("");
+const [examPerQuestionSec, setExamPerQuestionSec] = useState("");
+const [examPrerequisiteId, setExamPrerequisiteId] = useState("");
+const [examAvailableFrom, setExamAvailableFrom] = useState("");
+const [examAvailableUntil, setExamAvailableUntil] = useState("");
+const [examShuffle, setExamShuffle] = useState(true);
+const [examShowResults, setExamShowResults] = useState(true);
+const [examGroups, setExamGroups] = useState<{ id: string; name: string; courseId: string }[]>([]);
+const [availableExams, setAvailableExams] = useState<{ id: string; title: string }[]>([]);
+
+  // Load exam groups + available exams (for prerequisite dropdown) when the active view
+  useEffect(() => {
+    const cookie = (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "");
+    const headers = { cookie: "dros_session=" + cookie };
+    let cancelled = false;
+    fetch("/api/v1/admin/exam-groups", { headers })
+      .then((r) => r.json())
+      .then((j) => { if (!cancelled && j.ok) setExamGroups(j.data || []); })
+      .catch(() => {});
+    fetch("/api/v1/admin/exams", { headers })
+      .then((r) => r.json())
+      .then((j) => {
+        if (!cancelled && j.ok) {
+          const data = j.data || j.data?.exams || [];
+          setAvailableExams(Array.isArray(data) ? data.map((x: { id: string; title: string }) => ({ id: x.id, title: x.title })) : []);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [examCourseId]);
 
   /* New stage form */
   const [stageName, setStageName] = useState("");
@@ -1419,19 +1455,35 @@ export function AdminConsole({
 
   async function handleCreateExam(e: FormEvent) {
     e.preventDefault();
+    const body: Record<string, unknown> = {
+      title: examTitle,
+      courseId: examCourseId,
+      durationMin: Number(examDuration) || 60,
+      type: examType,
+      isPublished: examIsPublished,
+      passingScore: Number(examPassingScore) || 50,
+      shuffleQuestions: examShuffle,
+      showResultsImmediately: examShowResults,
+    };
+    if (examGroupId) body.groupId = examGroupId;
+    if (examMaxAttempts && Number(examMaxAttempts) > 0) body.maxAttempts = Number(examMaxAttempts);
+    if (examPerQuestionSec && Number(examPerQuestionSec) > 0) body.perQuestionSec = Number(examPerQuestionSec);
+    if (examPrerequisiteId) body.prerequisiteExamId = examPrerequisiteId;
+    if (examAvailableFrom) body.availableFrom = examAvailableFrom;
+    if (examAvailableUntil) body.availableUntil = examAvailableUntil;
     const done = await api("/api/v1/admin/exams", {
       method: "POST",
-      body: JSON.stringify({
-        title: examTitle,
-        courseId: examCourseId,
-        durationMin: Number(examDuration) || 60,
-        mode: examMode,
-        isPublished: examIsPublished,
-      }),
+      body: JSON.stringify(body),
     });
     if (done) {
       pushToast("ok", `تم إنشاء الامتحان «${examTitle}» بنجاح.`);
       setExamTitle("");
+      setExamGroupId("");
+      setExamMaxAttempts("");
+      setExamPerQuestionSec("");
+      setExamPrerequisiteId("");
+      setExamAvailableFrom("");
+      setExamAvailableUntil("");
       setActiveSubFeature("exams_table");
     }
   }
@@ -1447,6 +1499,7 @@ export function AdminConsole({
       method: "POST",
       body: JSON.stringify({
         subjectId: qSubjectId,
+        courseId: qCourseId,
         topic: qTopic || "عام",
         prompt: qPrompt,
         options: [qOpt1, qOpt2, qOpt3, qOpt4],
@@ -1530,6 +1583,7 @@ export function AdminConsole({
           method: "POST",
           body: JSON.stringify({
             subjectId: bulkSubjectId,
+            courseId: bulkSubjectId ? "" : "", // bulk uses subject only
             topic: bulkTopic || "عام",
             prompt: q.prompt,
             options: q.options,
@@ -1640,7 +1694,7 @@ export function AdminConsole({
         !globalSearch ||
         e.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
         e.courseTitle.toLowerCase().includes(globalSearch.toLowerCase());
-      const matchMode = examModeFilter === "all" || e.mode === examModeFilter;
+      const matchMode = examModeFilter === "all" || e.type === examModeFilter;
       return matchSearch && matchMode;
     });
   }, [localExams, globalSearch, examModeFilter]);
@@ -1654,9 +1708,10 @@ export function AdminConsole({
         q.prompt.toLowerCase().includes(globalSearch.toLowerCase()) ||
         q.topic.toLowerCase().includes(globalSearch.toLowerCase());
       const matchTopic = questionTopicFilter === "all" || q.topic === questionTopicFilter;
-      return matchSearch && matchTopic;
+      const matchCourse = qCourseFilter === "all" || q.courseId === qCourseFilter;
+      return matchSearch && matchTopic && matchCourse;
     });
-  }, [questions, globalSearch, questionTopicFilter]);
+  }, [questions, globalSearch, questionTopicFilter, qCourseFilter]);
 
   const filteredCoupons = useMemo(() => {
     return localCoupons.filter((c) => {
@@ -2168,11 +2223,30 @@ export function AdminConsole({
     {
       key: "mode",
       header: "النوع",
-      render: (e) => (
-        <Badge tone={e.mode === "graded" ? "gold" : "brand"}>
-          {e.mode === "graded" ? "رسمي بدرجات" : "تدريبي"}
-        </Badge>
-      ),
+      render: (e) => {
+        const t = String(e.type || "graded");
+        const tones: Record<string, "brand" | "gold" | "success" | "muted" | "danger"> = {
+          graded: "gold",
+          practice: "brand",
+          quiz: "success",
+          surprise: "danger",
+          final: "gold",
+          diagnostic: "muted",
+        };
+        const labels: Record<string, string> = {
+          graded: "رسمي بدرجات",
+          practice: "تدريبي",
+          quiz: "كويز",
+          surprise: "مفاجئ",
+          final: "نهائي",
+          diagnostic: "تشخيصي",
+        };
+        return (
+          <Badge tone={tones[t] || "brand"}>
+            {labels[t] || t}
+          </Badge>
+        );
+      },
     },
     {
       key: "duration",
@@ -3449,6 +3523,89 @@ export function AdminConsole({
       )}
 
       {/* ═══ 3. EXAMS & QUESTION BANK ═══ */}
+      {activeCategory === "exams" && activeSubFeature === "exam_groups_table" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Layers}
+            title="مجموعات الامتحانات"
+            count={examGroups.length}
+            hint="اجمع امتحانات المقرر في مجموعات (مثل: تشخيصي → تدريبي → نهائي) لتسهيل المتابعة"
+          />
+          {examGroups.length === 0 ? (
+            <div className="grid place-items-center gap-2 py-10 text-center">
+              <Layers size={22} className="text-muted" />
+              <p className="text-sm font-bold">لا توجد مجموعات بعد</p>
+              <p className="text-xs text-muted">استخدم النموذج أدناه لإنشاء أول مجموعة (مثلاً: تدريبي / تشخيصي / نهائي)</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {examGroups
+                .filter((g) => !examCourseId || g.courseId === examCourseId)
+                .map((g) => {
+                  const courseTitle = localCourses.find((c) => c.id === g.courseId)?.title ?? "";
+                  return (
+                    <div key={g.id} className="rounded-xl border border-line bg-surface2/40 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-ink">{g.name}</p>
+                          <p className="truncate text-[10px] text-muted">{courseTitle}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm(`حذف المجموعة "${g.name}"؟`)) return;
+                            const res = await fetch(`/api/v1/admin/exam-groups/${g.id}`, {
+                              method: "DELETE",
+                              headers: { cookie: "dros_session=" + (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "") },
+                            });
+                            if (res.ok) {
+                              setExamGroups((prev) => prev.filter((x) => x.id !== g.id));
+                            }
+                          }}
+                          className="cursor-pointer rounded p-1 text-muted hover:text-danger"
+                          aria-label={`حذف ${g.name}`}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!examCourseId) {
+                pushToast("err", "اختر الكورس أولاً");
+                return;
+              }
+              const name = (document.getElementById("newGroupName") as HTMLInputElement)?.value?.trim();
+              if (!name) return;
+              const res = await fetch("/api/v1/admin/exam-groups", {
+                method: "POST",
+                headers: { "content-type": "application/json", cookie: "dros_session=" + (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "") },
+                body: JSON.stringify({ name, courseId: examCourseId }),
+              });
+              const json = await res.json().catch(() => null);
+              if (json?.ok) {
+                setExamGroups((prev) => [...prev, json.data.group]);
+                (document.getElementById("newGroupName") as HTMLInputElement).value = "";
+                pushToast("ok", "تم إنشاء المجموعة");
+              } else {
+                pushToast("err", json?.error?.message ?? "فشل");
+              }
+            }}
+            className="grid gap-2 rounded-xl border border-line bg-surface2/30 p-3 sm:grid-cols-[1fr_auto]"
+          >
+            <Input id="newGroupName" placeholder="اسم المجموعة (مثلاً: تدريبي، تشخيصي، نهائي)" className="h-9 text-sm" />
+            <Button type="submit" variant="primary" size="sm">
+              <Plus size={13} /> إضافة مجموعة
+            </Button>
+          </form>
+        </Card>
+      )}
+
       {activeCategory === "exams" && activeSubFeature === "exams_table" && (
         <Card className="space-y-4 p-6">
           <SectionHeader
@@ -3504,25 +3661,85 @@ export function AdminConsole({
                 placeholder="امتحان تفاضل وتكامل - الوحدة الأولى (النهايات والاتصال)"
               />
             </Field>
-            <Field label="المقرر الدراسي المرتبط">
-              <Select value={examCourseId} onChange={(e) => setExamCourseId(e.target.value)}>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title}
-                  </option>
-                ))}
-              </Select>
-            </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="مدة الامتحان (بالدقائق)">
-                <Input required type="number" dir="ltr" min="5" max="300" value={examDuration} onChange={(e) => setExamDuration(e.target.value)} />
-              </Field>
-              <Field label="نوع الاختبار">
-                <Select value={examMode} onChange={(e) => setExamMode(e.target.value as "practice" | "graded")}>
-                  <option value="graded">رسمي / مقيّم بدرجات</option>
-                  <option value="practice">تدريبي / تجريبي</option>
+              <Field label="المقرر الدراسي المرتبط">
+                <Select value={examCourseId} onChange={(e) => setExamCourseId(e.target.value)}>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
                 </Select>
               </Field>
+              <Field label="نوع الامتحان">
+                <Select
+                  value={examType}
+                  onChange={(e) => setExamType(e.target.value as typeof examType)}
+                >
+                  <option value="graded">رسمي / مقيّم بدرجات</option>
+                  <option value="practice">تدريبي / تجريبي</option>
+                  <option value="quiz">كويز سريع</option>
+                  <option value="surprise">مفاجئ (pop quiz)</option>
+                  <option value="final">نهائي</option>
+                  <option value="diagnostic">تشخيصي</option>
+                </Select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="مدة الامتحان (دقيقة)">
+                <Input required type="number" dir="ltr" min="5" max="300" value={examDuration} onChange={(e) => setExamDuration(e.target.value)} />
+              </Field>
+              <Field label="نسبة النجاح %">
+                <Input type="number" dir="ltr" min="0" max="100" value={examPassingScore} onChange={(e) => setExamPassingScore(e.target.value)} />
+              </Field>
+              <Field label="أقصى محاولات (فاضي = مفتوح)">
+                <Input type="number" dir="ltr" min="1" max="20" placeholder="∞" value={examMaxAttempts} onChange={(e) => setExamMaxAttempts(e.target.value)} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="وقت لكل سؤال (ثانية، فاضي = مفتوح)">
+                <Input type="number" dir="ltr" min="10" max="3600" placeholder="∞" value={examPerQuestionSec} onChange={(e) => setExamPerQuestionSec(e.target.value)} />
+              </Field>
+              <Field label="مجموعة امتحانات (اختياري)">
+                <Select value={examGroupId} onChange={(e) => setExamGroupId(e.target.value)}>
+                  <option value="">— بدون مجموعة —</option>
+                  {examGroups
+                    .filter((g) => g.courseId === examCourseId)
+                    .map((g) => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="متاح من">
+                <Input type="datetime-local" value={examAvailableFrom} onChange={(e) => setExamAvailableFrom(e.target.value)} />
+              </Field>
+              <Field label="متاح حتى">
+                <Input type="datetime-local" value={examAvailableUntil} onChange={(e) => setExamAvailableUntil(e.target.value)} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="امتحان مسبق مطلوب (اختياري)">
+                <Select value={examPrerequisiteId} onChange={(e) => setExamPrerequisiteId(e.target.value)}>
+                  <option value="">— بدون شرط —</option>
+                  {availableExams
+                    .filter((ae) => ae.id !== undefined)
+                    .map((ae) => (
+                      <option key={ae.id} value={ae.id}>{ae.title}</option>
+                    ))}
+                </Select>
+              </Field>
+              <div className="space-y-2 pt-1">
+                <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-ink">
+                  <input type="checkbox" checked={examShuffle} onChange={(e) => setExamShuffle(e.target.checked)} className="rounded accent-brand" />
+                  خلط ترتيب الأسئلة
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-ink">
+                  <input type="checkbox" checked={examShowResults} onChange={(e) => setExamShowResults(e.target.checked)} className="rounded accent-brand" />
+                  عرض النتيجة فوراً للطالب
+                </label>
+              </div>
             </div>
             <label className="flex cursor-pointer items-center gap-2 pt-1 text-xs font-medium text-ink">
               <input
@@ -3547,10 +3764,16 @@ export function AdminConsole({
             icon={HelpCircle}
             title="بنك الأسئلة والتمارين"
             count={filteredQuestions.length}
-            hint="أسئلة اختيار من متعدد مع الحلول النموذجية والخطوات"
+            hint="أسئلة اختيار من متعدد مرتبطة بالكورسات — فعّل فلتر الكورس لعرض أسئلة كورس محدد"
             actions={
               <>
-                <Select value={questionTopicFilter} onChange={(e) => setQuestionTopicFilter(e.target.value)} className="h-9 w-36 text-xs">
+                <Select value={qCourseFilter} onChange={(e) => setQCourseFilter(e.target.value)} className="h-9 w-36 text-xs" aria-label="فلتر الكورس">
+                  <option value="all">كل الكورسات</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>{c.title}</option>
+                  ))}
+                </Select>
+                <Select value={questionTopicFilter} onChange={(e) => setQuestionTopicFilter(e.target.value)} className="h-9 w-32 text-xs">
                   <option value="all">كل المواضيع</option>
                   {questionTopics.map((t) => (
                     <option key={t} value={t}>{t}</option>

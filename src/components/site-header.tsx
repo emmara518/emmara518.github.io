@@ -36,7 +36,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
   }
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/85 dark:bg-[#050505]/90 backdrop-blur-xl transition-colors duration-300">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/85 dark:bg-[#0F1413]/90 backdrop-blur-xl transition-colors duration-300">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="shrink-0" aria-label="دروس ماث — الرئيسية">
           <LogoWordmark />
@@ -112,7 +112,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 href="/register"
                 className={cn(
                   buttonStyles("primary", "sm"),
-                  "rounded-xl bg-neon-lime text-black hover:bg-lime-400 font-bold shadow-sm"
+                  "rounded-xl bg-neon-lime text-black hover:bg-yellow-300 font-bold shadow-sm"
                 )}
               >
                 إنشاء حساب
@@ -133,7 +133,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
       {/* Mobile Drawer Menu */}
       {open ? (
-        <div className="border-t border-line bg-bg/95 dark:bg-[#050505]/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2 duration-200">
+        <div className="border-t border-line bg-bg/95 dark:bg-[#0F1413]/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2 duration-200">
           <nav className="grid gap-1.5" aria-label="قائمة الجوال">
             {links.map((l) => (
               <Link

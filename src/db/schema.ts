@@ -178,6 +178,9 @@ export const questionBank = pgTable(
   "question_bank",
   {
     id: uuid("id").defaultRandom().primaryKey(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
     subjectId: uuid("subject_id")
       .notNull()
       .references(() => subjects.id),
@@ -190,7 +193,39 @@ export const questionBank = pgTable(
     difficulty: integer("difficulty").notNull().default(1),
     marks: integer("marks").notNull().default(1),
   },
-  (t) => [index("qb_subject_idx").on(t.subjectId)],
+  (t) => [index("qb_subject_idx").on(t.subjectId), index("qb_course_idx").on(t.courseId)],
+);
+
+export const examTypeEnum = pgEnum("exam_type", [
+  "graded",
+  "practice",
+  "quiz",
+  "surprise",
+  "final",
+  "diagnostic",
+]);
+
+export const questionDifficultyEnum = pgEnum("question_difficulty", [
+  "easy",
+  "medium",
+  "hard",
+  "expert",
+]);
+
+export const examGroups = pgTable(
+  "exam_groups",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("exam_groups_course_idx").on(t.courseId)],
 );
 
 export const exams = pgTable(
@@ -200,14 +235,34 @@ export const exams = pgTable(
     courseId: uuid("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id").references(() => examGroups.id, { onDelete: "set null" }),
     title: text("title").notNull(),
-    mode: examModeEnum("mode").notNull().default("graded"),
+    description: text("description").notNull().default(""),
+    type: examTypeEnum("type").notNull().default("graded"),
+    /** Window in which the exam is available. null = always open. */
+    availableFrom: timestamp("available_from", { withTimezone: true }),
+    availableUntil: timestamp("available_until", { withTimezone: true }),
     durationMin: integer("duration_min").notNull().default(20),
+    /** Time per question in seconds. null = no per-question limit. */
+    perQuestionSec: integer("per_question_sec"),
+    /** Maximum attempts per student. null = unlimited. */
+    maxAttempts: integer("max_attempts"),
+    /** Passing score percentage (0-100). */
+    passingScore: integer("passing_score").notNull().default(50),
+    shuffleQuestions: boolean("shuffle_questions").notNull().default(false),
+    showResultsImmediately: boolean("show_results_immediately").notNull().default(true),
+    /** Optional prerequisite examId the student must pass first. */
+    prerequisiteExamId: uuid("prerequisite_exam_id"),
     isPublished: boolean("is_published").notNull().default(true),
+    isActive: boolean("is_active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("exams_course_idx").on(t.courseId)],
+  (t) => [
+    index("exams_course_idx").on(t.courseId),
+    index("exams_group_idx").on(t.groupId),
+    index("exams_type_idx").on(t.type),
+  ],
 );
 
 export const examQuestions = pgTable(

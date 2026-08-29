@@ -22,6 +22,7 @@ import {
   auditLogs,
   paymentChannels,
   paymentChannelTypeEnum,
+  examGroups,
 } from "@/db/schema";
 import { ServiceError } from "../errors";
 import type { SessionUser } from "../auth";
@@ -285,9 +286,17 @@ export async function listExamsAdmin() {
     .select({
       id: exams.id,
       title: exams.title,
-      mode: exams.mode,
+      description: exams.description,
+      type: exams.type,
       durationMin: exams.durationMin,
+      groupId: exams.groupId,
+      passingScore: exams.passingScore,
+      maxAttempts: exams.maxAttempts,
+      shuffleQuestions: exams.shuffleQuestions,
+      availableFrom: exams.availableFrom,
+      availableUntil: exams.availableUntil,
       isPublished: exams.isPublished,
+      isActive: exams.isActive,
       sortOrder: exams.sortOrder,
       courseTitle: courses.title,
       courseSlug: courses.slug,
@@ -299,6 +308,93 @@ export async function listExamsAdmin() {
     .innerJoin(courses, eq(exams.courseId, courses.id))
     .orderBy(exams.sortOrder, desc(exams.createdAt))
     .limit(100);
+}
+
+export async function createExamAdvanced(
+  actor: SessionUser,
+  input: {
+    title: string;
+    description?: string;
+    courseId: string;
+    groupId?: string | null;
+    type: "graded" | "practice" | "quiz" | "surprise" | "final" | "diagnostic";
+    durationMin: number;
+    perQuestionSec?: number | null;
+    maxAttempts?: number | null;
+    passingScore: number;
+    shuffleQuestions: boolean;
+    showResultsImmediately: boolean;
+    prerequisiteExamId?: string | null;
+    availableFrom?: string | null;
+    availableUntil?: string | null;
+    isPublished: boolean;
+  }
+) {
+  const [created] = await db
+    .insert(exams)
+    .values({
+      title: input.title,
+      description: input.description ?? "",
+      courseId: input.courseId,
+      groupId: input.groupId ?? null,
+      type: input.type,
+      durationMin: input.durationMin,
+      perQuestionSec: input.perQuestionSec ?? null,
+      maxAttempts: input.maxAttempts ?? null,
+      passingScore: input.passingScore,
+      shuffleQuestions: input.shuffleQuestions,
+      showResultsImmediately: input.showResultsImmediately,
+      prerequisiteExamId: input.prerequisiteExamId ?? null,
+      availableFrom: input.availableFrom ? new Date(input.availableFrom) : null,
+      availableUntil: input.availableUntil ? new Date(input.availableUntil) : null,
+      isPublished: input.isPublished,
+      isActive: true,
+    })
+    .returning({ id: exams.id, title: exams.title });
+  await audit(actor, "exams.create", "exams", created.id, input);
+  return created;
+}
+
+export async function listExamGroupsAdmin() {
+  return db
+    .select({
+      id: examGroups.id,
+      name: examGroups.name,
+      description: examGroups.description,
+      courseId: examGroups.courseId,
+      courseTitle: courses.title,
+      sortOrder: examGroups.sortOrder,
+      isActive: examGroups.isActive,
+      examsCount: sql<number>`(SELECT count(*)::int FROM ${exams} WHERE ${exams.groupId} = ${examGroups.id})`,
+      createdAt: examGroups.createdAt,
+    })
+    .from(examGroups)
+    .innerJoin(courses, eq(examGroups.courseId, courses.id))
+    .orderBy(examGroups.sortOrder);
+}
+
+export async function createExamGroup(
+  actor: SessionUser,
+  input: { name: string; courseId: string; description?: string; sortOrder?: number }
+) {
+  const [created] = await db
+    .insert(examGroups)
+    .values({
+      name: input.name,
+      courseId: input.courseId,
+      description: input.description ?? "",
+      sortOrder: input.sortOrder ?? 0,
+      isActive: true,
+    })
+    .returning({ id: examGroups.id, name: examGroups.name });
+  await audit(actor, "exam_groups.create", "exam_groups", created.id, input);
+  return created;
+}
+
+export async function deleteExamGroup(actor: SessionUser, id: string) {
+  await db.delete(examGroups).where(eq(examGroups.id, id));
+  await audit(actor, "exam_groups.delete", "exam_groups", id);
+  return { id };
 }
 
 /** Reorders any sortable admin entity to match the given id sequence. */

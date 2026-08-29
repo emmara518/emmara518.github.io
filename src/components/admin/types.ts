@@ -63,9 +63,17 @@ export type OrderRow = {
 export type ExamRow = {
   id: string;
   title: string;
-  mode: string;
+  description?: string;
+  type: string;
   durationMin: number;
+  groupId?: string | null;
+  passingScore: number;
+  maxAttempts?: number | null;
+  shuffleQuestions: boolean;
+  availableFrom?: string | null;
+  availableUntil?: string | null;
   isPublished: boolean;
+  isActive?: boolean;
   sortOrder: number;
   courseTitle: string;
   courseSlug: string;
@@ -129,6 +137,7 @@ export type QuestionRow = {
   difficulty: number;
   marks: number;
   subjectName: string;
+  courseId?: string;
 };
 
 export type SubscriptionRow = {

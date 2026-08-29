@@ -100,7 +100,7 @@ export function MathSymbolPng({
           alt={alt || symbol.label}
           fill
           sizes="(max-width: 768px) 100vw, 400px"
-          className="object-contain drop-shadow-[0_15px_30px_rgba(132,204,22,0.4)] rounded-3xl"
+          className="object-contain drop-shadow-[0_15px_30px_rgba(255,196,0,0.4)] rounded-3xl"
           priority
         />
       </div>

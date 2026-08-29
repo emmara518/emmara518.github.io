@@ -4,14 +4,26 @@ import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
 import { exams, auditLogs } from "@/db/schema";
-import { listExamsAdmin } from "@/lib/services/admin.service";
+import { listExamsAdmin, createExamAdvanced } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
 
+const examTypeEnum = z.enum(["graded", "practice", "quiz", "surprise", "final", "diagnostic"]);
+
 const createExamSchema = z.object({
-  title: z.string().trim().min(3).max(160),
+  title: z.string().trim().min(3, "العنوان قصير").max(160),
+  description: z.string().trim().max(500).optional(),
   courseId: z.string().uuid(),
+  groupId: z.string().uuid().optional().nullable(),
+  type: examTypeEnum.default("graded"),
   durationMin: z.number().int().min(5).max(300).default(60),
-  mode: z.enum(["practice", "graded"]).default("graded"),
+  perQuestionSec: z.number().int().min(10).max(3600).optional().nullable(),
+  maxAttempts: z.number().int().min(1).max(20).optional().nullable(),
+  passingScore: z.number().int().min(0).max(100).default(50),
+  shuffleQuestions: z.boolean().default(false),
+  showResultsImmediately: z.boolean().default(true),
+  prerequisiteExamId: z.string().uuid().optional().nullable(),
+  availableFrom: z.string().datetime().optional().nullable(),
+  availableUntil: z.string().datetime().optional().nullable(),
   isPublished: z.boolean().default(false),
 });
 
@@ -31,25 +43,7 @@ export async function POST(request: Request) {
   if ("response" in parsed) return parsed.response;
 
   try {
-    const [created] = await db
-      .insert(exams)
-      .values({
-        title: parsed.data.title,
-        courseId: parsed.data.courseId,
-        durationMin: parsed.data.durationMin,
-        mode: parsed.data.mode,
-        isPublished: parsed.data.isPublished,
-      })
-      .returning({ id: exams.id, title: exams.title });
-
-    await db.insert(auditLogs).values({
-      actorId: auth.user.id,
-      action: "exams.create",
-      entity: "exams",
-      entityId: created.id,
-      meta: { title: created.title },
-    });
-
+    const created = await createExamAdvanced(auth.user, parsed.data);
     return ok(created, { status: 201 });
   } catch (e) {
     const envelope = toEnvelope(e);

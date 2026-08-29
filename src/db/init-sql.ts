@@ -396,4 +396,32 @@ CREATE UNIQUE INDEX IF NOT EXISTS "wallet_accounts_user_unique" ON "wallet_accou
 CREATE UNIQUE INDEX IF NOT EXISTS "invoices_order_unique" ON "invoices" ("order_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "parent_child_unique" ON "parent_links" ("parent_id","student_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "progress_user_video_unique" ON "student_progress" ("user_id","video_id");
+
+/* -- v3 exams/question bank advanced -- */
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "group_id" uuid;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "description" text DEFAULT '' NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "type" text DEFAULT 'graded' NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "available_from" timestamp with time zone;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "available_until" timestamp with time zone;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "per_question_sec" integer;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "max_attempts" integer;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "passing_score" integer DEFAULT 50 NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "shuffle_questions" boolean DEFAULT false NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "show_results_immediately" boolean DEFAULT true NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "prerequisite_exam_id" uuid;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true NOT NULL;
+ALTER TABLE "question_bank" ADD COLUMN IF NOT EXISTS "course_id" uuid;
+CREATE INDEX IF NOT EXISTS "exams_group_idx" ON "exams" ("group_id");
+CREATE INDEX IF NOT EXISTS "exams_type_idx" ON "exams" ("type");
+CREATE INDEX IF NOT EXISTS "qb_course_idx" ON "question_bank" ("course_id");
+CREATE TABLE IF NOT EXISTS "exam_groups" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"course_id" uuid NOT NULL REFERENCES "courses"("id") ON DELETE cascade,
+	"name" text NOT NULL,
+	"description" text DEFAULT '' NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "exam_groups_course_idx" ON "exam_groups" ("course_id");
 `;

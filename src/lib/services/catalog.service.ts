@@ -173,7 +173,7 @@ export async function getCourseCurriculum(courseId: string) {
       id: exams.id,
       title: exams.title,
       durationMin: exams.durationMin,
-      mode: exams.mode,
+      type: exams.type,
       questionsCount: count(examQuestions.id),
     })
     .from(exams)
