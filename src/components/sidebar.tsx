@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
-import { BookOpen, ClipboardList, Home, LogOut, MessagesSquare, UserRound, Wallet } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { LogoWordmark } from "./logo";
+import { STUDENT_NAV } from "@/lib/nav";
+import { Avatar } from "@/components/avatar";
 import type { ShellUser } from "./dashboard-shell";
 import { cn } from "@/lib/utils";
 
@@ -13,16 +14,6 @@ interface SidebarProps {
   className?: string;
   onCloseMobile?: () => void;
 }
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "الرئيسية", icon: Home, exact: true },
-  { href: "/dashboard/courses", label: "كورساتي", icon: BookOpen },
-  { href: "/dashboard/exams", label: "الاختبارات", icon: ClipboardList },
-  { href: "/dashboard/community", label: "مجتمع الطلاب", icon: MessagesSquare },
-  { href: "/dashboard/wallet", label: "المحفظة", icon: Wallet },
-  { href: "/dashboard/account", label: "حسابي", icon: UserRound },
-  { href: "/courses", label: "استكشاف الكورسات", icon: BookOpen },
-] as const;
 
 export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
@@ -49,21 +40,15 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
         </Link>
         {/* Light mentor identity */}
         <div className="mt-3 flex items-center gap-2">
-          <Image
-            src="/images/assets/teacher.webp"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6 rounded-full object-cover object-top ring-1 ring-line"
-          />
+          <Avatar name="محمد سعيد" src="/images/assets/teacher.webp" size="xs" />
           <span className="text-[11px] font-bold text-muted">مع مستر محمد سعيد</span>
         </div>
       </div>
 
       {/* Navigation — existing routes only */}
       <nav className="mt-4 space-y-1" aria-label="تنقل مساحة الطالب">
-        {NAV_ITEMS.map((item) => {
-          const isActive = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
+        {STUDENT_NAV.map((item) => {
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
             <Link
@@ -92,14 +77,7 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
       <div className="mt-auto space-y-2 border-t border-line pt-4">
         {user ? (
           <div className="flex items-center gap-3 rounded-xl bg-surface2/60 px-3 py-2.5">
-            {user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.avatarUrl} alt="" className="size-9 shrink-0 rounded-full object-cover ring-1 ring-line" />
-            ) : (
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-xs font-bold text-muted ring-1 ring-line">
-                {user.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}
-              </span>
-            )}
+            <Avatar name={user.name} src={user.avatarUrl} size="md" />
             <div className="min-w-0 leading-tight">
               <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
               <p className="text-[10px] font-semibold text-muted">حسابي</p>

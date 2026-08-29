@@ -53,37 +53,47 @@ export async function getChildren(parentId: string) {
     .where(eq(parentLinks.parentId, parentId))
     .orderBy(desc(parentLinks.createdAt));
 
-  const children = [];
-  for (const child of rows) {
-    const [coursesRow] = await db
-      .select({ value: sql<number>`count(*)::int` })
+  const studentIds = rows.map((r) => r.id);
+  if (studentIds.length === 0) return [];
+
+  const [subCounts, attemptRows] = await Promise.all([
+    db
+      .select({ userId: subscriptions.userId, value: sql<number>`count(*)::int` })
       .from(subscriptions)
-      .where(and(eq(subscriptions.userId, child.id), eq(subscriptions.status, "active")));
-
-    const attempts = await db
-      .select({ score: examAttempts.score, totalMarks: examAttempts.totalMarks })
+      .where(and(inArray(subscriptions.userId, studentIds), eq(subscriptions.status, "active")))
+      .groupBy(subscriptions.userId),
+    db
+      .select({ userId: examAttempts.userId, score: examAttempts.score, totalMarks: examAttempts.totalMarks })
       .from(examAttempts)
-      .where(eq(examAttempts.userId, child.id));
+      .where(inArray(examAttempts.userId, studentIds)),
+  ]);
 
+  const subCountMap = new Map(subCounts.map((s) => [s.userId, s.value]));
+  const attemptsByStudent = new Map<string, { score: number; totalMarks: number }[]>();
+  for (const a of attemptRows) {
+    if (!attemptsByStudent.has(a.userId)) attemptsByStudent.set(a.userId, []);
+    attemptsByStudent.get(a.userId)!.push({ score: a.score, totalMarks: a.totalMarks });
+  }
+
+  return rows.map((child) => {
+    const attempts = attemptsByStudent.get(child.id) ?? [];
     const percents = attempts
       .filter((a) => a.totalMarks > 0)
       .map((a) => Math.round((a.score / a.totalMarks) * 100));
     const avgPercent = percents.length
       ? Math.round(percents.reduce((sum, p) => sum + p, 0) / percents.length)
       : null;
-
-    children.push({
+    return {
       id: child.id,
       name: child.name,
       email: child.email,
       avatarUrl: child.avatarUrl,
       gradeName: child.gradeName,
-      activeCourses: coursesRow?.value ?? 0,
+      activeCourses: subCountMap.get(child.id) ?? 0,
       attemptsCount: attempts.length,
       avgPercent,
-    });
-  }
-  return children;
+    };
+  });
 }
 
 export async function getChildProgress(parentId: string, childId: string) {
@@ -118,50 +128,58 @@ export async function getChildProgress(parentId: string, childId: string) {
     .innerJoin(grades, eq(courses.gradeId, grades.id))
     .where(and(eq(subscriptions.userId, childId), eq(subscriptions.status, "active")));
 
-  const enriched = [];
-  for (const e of enrollments) {
-    const [totalRow] = await db
-      .select({ value: sql<number>`count(*)::int` })
+  const courseIds = enrollments.map((e) => e.courseId);
+  if (courseIds.length === 0) {
+    return { child: { id: child.id, name: child.name, email: child.email, gradeName: child.gradeName }, enrollments: [], recentAttempts: [] };
+  }
+
+  const [totalRows, doneRows] = await Promise.all([
+    db
+      .select({ courseId: lessons.courseId, value: sql<number>`count(*)::int` })
       .from(videos)
       .innerJoin(lessons, eq(videos.lessonId, lessons.id))
-      .where(eq(lessons.courseId, e.courseId));
-    const [doneRow] = await db
-      .select({ value: sql<number>`count(*)::int` })
+      .where(inArray(lessons.courseId, courseIds))
+      .groupBy(lessons.courseId),
+    db
+      .select({ courseId: studentProgress.courseId, value: sql<number>`count(*)::int` })
       .from(studentProgress)
       .where(
         and(
           eq(studentProgress.userId, childId),
-          eq(studentProgress.courseId, e.courseId),
+          inArray(studentProgress.courseId, courseIds),
           isNotNull(studentProgress.completedAt),
         ),
-      );
-    const total = totalRow?.value ?? 0;
-    const completed = doneRow?.value ?? 0;
-    enriched.push({
+      )
+      .groupBy(studentProgress.courseId),
+  ]);
+  const totalByCourse = new Map(totalRows.map((r) => [r.courseId, r.value]));
+  const doneByCourse = new Map(doneRows.map((r) => [r.courseId, r.value]));
+
+  const enriched = enrollments.map((e) => {
+    const total = totalByCourse.get(e.courseId) ?? 0;
+    const completed = doneByCourse.get(e.courseId) ?? 0;
+    return {
       ...e,
       videosTotal: total,
       videosCompleted: completed,
       progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
-    });
-  }
+    };
+  });
 
-  const courseIds = enrollments.map((e) => e.courseId);
-  const attempts = courseIds.length
-    ? await db
-        .select({
-          examTitle: exams.title,
-          courseTitle: courses.title,
-          score: examAttempts.score,
-          totalMarks: examAttempts.totalMarks,
-          submittedAt: examAttempts.submittedAt,
-        })
-        .from(examAttempts)
-        .innerJoin(exams, eq(examAttempts.examId, exams.id))
-        .innerJoin(courses, eq(exams.courseId, courses.id))
-        .where(and(eq(examAttempts.userId, childId), inArray(exams.courseId, courseIds)))
-        .orderBy(desc(examAttempts.submittedAt))
-        .limit(20)
-    : [];
+  const attempts = await db
+    .select({
+      examTitle: exams.title,
+      courseTitle: courses.title,
+      score: examAttempts.score,
+      totalMarks: examAttempts.totalMarks,
+      submittedAt: examAttempts.submittedAt,
+    })
+    .from(examAttempts)
+    .innerJoin(exams, eq(examAttempts.examId, exams.id))
+    .innerJoin(courses, eq(exams.courseId, courses.id))
+    .where(and(eq(examAttempts.userId, childId), inArray(exams.courseId, courseIds)))
+    .orderBy(desc(examAttempts.submittedAt))
+    .limit(20);
 
   return {
     child: { id: child.id, name: child.name, email: child.email, gradeName: child.gradeName },

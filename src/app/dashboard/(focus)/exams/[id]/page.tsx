@@ -13,16 +13,14 @@ export const metadata: Metadata = { title: "قاعة الاختبار" };
 function ExamError({ code, message }: { code: string; message: string }) {
   const notEnrolled = code === "NOT_ENROLLED";
   return (
-    <main className="mx-auto max-w-lg px-4 py-16 sm:px-6">
-      <Card className="grid place-items-center gap-4 p-12 text-center">
-        <Lock size={28} className="text-muted" />
-        <h1 className="text-xl font-extrabold">{notEnrolled ? "الاختبار للمشتركين فقط" : "الاختبار غير متاح"}</h1>
-        <p className="text-sm leading-7 text-muted">{message}</p>
-        <Link href="/dashboard" className={buttonStyles("primary", "md")}>
-          العودة إلى لوحتي
-        </Link>
-      </Card>
-    </main>
+    <Card className="grid place-items-center gap-4 p-12 text-center">
+      <Lock size={28} className="text-muted" />
+      <h1 className="text-xl font-extrabold">{notEnrolled ? "الاختبار للمشتركين فقط" : "الاختبار غير متاح"}</h1>
+      <p className="text-sm leading-7 text-muted">{message}</p>
+      <Link href="/dashboard/exams" className={buttonStyles("primary", "md")}>
+        العودة إلى الاختبارات
+      </Link>
+    </Card>
   );
 }
 
@@ -48,9 +46,5 @@ export default async function ExamPage({ params }: { params: Promise<{ id: strin
     return <ExamError code={error.code} message={error.message} />;
   }
 
-  return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <ExamRoom room={room!} />
-    </main>
-  );
+  return <ExamRoom room={room!} />;
 }

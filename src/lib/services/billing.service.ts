@@ -12,6 +12,8 @@ import {
   subscriptions,
   notifications,
   auditLogs,
+  exams,
+  examAttempts,
 } from "@/db/schema";
 import { ServiceError } from "../errors";
 

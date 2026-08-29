@@ -48,19 +48,16 @@ export function Button({
 export function Card({
   className,
   children,
-  ticks = false,
   hover = false,
 }: {
   className?: string;
   children: ReactNode;
-  ticks?: boolean;
   hover?: boolean;
 }) {
   return (
     <div
       className={cn(
         "rounded-2xl border border-line bg-surface shadow-card",
-        ticks && "card-ticks",
         hover && "transition-all duration-300 hover:-translate-y-1 hover:shadow-lift hover:border-brand/40",
         className,
       )}
@@ -147,15 +144,32 @@ export function EmptyState({
   title,
   hint,
   action,
+  tone = "muted",
+  compact = false,
 }: {
   icon: ReactNode;
   title: string;
   hint?: string;
   action?: ReactNode;
+  tone?: "muted" | "brand";
+  compact?: boolean;
 }) {
   return (
-    <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center border-dashed">
-      <div className="grid size-12 place-items-center rounded-2xl bg-surface2 text-muted">{icon}</div>
+    <Card
+      className={cn(
+        "flex flex-col items-center gap-3 border-dashed text-center",
+        compact ? "px-4 py-8" : "px-6 py-14",
+      )}
+    >
+      <div
+        className={cn(
+          "grid place-items-center rounded-2xl",
+          compact ? "size-10" : "size-12",
+          tone === "brand" ? "bg-[var(--brand-soft)] text-brand" : "bg-surface2 text-muted",
+        )}
+      >
+        {icon}
+      </div>
       <p className="font-bold text-ink">{title}</p>
       {hint ? <p className="max-w-sm text-sm text-muted">{hint}</p> : null}
       {action}
@@ -167,11 +181,24 @@ export function Skeleton({ className }: { className?: string }) {
   return <div className={cn("animate-pulse rounded-lg bg-surface2", className)} />;
 }
 
-export function Progress({ value, className }: { value: number; className?: string }) {
+export function Progress({
+  value,
+  variant = "solid",
+  className,
+}: {
+  value: number;
+  variant?: "solid" | "gradient";
+  className?: string;
+}) {
   return (
     <div className={cn("h-2 w-full overflow-hidden rounded-full bg-surface2", className)}>
       <div
-        className="h-full rounded-full bg-[linear-gradient(90deg,var(--brand),var(--gold))] transition-all duration-700"
+        className={cn(
+          "h-full rounded-full transition-all duration-700",
+          variant === "gradient"
+            ? "bg-[linear-gradient(90deg,var(--brand),var(--gold))]"
+            : "bg-brand",
+        )}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
       />
     </div>

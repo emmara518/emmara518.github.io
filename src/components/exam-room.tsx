@@ -115,7 +115,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
     const C = 2 * Math.PI * 44;
     return (
       <div className="space-y-8">
-        <Card ticks className="flex flex-col items-center gap-5 p-10 text-center">
+        <Card className="flex flex-col items-center gap-5 p-10 text-center">
           <div className="relative grid size-36 place-items-center">
             <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="44" fill="none" stroke="var(--surface-2)" strokeWidth="8" />
@@ -144,8 +144,8 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/dashboard" className={buttonStyles("primary", "md")}>
-              <Award size={16} /> العودة للوحة الطالب
+            <Link href="/dashboard/exams" className={buttonStyles("primary", "md")}>
+              <Award size={16} /> العودة للاختبارات
             </Link>
             <button
               onClick={() => {

@@ -611,6 +611,9 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
 
   /* Community groups management */
   const [cgList, setCgList] = useState<{ id: string; name: string; description: string; scope: string; courseId?: string | null; courseTitle?: string; stageId?: string | null; stageName?: string; coverImageUrl?: string | null; isActive: boolean; moderationRequired: boolean; sortOrder: number; postsCount: number; membersCount: number; createdAt: string }[]>([]);
+  const [cgMembersOf, setCgMembersOf] = useState<{ id: string; name: string; scope: string } | null>(null);
+  const [cgMembers, setCgMembers] = useState<{ id: string; userId: string; name: string; email: string; role: string }[]>([]);
+  const [cgNewMemberIds, setCgNewMemberIds] = useState("");
   const [cgFormOpen, setCgFormOpen] = useState(false);
   const [cgName, setCgName] = useState("");
   const [cgDescription, setCgDescription] = useState("");
@@ -619,7 +622,6 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
   const [cgStageId, setCgStageId] = useState("");
   const [cgCover, setCgCover] = useState("");
   const [cgSortOrder, setCgSortOrder] = useState("0");
-  const [cgMembers, setCgMembers] = useState("");
   const [cgModeration, setCgModeration] = useState(true);
   const [cgBusy, setCgBusy] = useState(false);
 
@@ -649,8 +651,8 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
     if (cgCover) body.coverImageUrl = cgCover;
     if (cgScope === "course" && cgCourseId) body.courseId = cgCourseId;
     if (cgScope === "stage" && cgStageId) body.stageId = cgStageId;
-    if (cgScope === "custom" && cgMembers) {
-      body.memberUserIds = cgMembers.split(",").map((s) => s.trim()).filter(Boolean);
+    if (cgScope === "custom" && cgNewMemberIds) {
+      body.memberUserIds = cgNewMemberIds.split(",").map((s: string) => s.trim()).filter(Boolean);
     }
     const data = await api("/api/v1/admin/community-groups", {
       method: "POST", body: JSON.stringify(body),
@@ -660,7 +662,7 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
     setCgList((prev) => [...prev, data.group]);
     setCgName(""); setCgDescription(""); setCgScope("public");
     setCgCourseId(""); setCgStageId(""); setCgCover(""); setCgSortOrder("0");
-    setCgMembers(""); setCgModeration(true); setCgFormOpen(false);
+    setCgNewMemberIds(""); setCgModeration(true); setCgFormOpen(false);
     pushToast("ok", "تم إنشاء المجموعة بنجاح");
   }
 
@@ -4648,7 +4650,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               )}
               {cgScope === "custom" && (
                 <Field label="IDs الأعضاء (افصل بفواصل)">
-                  <Input value={cgMembers} onChange={(e) => setCgMembers(e.target.value)} placeholder="uuid1,uuid2,uuid3" className="font-mono text-xs" />
+                  <Input value={cgNewMemberIds} onChange={(e) => setCgNewMemberIds(e.target.value)} placeholder="uuid1,uuid2,uuid3" className="font-mono text-xs" />
                 </Field>
               )}
               <Field label="الوصف">
@@ -4736,6 +4738,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               }}
             />
           )}
+          <CgMembersManager />
         </Card>
       )}
 
@@ -5901,3 +5904,122 @@ function CancelSubscriptionSection() {
     </Card>
   );
 }
+
+/* ── Community group members manager (admin) ── */
+function CgMembersManager() {
+  const [groups, setGroups] = useState<{ id: string; name: string; scope: string }[]>([]);
+  const [selected, setSelected] = useState<string>("");
+  const [members, setMembers] = useState<{ id: string; userId: string; name: string; email: string; role: string }[]>([]);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    if (!cookie) return;
+    fetch("/api/v1/admin/community-groups", { headers: { cookie: "dros_session=" + cookie } })
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.ok) {
+          const list = j.data || [];
+          setGroups(list.map((g: any) => ({ id: g.id, name: g.name, scope: g.scope })));
+          setSelected((prev) => prev || (list[0]?.id ?? ""));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!selected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMembers([]);
+      return;
+    }
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } })
+      .then((r) => r.json())
+      .then((j) => { if (j.ok) setMembers(j.data?.members || []); })
+      .catch(() => {});
+  }, [selected]);
+
+  async function add() {
+    if (!selected || !email.trim()) return;
+    setBusy(true);
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    const res = await fetch(`/api/v1/admin/users/lookup?email=${encodeURIComponent(email.trim())}`, { headers: { cookie: "dros_session=" + cookie } });
+    const lookup = await res.json();
+    if (!lookup?.ok) {
+      setBusy(false);
+      alert("لم يتم العثور على مستخدم بهذا الإيميل");
+      return;
+    }
+    const addRes = await fetch(`/api/v1/admin/community-groups/${selected}/members`, {
+      method: "POST",
+      headers: { "content-type": "application/json", cookie: "dros_session=" + cookie },
+      body: JSON.stringify({ userId: lookup.data.userId }),
+    });
+    setBusy(false);
+    if (addRes.ok) {
+      setEmail("");
+      const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } });
+      const j = await r.json();
+      if (j.ok) setMembers(j.data?.members || []);
+    } else {
+      alert("فشل إضافة العضو");
+    }
+  }
+
+  async function remove(userId: string) {
+    if (!selected) return;
+    if (!confirm("حذف هذا العضو من المجموعة؟")) return;
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    await fetch(`/api/v1/admin/community-groups/${selected}/members?userId=${userId}`, {
+      method: "DELETE",
+      headers: { cookie: "dros_session=" + cookie },
+    });
+    const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } });
+    const j = await r.json();
+    if (j.ok) setMembers(j.data?.members || []);
+  }
+
+  if (groups.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-line bg-surface2/30 p-3">
+      <p className="text-[11px] font-bold text-muted">إدارة أعضاء المجموعات (custom)</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Select value={selected} onChange={(e) => setSelected(e.target.value)} className="h-9 max-w-64 text-xs">
+          {groups.map((g) => (
+            <option key={g.id} value={g.id}>{g.name} ({g.scope})</option>
+          ))}
+        </Select>
+        <Input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="إيميل العضو لإضافته"
+          className="h-9 max-w-64 text-xs"
+        />
+        <Button onClick={add} disabled={busy || !email.trim()} variant="primary" size="sm">
+          {busy ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+          إضافة عضو
+        </Button>
+      </div>
+      {members.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {members.map((m) => (
+            <li key={m.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-1.5 text-xs">
+              <div className="min-w-0">
+                <span className="font-bold text-ink">{m.name}</span>
+                <span className="ms-2 text-muted" dir="ltr">{m.email}</span>
+                <span className="ms-2 rounded bg-surface2 px-1.5 py-0.5 text-[10px] font-bold text-muted">{m.role}</span>
+              </div>
+              <button type="button" onClick={() => remove(m.userId)} className="rounded p-1 text-muted hover:text-danger">
+                <Trash2 size={11} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { Bell, CheckCheck, LogOut, Menu } from "lucide-react";
+import { forwardRef, useEffect, useRef, useState } from "react";
+import { Bell, CheckCheck, Home, LogOut, Menu } from "lucide-react";
 import { ThemeToggle } from "./theme";
 import type { ShellNotification, ShellUser } from "./dashboard-shell";
+import { Avatar } from "@/components/avatar";
 import { timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -16,51 +17,41 @@ const ROLE_LABELS: Record<string, string> = {
   teacher: "مدرس",
 };
 
-function Initials({ name, className }: { name: string; className?: string }) {
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
-  return (
-    <span
-      className={cn(
-        "grid place-items-center rounded-full bg-surface2 font-bold text-muted ring-1 ring-line",
-        className,
-      )}
-      aria-hidden
-    >
-      {initials}
-    </span>
-  );
-}
-
-export function Topbar({
-  user,
-  unreadCount,
-  notifications,
-  onToggleMobileMenu,
-  identityHref = "/dashboard/account",
-}: {
+type TopbarProps = {
   user: ShellUser;
   unreadCount: number;
   notifications: ShellNotification[];
   onToggleMobileMenu?: () => void;
   /** Where the identity block links to — parent portal overrides it. */
   identityHref?: string;
-}) {
+  /** Hides the hamburger trigger — used by focus mode (lesson/exam room). */
+  hideMobileMenu?: boolean;
+  /** Open state of the mobile drawer — drives the hamburger's aria-expanded. */
+  mobileMenuOpen?: boolean;
+};
+
+export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar(
+  {
+    user,
+    unreadCount,
+    notifications,
+    onToggleMobileMenu,
+    identityHref = "/dashboard/account",
+    hideMobileMenu = false,
+    mobileMenuOpen = false,
+  },
+  hamburgerRef,
+) {
   const router = useRouter();
   const [bellOpen, setBellOpen] = useState(false);
   const [unread, setUnread] = useState(unreadCount);
   const [marking, setMarking] = useState(false);
-  const [syncedCount, setSyncedCount] = useState(unreadCount);
   const bellRef = useRef<HTMLDivElement>(null);
 
-  if (syncedCount !== unreadCount) {
-    setSyncedCount(unreadCount);
+  // Sync prop changes into local state — avoid setting state during render.
+  useEffect(() => {
     setUnread(unreadCount);
-  }
+  }, [unreadCount]);
 
   useEffect(() => {
     if (!bellOpen) return;
@@ -91,26 +82,27 @@ export function Topbar({
   }
 
   const roleLabel = ROLE_LABELS[user.role] ?? "طالب";
+  const showViewAll = notifications.length > 0;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-line bg-surface px-4 sm:px-6">
       {/* Mobile menu */}
-      <button
-        onClick={onToggleMobileMenu}
-        className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink lg:hidden"
-        aria-label="فتح القائمة"
-      >
-        <Menu size={18} />
-      </button>
+      {!hideMobileMenu && (
+        <button
+          ref={hamburgerRef}
+          onClick={onToggleMobileMenu}
+          className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink lg:hidden"
+          aria-label="فتح القائمة"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-nav-drawer"
+        >
+          <Menu size={18} />
+        </button>
+      )}
 
       {/* User identity → their portal */}
       <Link href={identityHref} className="flex min-w-0 flex-1 items-center gap-2.5">
-        {user.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.avatarUrl} alt="" className="size-8 shrink-0 rounded-full object-cover ring-1 ring-line" />
-        ) : (
-          <Initials name={user.name} className="size-8 shrink-0 text-xs" />
-        )}
+        <Avatar name={user.name} src={user.avatarUrl} size="sm" />
         <div className="min-w-0 leading-tight">
           <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
           <p className="text-[10px] font-semibold text-muted">{roleLabel}</p>
@@ -166,6 +158,17 @@ export function Topbar({
                   ))
                 )}
               </ul>
+              {showViewAll ? (
+                <div className="border-t border-line bg-surface2/40 px-4 py-2.5 text-center">
+                  <Link
+                    href="/notifications"
+                    onClick={() => setBellOpen(false)}
+                    className="text-xs font-bold text-brand hover:underline"
+                  >
+                    عرض الكل ←
+                  </Link>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
@@ -183,11 +186,12 @@ export function Topbar({
 
         <Link
           href="/"
-          className="hidden rounded-xl px-3 py-2 text-xs font-bold text-muted hover:text-ink sm:block"
+          className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-muted/80 hover:text-ink sm:inline-flex"
         >
+          <Home size={14} />
           الرئيسية العامة
         </Link>
       </div>
     </header>
   );
-}
+});

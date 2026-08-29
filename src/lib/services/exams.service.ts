@@ -23,6 +23,15 @@ export async function getExamRoom(examId: string, userId: string) {
       title: exams.title,
       type: exams.type,
       durationMin: exams.durationMin,
+      perQuestionSec: exams.perQuestionSec,
+      maxAttempts: exams.maxAttempts,
+      passingScore: exams.passingScore,
+      shuffleQuestions: exams.shuffleQuestions,
+      showResultsImmediately: exams.showResultsImmediately,
+      availableFrom: exams.availableFrom,
+      availableUntil: exams.availableUntil,
+      prerequisiteExamId: exams.prerequisiteExamId,
+      isActive: exams.isActive,
       courseId: exams.courseId,
       courseTitle: courses.title,
       courseSlug: courses.slug,
@@ -33,9 +42,42 @@ export async function getExamRoom(examId: string, userId: string) {
     .limit(1);
   const exam = examRows[0];
   if (!exam) throw new ServiceError(404, "EXAM_NOT_FOUND", "الامتحان غير موجود");
+  if (!exam.isActive) throw new ServiceError(403, "EXAM_INACTIVE", "هذا الامتحان معطل حالياً");
 
   const enrolled = await hasActiveSubscription(userId, exam.courseId);
   if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "يجب الاشتراك في الكورس لدخول الامتحان");
+
+  const now = new Date();
+  if (exam.availableFrom && exam.availableFrom > now) {
+    throw new ServiceError(403, "EXAM_NOT_OPEN", `الامتحان سيفتح في ${exam.availableFrom.toLocaleString("ar-EG")}`);
+  }
+  if (exam.availableUntil && exam.availableUntil < now) {
+    throw new ServiceError(403, "EXAM_CLOSED", "انتهت نافذة هذا الامتحان");
+  }
+
+  if (exam.prerequisiteExamId) {
+    const passedRows = await db
+      .select({ id: examAttempts.id, score: examAttempts.score, totalMarks: examAttempts.totalMarks })
+      .from(examAttempts)
+      .where(and(
+        eq(examAttempts.examId, exam.prerequisiteExamId),
+        eq(examAttempts.userId, userId),
+      ));
+    const passingPercent = exam.passingScore;
+    const passed = passedRows.find((r) => r.totalMarks > 0 && (r.score / r.totalMarks) * 100 >= passingPercent);
+    if (!passed) {
+      throw new ServiceError(403, "PREREQ_NOT_MET", "يجب اجتياز الامتحان المسبق أولاً");
+    }
+  }
+
+  const attempts = await db
+    .select({ id: examAttempts.id, score: examAttempts.score, totalMarks: examAttempts.totalMarks })
+    .from(examAttempts)
+    .where(and(eq(examAttempts.examId, examId), eq(examAttempts.userId, userId)));
+
+  if (exam.maxAttempts != null && attempts.length >= exam.maxAttempts) {
+    throw new ServiceError(403, "ATTEMPTS_EXHAUSTED", `لقد استنفذت الحد الأقصى من المحاولات (${exam.maxAttempts})`);
+  }
 
   const links = await db
     .select({
@@ -51,10 +93,21 @@ export async function getExamRoom(examId: string, userId: string) {
     .where(eq(examQuestions.examId, examId))
     .orderBy(asc(examQuestions.sortOrder));
 
-  const attempts = await db
-    .select({ id: examAttempts.id, score: examAttempts.score, totalMarks: examAttempts.totalMarks })
-    .from(examAttempts)
-    .where(and(eq(examAttempts.examId, examId), eq(examAttempts.userId, userId)));
+  let questions = links.map((q) => ({
+    id: q.questionId,
+    prompt: q.prompt,
+    options: q.options,
+    marks: q.marks,
+    kind: q.kind,
+    topic: q.topic,
+  }));
+
+  if (exam.shuffleQuestions) {
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+  }
 
   return {
     exam: {
@@ -62,18 +115,14 @@ export async function getExamRoom(examId: string, userId: string) {
       title: exam.title,
       type: exam.type,
       durationMin: exam.durationMin,
+      perQuestionSec: exam.perQuestionSec,
+      passingScore: exam.passingScore,
+      showResultsImmediately: exam.showResultsImmediately,
       courseTitle: exam.courseTitle,
       courseSlug: exam.courseSlug,
-      totalMarks: links.reduce((s, q) => s + q.marks, 0),
+      totalMarks: questions.reduce((s, q) => s + q.marks, 0),
     },
-    questions: links.map((q) => ({
-      id: q.questionId,
-      prompt: q.prompt,
-      options: q.options,
-      marks: q.marks,
-      kind: q.kind,
-      topic: q.topic,
-    })),
+    questions,
     attemptsCount: attempts.length,
     bestScore: attempts.length ? Math.max(...attempts.map((a) => a.score)) : null,
   };

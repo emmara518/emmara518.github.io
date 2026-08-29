@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ChevronDown,
   CircleCheckBig as CircleOkIcon,
   CirclePlay,
   ClipboardList,
   EyeOff,
   FileText,
   Link2,
+  ListVideo,
   LoaderCircle as Loader2,
   Lock,
 } from "lucide-react";
@@ -61,10 +63,20 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
   );
   const [busy, setBusy] = useState(false);
   const [viewNotice, setViewNotice] = useState<string | null>(null);
+  const playlistRef = useRef<HTMLDivElement>(null);
 
   const flat: RoomVideo[] = room.lessons.flatMap((l) => l.videos);
   const current = flat.find((v) => v.id === currentId) ?? null;
   const unlockedFlat = flat.filter((v) => v.youtubeVideoId);
+  const currentLessonId = current
+    ? (room.lessons.find((l) => l.videos.some((v) => v.id === current.id))?.id ?? null)
+    : null;
+  const [openLessonId, setOpenLessonId] = useState<string | null>(null);
+  const effectiveOpenId = openLessonId ?? currentLessonId;
+
+  function scrollToPlaylist() {
+    playlistRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   /* Count one view each time a video is opened; refresh if the limit is hit. */
   useEffect(() => {
@@ -89,8 +101,10 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
     return () => {
       cancelled = true;
     };
+    // current.id / current.youtubeVideoId are derived from currentId; we
+    // intentionally only re-run on currentId changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentId]);
+  }, [currentId, router]);
 
   const doneCount = completedIds.size;
   const total = room.stats.totalVideos;
@@ -163,6 +177,18 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* player column */}
           <div className="space-y-4">
+            {/* Mobile jump-to-playlist pill — sticky just below the topbar. */}
+            <div className="sticky top-14 z-10 -mx-1 lg:hidden">
+              <button
+                type="button"
+                onClick={scrollToPlaylist}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-bold text-ink shadow-sm hover:border-brand hover:text-brand"
+              >
+                <ListVideo size={13} />
+                قائمة الدروس
+                <ChevronDown size={13} />
+              </button>
+            </div>
             {current?.youtubeVideoId ? (
               <>
                 <div className="video-frame">
@@ -195,7 +221,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                     <button
                       onClick={markComplete}
                       disabled={busy || completedIds.has(current.id)}
-                      className={buttonStyles("gold", "sm")}
+                      className={cn(buttonStyles("gold", "sm"), "hidden lg:inline-flex")}
                     >
                       {busy ? <Loader2 size={14} className="animate-spin" /> : <CircleOkIcon size={14} />}
                       {completedIds.has(current.id) ? "تم الإكمال" : "إكمال والتالي"}
@@ -260,63 +286,103 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
           </div>
 
           {/* playlist column */}
-          <Card className="h-fit max-h-[72vh] overflow-y-auto lg:sticky lg:top-24">
+          <div ref={playlistRef} className="scroll-mt-20 lg:sticky lg:top-24">
+          <Card className="h-fit max-h-[72vh] overflow-y-auto">
             <div className="border-b border-line p-4">
               <p className="font-mono text-[10px] tracking-[0.24em] text-muted">PLAYLIST · {room.course.teacherName}</p>
             </div>
             <div className="divide-y divide-line">
-              {room.lessons.map((lesson, li) => (
-                <div key={lesson.id}>
-                  <div className="flex items-center gap-2 bg-surface2/50 px-4 py-3">
-                    <span className="font-mono text-[10px] font-bold text-muted">{String(li + 1).padStart(2, "0")}</span>
-                    <p className="flex-1 text-xs font-bold">{lesson.title}</p>
-                    {lesson.isFreePreview && !room.enrolled ? <Badge tone="success">مجاني</Badge> : null}
-                    {!lesson.unlocked ? <Lock size={12} className="text-muted" /> : null}
+              {room.lessons.map((lesson, li) => {
+                const isOpen = effectiveOpenId === lesson.id;
+                return (
+                  <div key={lesson.id}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenLessonId(isOpen ? null : lesson.id)}
+                      aria-expanded={isOpen}
+                      className="flex w-full items-center gap-2 bg-surface2/50 px-4 py-3 text-start hover:bg-surface2"
+                    >
+                      <span className="font-mono text-[10px] font-bold text-muted">{String(li + 1).padStart(2, "0")}</span>
+                      <p className="flex-1 text-xs font-bold">{lesson.title}</p>
+                      {lesson.isFreePreview && !room.enrolled ? <Badge tone="success">مجاني</Badge> : null}
+                      {!lesson.unlocked ? <Lock size={12} className="text-muted" /> : null}
+                      <ChevronDown
+                        size={14}
+                        className={cn("shrink-0 text-muted transition-transform", isOpen && "rotate-180")}
+                      />
+                    </button>
+                    {isOpen ? (
+                      <div className="divide-y divide-line">
+                        {lesson.videos.map((v) => {
+                          const isCurrent = v.id === currentId;
+                          const done = completedIds.has(v.id);
+                          const playable = Boolean(v.youtubeVideoId);
+                          const isSequenceLocked = v.lockReason === "sequence";
+                          return (
+                            <button
+                              key={v.id}
+                              disabled={!playable}
+                              onClick={() => setCurrentId(v.id)}
+                              title={!playable ? lockLabel(v) : v.title}
+                              className={cn(
+                                "flex w-full items-center gap-3 px-4 py-3 text-start transition-colors",
+                                isCurrent ? "bg-[var(--brand-soft)]" : "hover:bg-surface2/60",
+                                !playable && "cursor-not-allowed opacity-50",
+                              )}
+                            >
+                              {done ? (
+                                <CircleOkIcon size={15} className="shrink-0 text-success" />
+                              ) : playable ? (
+                                <CirclePlay size={15} className={cn("shrink-0", isCurrent ? "text-brand" : "text-muted")} />
+                              ) : (
+                                <Lock size={13} className="shrink-0 text-muted" />
+                              )}
+                              <span className={cn("flex-1 text-xs leading-5", isCurrent && "font-bold text-brand")}>
+                                {v.title}
+                                {!playable && (
+                                  <span className="mt-0.5 block text-[10px] font-medium normal-case text-muted">
+                                    {lockLabel(v)}
+                                  </span>
+                                )}
+                              </span>
+                              {isSequenceLocked ? null : (
+                                <span className="font-mono text-[10px] text-muted">{formatDuration(v.durationSec)}</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
                   </div>
-                  {lesson.videos.map((v) => {
-                    const isCurrent = v.id === currentId;
-                    const done = completedIds.has(v.id);
-                    const playable = Boolean(v.youtubeVideoId);
-                    const isSequenceLocked = v.lockReason === "sequence";
-                    return (
-                      <button
-                        key={v.id}
-                        disabled={!playable}
-                        onClick={() => setCurrentId(v.id)}
-                        title={!playable ? lockLabel(v) : v.title}
-                        className={cn(
-                          "flex w-full items-center gap-3 px-4 py-3 text-start transition-colors",
-                          isCurrent ? "bg-[var(--brand-soft)]" : "hover:bg-surface2/60",
-                          !playable && "cursor-not-allowed opacity-50",
-                        )}
-                      >
-                        {done ? (
-                          <CircleOkIcon size={15} className="shrink-0 text-success" />
-                        ) : playable ? (
-                          <CirclePlay size={15} className={cn("shrink-0", isCurrent ? "text-brand" : "text-muted")} />
-                        ) : (
-                          <Lock size={13} className="shrink-0 text-muted" />
-                        )}
-                        <span className={cn("flex-1 text-xs leading-5", isCurrent && "font-bold text-brand")}>
-                          {v.title}
-                          {!playable && (
-                            <span className="mt-0.5 block text-[10px] font-medium normal-case text-muted">
-                              {lockLabel(v)}
-                            </span>
-                          )}
-                        </span>
-                        {isSequenceLocked ? null : (
-                          <span className="font-mono text-[10px] text-muted">{formatDuration(v.durationSec)}</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
+          </div>
         </div>
       )}
+
+      {/* Mobile bottom action bar — fixed, only when a video is playable. */}
+      {current?.youtubeVideoId ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift lg:hidden">
+          <div className="mx-auto flex max-w-md items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-xs font-bold text-ink">{current.title}</p>
+              <p className="font-mono text-[10px] text-muted">
+                {formatDuration(current.durationSec)}
+              </p>
+            </div>
+            <button
+              onClick={markComplete}
+              disabled={busy || completedIds.has(current.id)}
+              className={cn(buttonStyles("gold", "sm"), "shrink-0")}
+            >
+              {busy ? <Loader2 size={14} className="animate-spin" /> : <CircleOkIcon size={14} />}
+              {completedIds.has(current.id) ? "تم الإكمال" : "إكمال والتالي"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

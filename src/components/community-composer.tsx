@@ -7,11 +7,14 @@ import { Button, Card, Field, Select, Textarea } from "./ui";
 
 export function CommunityComposer({
   courses,
+  groups = [],
 }: {
   courses: { slug: string; title: string }[];
+  groups?: { id: string; name: string; scope: string }[];
 }) {
   const router = useRouter();
   const [slug, setSlug] = useState(courses[0]?.slug ?? "");
+  const [groupId, setGroupId] = useState<string>("");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,9 @@ export function CommunityComposer({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/v1/courses/${slug}/posts`, {
+      const url = new URL(`/api/v1/courses/${slug}/posts`, window.location.origin);
+      if (groupId) url.searchParams.set("groupId", groupId);
+      const res = await fetch(url.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body }),
@@ -55,7 +60,7 @@ export function CommunityComposer({
   }
 
   return (
-    <Card className="space-y-3 p-5">
+    <Card className="fixed inset-x-0 bottom-0 z-20 space-y-3 rounded-none border-x-0 border-b-0 bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift lg:static lg:inset-auto lg:z-auto lg:space-y-3 lg:rounded-2xl lg:border lg:bg-surface lg:p-5 lg:pb-5 lg:shadow-none">
       <p className="text-sm font-bold">اسأل مستر محمد سعيد وفريق المساعدين</p>
       <form onSubmit={submit} className="space-y-3">
         <Field label="الكورس">
@@ -67,6 +72,18 @@ export function CommunityComposer({
             ))}
           </Select>
         </Field>
+        {groups.length > 0 && (
+          <Field label="مجموعة النقاش (اختياري)">
+            <Select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="h-10 text-xs">
+              <option value="">— بدون مجموعة (عام) —</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name} ({g.scope === "public" ? "عام" : g.scope === "course" ? "كورس" : g.scope === "stage" ? "مرحلة" : "خاص"})
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
         <Field label="سؤالك">
           <Textarea
             rows={3}

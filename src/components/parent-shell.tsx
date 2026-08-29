@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UsersRound } from "lucide-react";
 import { Topbar } from "./topbar";
+import { PARENT_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import type { ShellNotification, ShellUser } from "./dashboard-shell";
-
-const NAV_ITEMS = [{ href: "/parent", label: "أبنائي", icon: UsersRound, exact: true }] as const;
 
 /** Guardian portal shell — same topbar, guardian-scoped navigation. */
 export function ParentShell({
@@ -30,8 +28,8 @@ export function ParentShell({
       {/* Guardian nav strip */}
       <div className="border-b border-line bg-surface">
         <nav aria-label="تنقل بوابة ولي الأمر" className="mx-auto flex w-full max-w-6xl items-center gap-1.5 px-4 sm:px-6">
-          {NAV_ITEMS.map((item) => {
-            const isActive = "exact" in item && item.exact ? pathname === item.href : pathname.startsWith(item.href);
+          {PARENT_NAV.map((item) => {
+            const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
               <Link

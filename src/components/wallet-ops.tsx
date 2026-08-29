@@ -10,13 +10,12 @@ import {
   Copy,
   Check,
   LoaderCircle as Loader2,
-  Plus,
   ReceiptText,
   Send,
   Ticket,
 } from "lucide-react";
-import { Button, Card, Input, Select } from "./ui";
-import { formatEGP, timeAgo } from "@/lib/format";
+import { Button, Card, Field, Input, Select } from "./ui";
+import { formatEGP, timeAgo, TXN_KIND_LABELS } from "@/lib/format";
 import type { WalletTxnView } from "./wallet-card";
 
 export type PaymentRequestView = {
@@ -41,13 +40,6 @@ interface PaymentChannel {
   hint?: string;
 }
 
-const TXN_LABELS: Record<string, string> = {
-  topup: "شحن رصيد",
-  grant: "شحن بكود",
-  purchase: "شراء كورس",
-  refund: "استرداد",
-};
-
 const REQ_STATUS: Record<string, { label: string; cls: string }> = {
   pending: { label: "قيد المراجعة", cls: "bg-surface2 text-muted" },
   approved: { label: "مقبول", cls: "bg-success/10 text-success" },
@@ -62,12 +54,10 @@ export function WalletOps({
   transactions?: WalletTxnView[];
 }) {
   const router = useRouter();
-  const [balance, setBalance] = useState(balanceCents);
-  const [syncedBalance, setSyncedBalance] = useState(balanceCents);
-  if (syncedBalance !== balanceCents) {
-    setSyncedBalance(balanceCents);
-    setBalance(balanceCents);
-  }
+  // The displayed balance is rendered by the parent <WalletCard>; this
+  // component only drives charging flows and transaction history. The
+  // `balanceCents` prop is read by the parent on each refresh — no local
+  // state needed here.
 
   /* ── code redemption ── */
   const [code, setCode] = useState("");
@@ -91,12 +81,12 @@ export function WalletOps({
   useEffect(() => {
     let cancelled = false;
     fetch("/api/v1/payment-channels")
-      .then(r => r.json())
-      .then(json => {
+      .then((r) => r.json())
+      .then((json) => {
         if (!cancelled && json.ok && Array.isArray(json.data)) {
           setChannels(json.data);
           if (json.data.length > 0) {
-            setReqMethod(prev => prev || json.data[0].id);
+            setReqMethod((prev) => prev || json.data[0].id);
           }
         }
       })
@@ -107,7 +97,7 @@ export function WalletOps({
   }, []);
 
   function channelLabel(id: string): string {
-    return channels.find(c => c.id === id)?.label ?? id;
+    return channels.find((c) => c.id === id)?.label ?? id;
   }
 
   /* ── my requests ── */
@@ -142,10 +132,6 @@ export function WalletOps({
     };
   }, []);
 
-  /* ── demo top-up ── */
-  const [topupLoading, setTopupLoading] = useState<number | null>(null);
-  const [topupError, setTopupError] = useState<string | null>(null);
-
   async function redeem() {
     const clean = code.trim().toUpperCase();
     if (clean.length < 3 || redeeming) return;
@@ -165,7 +151,6 @@ export function WalletOps({
       }
       setResult(json.data);
       setCode("");
-      if (json.data.type === "wallet") setBalance(json.data.balanceCents);
       router.refresh();
     } catch {
       setError("مشكلة في الاتصال، حاول مرة أخرى");
@@ -213,29 +198,6 @@ export function WalletOps({
     }
   }
 
-  async function topUp(amountEgp: number) {
-    setTopupLoading(amountEgp);
-    setTopupError(null);
-    try {
-      const res = await fetch("/api/v1/me/wallet/topup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amountEgp }),
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        setTopupError(json.error?.message ?? "تعذر الشحن");
-        return;
-      }
-      setBalance(json.data.balanceCents);
-      router.refresh();
-    } catch {
-      setTopupError("مشكلة في الاتصال");
-    } finally {
-      setTopupLoading(null);
-    }
-  }
-
   function copyChannel(id: string, value: string) {
     void navigator.clipboard.writeText(value);
     setCopiedId(id);
@@ -244,37 +206,39 @@ export function WalletOps({
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
-      {/* ── charging column ── */}
-      <div className="space-y-6">
+      {/* ── charging column (mobile: order-2 / desktop: order-1) ── */}
+      <div className="order-2 space-y-6 lg:order-1">
         {/* code redemption */}
         <Card className="space-y-3 p-5">
           <h2 className="flex items-center gap-2 text-sm font-black text-ink">
             <Ticket size={15} className="text-brand" />
             شحن بكود
           </h2>
-          <div className="flex gap-2">
-            <input
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value.toUpperCase().replace(/\s+/g, ""));
-                setError(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void redeem();
-              }}
-              placeholder="DROS-XXXX-XXXX"
-              dir="ltr"
-              aria-label="كود الشحن"
-              autoComplete="off"
-              spellCheck={false}
-              maxLength={32}
-              className="h-11 min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 font-mono text-sm tracking-wider text-ink placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-            />
-            <Button onClick={() => void redeem()} disabled={redeeming || code.trim().length < 3} className="shrink-0">
-              {redeeming ? <Loader2 size={15} className="animate-spin" /> : <BadgeCheck size={15} />}
-              تفعيل
-            </Button>
-          </div>
+          <Field label="كود الشحن" hint="أدخل الكود الذي وصلك بعد الدفع">
+            <div className="flex gap-2">
+              <Input
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value.toUpperCase().replace(/\s+/g, ""));
+                  setError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void redeem();
+                }}
+                placeholder="DROS-XXXX-XXXX"
+                dir="ltr"
+                aria-label="كود الشحن"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={32}
+                className="min-w-0 flex-1 font-mono tracking-wider"
+              />
+              <Button onClick={() => void redeem()} disabled={redeeming || code.trim().length < 3} className="shrink-0">
+                {redeeming ? <Loader2 size={15} className="animate-spin" /> : <BadgeCheck size={15} />}
+                تفعيل
+              </Button>
+            </div>
+          </Field>
 
           {result?.type === "wallet" ? (
             <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-2.5">
@@ -410,33 +374,10 @@ export function WalletOps({
             </p>
           ) : null}
         </Card>
-
-        {/* demo top-up */}
-        <Card className="space-y-3 p-5">
-          <h2 className="text-sm font-black text-ink">شحن سريع (تجريبي)</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {[100, 250, 500].map((amount) => (
-              <Button
-                key={amount}
-                variant="surface"
-                size="sm"
-                disabled={topupLoading !== null}
-                onClick={() => topUp(amount)}
-              >
-                {topupLoading === amount ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                {amount} ج
-              </Button>
-            ))}
-          </div>
-          {topupError ? <p className="text-xs font-semibold text-danger">{topupError}</p> : null}
-          <p className="text-[11px] leading-5 text-muted">
-            شحن فوري لاختبار الشراء داخل المنصة — يُستبدل لاحقًا ببوابة دفع حقيقية.
-          </p>
-        </Card>
       </div>
 
-      {/* ── status column ── */}
-      <div className="space-y-6">
+      {/* ── status column (mobile: order-1 / desktop: order-2) ── */}
+      <div className="order-1 space-y-6 lg:order-2">
         {/* my requests */}
         <Card className="space-y-3 p-5">
           <h2 className="text-sm font-black text-ink">طلبات الشحن</h2>
@@ -482,7 +423,7 @@ export function WalletOps({
               {transactions.map((t) => (
                 <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-ink">{TXN_LABELS[t.kind] ?? t.kind}</p>
+                    <p className="text-xs font-bold text-ink">{TXN_KIND_LABELS[t.kind] ?? t.kind}</p>
                     <p className="truncate font-mono text-[10px] text-muted">{timeAgo(t.createdAt)}</p>
                   </div>
                   <span

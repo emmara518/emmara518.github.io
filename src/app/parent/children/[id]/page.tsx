@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowRight, BookOpen, ClipboardList, GraduationCap } from "lucide-react";
+import { BookOpen, ClipboardList, GraduationCap, Printer } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
 import { getChildProgress } from "@/lib/services/parent.service";
 import { Badge, Card, EmptyState, Progress, buttonStyles } from "@/components/ui";
 import { formatDateTime } from "@/lib/format";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = { title: "نتائج الابن — بوابة ولي الأمر" };
 
@@ -39,25 +40,28 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/parent"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-muted transition-colors hover:text-brand"
-      >
-        <ArrowRight size={14} />
-        رجوع لأبنائي
-      </Link>
-
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <h1 className="text-lg font-black text-ink">{data.child.name}</h1>
-          <p className="text-xs font-semibold text-muted">
-            {data.child.gradeName ? `${data.child.gradeName} · ` : ""}نتائج الاختبارات وتقدّم الكورسات
-          </p>
-        </div>
-        <Badge tone={avgPercent === null ? "muted" : attemptTone(avgPercent)}>
-          {avgPercent !== null ? `المعدل العام ${avgPercent}%` : "لا نتائج مسجلة بعد"}
-        </Badge>
-      </header>
+      <PageHeader
+        title={data.child.name}
+        subtitle={
+          data.child.gradeName ? `${data.child.gradeName} · نتائج الاختبارات وتقدّم الكورسات` : "نتائج الاختبارات وتقدّم الكورسات"
+        }
+        actions={
+          <>
+            <Link
+              href={`/parent/children/${id}/report`}
+              className={buttonStyles("outline", "sm")}
+            >
+              <Printer size={14} />
+              تحميل التقرير
+            </Link>
+            <Badge tone={avgPercent === null ? "muted" : attemptTone(avgPercent)}>
+              {avgPercent !== null ? `المعدل العام ${avgPercent}%` : "لا نتائج مسجلة بعد"}
+            </Badge>
+          </>
+        }
+        backHref="/parent"
+        backLabel="أبنائي"
+      />
 
       {/* Enrolled courses progress */}
       <section className="space-y-3">
