@@ -83,7 +83,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 href={dashboardHref}
                 className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex text-ink shadow-sm hover:border-brand/50 transition-colors"
               >
-                <span className="grid size-6 place-items-center rounded-lg bg-neon-lime text-[11px] font-black text-black">
+                <span className="grid size-6 place-items-center rounded-lg bg-neon-lime text-xs font-black text-black">
                   {user.name.trim().charAt(0)}
                 </span>
                 <span className="max-w-28 truncate">{user.name}</span>

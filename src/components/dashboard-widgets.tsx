@@ -32,7 +32,7 @@ export function NextBestActionChip({ action }: { action: NextAction | null }) {
     return (
       <Link
         href="/courses"
-        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-bold text-ink hover:border-brand hover:text-brand"
+        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
       >
         <Sparkles size={12} />
         تصفّح الكورسات
@@ -46,7 +46,7 @@ export function NextBestActionChip({ action }: { action: NextAction | null }) {
   return (
     <Link
       href={action.href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-bold text-ink hover:border-brand hover:text-brand"
+      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
     >
       {action.kind === "lesson" ? <Play size={12} fill="currentColor" /> : <Sparkles size={12} />}
       {label}
@@ -70,13 +70,13 @@ export function NextActionCard({
     <Card className="p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1.5">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted">
+          <p className="font-mono text-xs font-bold uppercase tracking-wider text-muted">
             ماذا أفعل الآن؟
           </p>
           {action?.kind === "lesson" ? (
             <>
-              <h2 className="text-lg font-black text-ink">كمل درسك</h2>
-              <p className="truncate text-xs font-semibold text-muted">
+              <h2 className="type-display text-2xl font-black text-ink">كمل درسك</h2>
+              <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.lessonTitle}
               </p>
               <div className="flex items-center gap-2 pt-1.5">
@@ -84,14 +84,14 @@ export function NextActionCard({
                   <Badge tone="muted">{action.videoTitle}</Badge>
                 ) : null}
                 {typeof progressPct === "number" && (
-                  <span className="font-mono text-[11px] font-bold text-brand">{progressPct}%</span>
+                  <span className="font-mono text-xs font-bold text-brand">{progressPct}%</span>
                 )}
               </div>
             </>
           ) : action?.kind === "exam" ? (
             <>
-              <h2 className="text-lg font-black text-ink">ابدأ الاختبار</h2>
-              <p className="truncate text-xs font-semibold text-muted">
+              <h2 className="type-display text-2xl font-black text-ink">ابدأ الاختبار</h2>
+              <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.examTitle}
               </p>
               <div className="pt-1.5">
@@ -100,8 +100,8 @@ export function NextActionCard({
             </>
           ) : (
             <>
-              <h2 className="text-lg font-black text-ink">ابدأ أول درس.</h2>
-              <p className="text-xs font-semibold text-muted">اشترك في كورس وابدأ التعلم.</p>
+              <h2 className="type-display text-2xl font-black text-ink">ابدأ أول درس.</h2>
+              <p className="text-sm font-semibold text-muted">اشترك في كورس وابدأ التعلم.</p>
             </>
           )}
         </div>
@@ -135,18 +135,19 @@ export function MyLearningList({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black text-ink">
+        <h2 className="inline-flex items-center text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
           كورساتي{" "}
           {enrollments.length > 0 && (
             <span className="font-mono text-xs font-bold text-muted">({enrollments.length})</span>
           )}
         </h2>
         {viewAll && enrollments.length > 0 ? (
-          <Link href="/dashboard/courses" className="text-xs font-bold text-brand hover:underline">
+          <Link href="/dashboard/courses" className="text-sm font-bold text-brand hover:underline">
             عرض الكل ←
           </Link>
         ) : (
-          <Link href="/courses" className="text-xs font-bold text-brand hover:underline">
+          <Link href="/courses" className="text-sm font-bold text-brand hover:underline">
             + كورس جديد
           </Link>
         )}
@@ -189,16 +190,19 @@ export function ProgressStrip({ stats }: { stats: Stats }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black text-ink">تقدمي</h2>
-        <Link href="/dashboard/progress" className="text-xs font-bold text-brand hover:underline">
+        <h2 className="inline-flex items-center text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
+          تقدمي
+        </h2>
+        <Link href="/dashboard/progress" className="text-sm font-bold text-brand hover:underline">
           التفاصيل ←
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
         {cells.map((c) => (
           <Card key={c.label} className="px-4 py-3.5">
-            <span className="block font-mono text-xl font-black text-ink">{c.value}</span>
-            <span className="mt-0.5 block text-[11px] font-bold text-muted">{c.label}</span>
+            <span className="block font-mono text-2xl font-black text-ink">{c.value}</span>
+            <span className="mt-0.5 block text-xs font-bold text-muted">{c.label}</span>
           </Card>
         ))}
       </div>
@@ -212,9 +216,12 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black text-ink">اختباراتي</h2>
+        <h2 className="inline-flex items-center text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
+          اختباراتي
+        </h2>
         {exams.length > 0 && (
-          <Link href="/dashboard/exams" className="text-xs font-bold text-brand hover:underline">
+          <Link href="/dashboard/exams" className="text-sm font-bold text-brand hover:underline">
             الكل ←
           </Link>
         )}
@@ -222,15 +229,15 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
 
       <Card className="divide-y divide-line">
         {exams.length === 0 ? (
-          <p className="px-4 py-6 text-center text-xs font-semibold text-muted">لا توجد اختبارات قريبة.</p>
+          <p className="px-4 py-6 text-center text-sm font-semibold text-muted">لا توجد اختبارات قريبة.</p>
         ) : (
           exams.slice(0, 3).map((exam) => {
             const attempted = exam.status !== null;
             return (
               <div key={exam.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-extrabold text-ink">{exam.title}</p>
-                  <p className="mt-0.5 truncate text-[11px] font-semibold text-muted">
+                  <p className="truncate text-sm font-extrabold text-ink">{exam.title}</p>
+                  <p className="mt-0.5 truncate text-xs font-semibold text-muted">
                     {exam.courseTitle}
                     <span className="mx-1.5 text-line-strong">·</span>
                     <Clock size={10} className="inline align-[-1px]" /> {exam.durationMin} د
@@ -238,7 +245,7 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
                 </div>
                 <div className="flex shrink-0 items-center gap-2.5">
                   {attempted ? (
-                    <span className="font-mono text-[11px] font-bold text-success">
+                    <span className="font-mono text-xs font-bold text-success">
                       {exam.status!.bestScore}/{exam.status!.bestTotal}
                     </span>
                   ) : (
@@ -246,7 +253,7 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
                   )}
                   <Link
                     href={`/dashboard/exams/${exam.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
+                    className="inline-flex items-center gap-1 text-sm font-bold text-brand hover:underline"
                   >
                     {attempted ? "إعادة" : "ابدأ"}
                     <ArrowLeft size={12} />

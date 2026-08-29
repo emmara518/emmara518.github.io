@@ -41,7 +41,7 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
         {/* Light mentor identity */}
         <div className="mt-3 flex items-center gap-2">
           <Avatar name="محمد سعيد" src="/images/assets/teacher.webp" size="xs" />
-          <span className="text-[11px] font-bold text-muted">مع مستر محمد سعيد</span>
+          <span className="text-xs font-bold text-muted">مع مستر محمد سعيد</span>
         </div>
       </div>
 
@@ -79,14 +79,14 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
           <div className="flex items-center gap-3 rounded-xl bg-surface2/60 px-3 py-2.5">
             <Avatar name={user.name} src={user.avatarUrl} size="md" />
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
-              <p className="text-[10px] font-semibold text-muted">حسابي</p>
+<p className="truncate text-sm font-extrabold text-ink">{user.name}</p>
+            <p className="text-xs font-semibold text-muted">حسابي</p>
             </div>
           </div>
         ) : null}
         <button
           onClick={logout}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-xs font-bold text-muted transition-colors hover:border-danger hover:text-danger"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm font-extrabold text-muted transition-colors hover:border-danger hover:text-danger"
         >
           <LogOut size={14} className="-scale-x-100" />
           تسجيل الخروج

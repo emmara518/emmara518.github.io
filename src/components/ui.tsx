@@ -81,7 +81,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold leading-5",
+        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold leading-normal",
         tone === "brand" && "bg-[var(--brand-soft)] text-brand",
         tone === "gold" && "bg-[var(--gold-soft)] text-gold",
         tone === "success" && "bg-success/10 text-success",
@@ -131,9 +131,9 @@ export function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-xs font-semibold text-muted">{label}</span>
+      <span className="text-sm font-semibold text-muted">{label}</span>
       {children}
-      {hint ? <span className="block text-[11px] text-muted/80">{hint}</span> : null}
+      {hint ? <span className="block text-xs text-muted/80">{hint}</span> : null}
     </label>
   );
 }
@@ -164,14 +164,16 @@ export function EmptyState({
       <div
         className={cn(
           "grid place-items-center rounded-2xl",
-          compact ? "size-10" : "size-12",
+          compact ? "size-12" : "size-14",
           tone === "brand" ? "bg-[var(--brand-soft)] text-brand" : "bg-surface2 text-muted",
         )}
       >
         {icon}
       </div>
-      <p className="font-bold text-ink">{title}</p>
-      {hint ? <p className="max-w-sm text-sm text-muted">{hint}</p> : null}
+      <p className={cn("font-bold text-ink", compact ? "text-base" : "text-lg")}>{title}</p>
+      {hint ? (
+        <p className={cn("max-w-md text-muted", compact ? "text-sm" : "text-base")}>{hint}</p>
+      ) : null}
       {action}
     </Card>
   );

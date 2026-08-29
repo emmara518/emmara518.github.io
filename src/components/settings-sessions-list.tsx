@@ -59,7 +59,7 @@ export function SettingsSessionsList({
     <div className="space-y-3">
       <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
         {sessions.length === 0 ? (
-          <li className="px-4 py-6 text-center text-xs text-muted">لا توجد جلسات نشطة.</li>
+          <li className="px-4 py-6 text-center text-sm text-muted">لا توجد جلسات نشطة.</li>
         ) : (
           sessions.map((s) => (
             <li
@@ -67,11 +67,11 @@ export function SettingsSessionsList({
               className="flex items-center justify-between gap-3 px-4 py-3 first:pt-3 last:pb-3"
             >
               <div className="min-w-0">
-                <p className="text-xs font-bold text-ink">
+                <p className="text-base font-semibold text-ink">
                   جلسة {formatDateTime(s.createdAt)}
                   {s.isCurrent ? " — الجهاز الحالي" : ""}
                 </p>
-                <p className="mt-0.5 font-mono text-[10px] text-muted">
+                <p className="mt-0.5 font-mono text-xs text-muted">
                   تنتهي: {formatDateTime(s.expiresAt)}
                 </p>
               </div>
@@ -102,15 +102,15 @@ export function SettingsSessionsList({
           تسجيل الخروج من باقي الأجهزة
         </button>
         {done !== null && !error ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-success">
+          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-success">
             <ShieldCheck size={14} />
             {done > 0 ? `تم إنهاء ${done} جلسة أخرى` : "لا توجد جلسات أخرى"}
           </span>
         ) : null}
-        {error ? <span className="text-xs font-semibold text-danger">{error}</span> : null}
+        {error ? <span className="text-sm font-semibold text-danger">{error}</span> : null}
       </div>
 
-      <p className="text-[11px] leading-5 text-muted">
+      <p className="text-xs leading-relaxed text-muted">
         إنهاء بقية الجلسات يُسجل خروجك من جميع الأجهزة الأخرى ويحتفظ بجلستك الحالية.
       </p>
 

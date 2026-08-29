@@ -68,6 +68,9 @@ html:not(.dark) {
   --shadow-card: 0 1px 3px rgba(24, 32, 31, 0.04), 0 8px 24px -4px rgba(24, 32, 31, 0.06);
   --shadow-lift: 0 10px 30px -5px rgba(24, 32, 31, 0.08), 0 20px 40px -10px rgba(24, 32, 31, 0.05);
 
+  --hero-glow-1: rgba(40, 127, 131, 0.18);    /* teal glow */
+  --hero-glow-2: rgba(255, 196, 0, 0.14);     /* yellow glow */
+
   /* Typography Font Stacks (Graphik Arabic is registered by next/font — real weights: 400/500/600) */
   --font-brand-stack: var(--font-graphik-arabic), "Graphik Arabic", "Segoe UI", sans-serif;
   --font-ui-stack: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
@@ -132,6 +135,9 @@ html.dark {
 
   --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
   --shadow-lift: 0 10px 30px -5px rgba(40, 127, 131, 0.18), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+
+  --hero-glow-1: rgba(40, 127, 131, 0.30);
+  --hero-glow-2: rgba(255, 196, 0, 0.18);
 }
 
 @theme inline {
@@ -153,12 +159,41 @@ html.dark {
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
+
+  /* ── Bumped typography scale (1px larger at each step than Tailwind defaults) ── */
+  --text-xs: 0.8125rem;       /* 13px (was 12px) */
+  --text-xs--line-height: 1.45rem;
+  --text-sm: 0.9375rem;       /* 15px (was 14px) */
+  --text-sm--line-height: 1.6rem;
+  --text-base: 1.0625rem;     /* 17px (was 16px) */
+  --text-base--line-height: 1.8rem;
+  --text-lg: 1.1875rem;       /* 19px (was 18px) */
+  --text-lg--line-height: 1.9rem;
+  --text-xl: 1.375rem;        /* 22px (was 20px) */
+  --text-xl--line-height: 1.95rem;
+  --text-2xl: 1.625rem;       /* 26px (was 24px) */
+  --text-2xl--line-height: 2.15rem;
+  --text-3xl: 1.9375rem;      /* 31px (was 30px) */
+  --text-3xl--line-height: 2.4rem;
+  --text-4xl: 2.5rem;         /* 40px (was 36px) */
+  --text-4xl--line-height: 2.6rem;
+  --text-5xl: 3.25rem;        /* 52px (was 48px) */
+  --text-5xl--line-height: 1.1;
+  --text-6xl: 4rem;           /* 64px (was 60px) */
+  --text-6xl--line-height: 1.05;
+
+  /* ── Display / brand font: now Cairo so 800 weight renders correctly. ──
+     Graphik Arabic still owns the body/UI fallback via --font-sans.
+     This decision:  all headings in the utility app render in Cairo (which
+     supports 800), so font-extrabold / font-black produce a real heavy
+     weight instead of silently falling back to 700. */
   --font-sans: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
-  --font-display: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), sans-serif;
-  --font-brand: "Graphik Arabic", var(--font-graphik-arabic), var(--font-cairo), sans-serif;
+  --font-display: var(--font-cairo), "Cairo", "Segoe UI", sans-serif;
+  --font-brand: var(--font-cairo), "Cairo", "Segoe UI", sans-serif;
   --font-ui: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
   --font-math: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
+
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
 }
@@ -174,14 +209,14 @@ html.dark {
 
 /* Brand & Display Typography */
 .font-display {
-  font-family: var(--font-brand-stack) !important;
+  font-family: var(--font-display) !important;
   font-synthesis: none;
   letter-spacing: normal !important;
   text-transform: none;
 }
 
 .font-brand {
-  font-family: var(--font-brand-stack) !important;
+  font-family: var(--font-brand) !important;
   font-synthesis: none;
   letter-spacing: normal !important;
   text-transform: none;
@@ -202,56 +237,54 @@ html.dark {
 
 /* Responsive Typographic Scale — premium Arabic editorial rhythm */
 .type-hero {
-  font-family: var(--font-brand-stack);
+  font-family: var(--font-ui-stack);
   font-synthesis: none;
-  font-size: clamp(2.6rem, 5.4vw, 5.1rem);
-  line-height: 1.16;
-  font-weight: 700;
-  letter-spacing: normal;
+  font-size: clamp(2.75rem, 5.6vw, 5.25rem);
+  line-height: 1.14;
+  font-weight: 800;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
-/* Optical correction: Latin inside Arabic display lines sits ~4% smaller
-   so cap-height aligns with Arabic stroke weight across the baseline */
+/* Optical correction: Latin inside Arabic display lines */
 .type-hero .bidi-term {
   font-size: 0.955em;
   letter-spacing: -0.012em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .type-h1 {
-  font-family: var(--font-brand-stack);
+  font-family: var(--font-ui-stack);
   font-synthesis: none;
-  font-size: clamp(2.1rem, 4.2vw, 3.9rem);
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: normal;
+  font-size: clamp(2.25rem, 4.4vw, 4rem);
+  line-height: 1.18;
+  font-weight: 800;
+  letter-spacing: -0.012em;
   text-wrap: balance;
 }
 
 .type-h2 {
-  font-family: var(--font-brand-stack);
+  font-family: var(--font-ui-stack);
   font-synthesis: none;
-  font-size: clamp(1.55rem, 2.8vw, 2.5rem);
-  line-height: 1.28;
+  font-size: clamp(1.65rem, 2.9vw, 2.625rem);
+  line-height: 1.26;
   font-weight: 700;
-  letter-spacing: normal;
+  letter-spacing: -0.008em;
   text-wrap: balance;
 }
 
 .type-h3 {
-  font-family: var(--font-brand-stack);
+  font-family: var(--font-ui-stack);
   font-synthesis: none;
-  font-size: clamp(1.125rem, 1.6vw, 1.45rem);
-  line-height: 1.42;
-  font-weight: 600;
-  letter-spacing: normal;
+  font-size: clamp(1.1875rem, 1.7vw, 1.5rem);
+  line-height: 1.4;
+  font-weight: 700;
   text-wrap: pretty;
 }
 
 .type-body {
   font-family: var(--font-ui-stack);
-  font-size: 1rem;
+  font-size: 1.0625rem;            /* 17px */
   line-height: 1.85;
   font-weight: 400;
   letter-spacing: normal;
@@ -261,7 +294,7 @@ html.dark {
 
 .type-small {
   font-family: var(--font-ui-stack);
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;            /* 15px */
   line-height: 1.7;
   font-weight: 400;
   word-spacing: 0.03em;
@@ -271,7 +304,7 @@ html.dark {
 /* Mono editorial eyebrow — Latin labels only */
 .type-eyebrow {
   font-family: var(--font-math-stack);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;               /* 12px (was 11px) */
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.14em;
@@ -283,8 +316,60 @@ html.dark {
 .num-anchor {
   font-family: var(--font-math-stack);
   font-variant-numeric: tabular-nums lining-nums;
-  font-weight: 600;
+  font-weight: 700;        /* was 600 — now matches the heavier scale */
   letter-spacing: 0.01em;
+}
+
+/* Editorial gradient text — used for the auth marketing tagline only.
+   No new colors, no glow — just a brand→gold gradient clip. */
+.text-gradient {
+  background: linear-gradient(135deg, var(--brand) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Small brand-tinted rule used as a decorative prefix on section heads */
+.type-rule {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2px;
+  background: var(--brand);
+  vertical-align: middle;
+  margin-inline-end: 0.625rem;
+  border-radius: 1px;
+}
+
+/* Editorial overline — small uppercase label with a leading tick */
+.type-overline {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-ui-stack);
+  font-size: 0.75rem;             /* 12px — overlines stay small intentionally */
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.type-overline::before {
+  content: "";
+  display: inline-block;
+  width: 1.25rem;
+  height: 1px;
+  background: currentColor;
+  margin-inline-end: 0.5rem;
+  opacity: 0.6;
+}
+
+/* Display heading utility — base for "h1 with editorial weight" */
+.type-display {
+  font-family: var(--font-ui-stack);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* English Uppercase Badges and Labels with Controlled Tracking */

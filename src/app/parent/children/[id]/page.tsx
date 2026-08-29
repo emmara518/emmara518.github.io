@@ -65,7 +65,8 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
       {/* Enrolled courses progress */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-sm font-extrabold text-ink">
+        <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
           <BookOpen size={16} className="text-brand" />
           الكورسات المشترك بها
         </h2>
@@ -77,13 +78,13 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
               <Card key={e.courseId} className="space-y-3 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 space-y-0.5">
-                    <p className="truncate text-sm font-extrabold text-ink">{e.title}</p>
-                    <p className="text-[11px] font-semibold text-muted">{e.gradeName}</p>
+                    <p className="truncate text-base font-extrabold text-ink">{e.title}</p>
+                    <p className="text-xs font-semibold text-muted">{e.gradeName}</p>
                   </div>
-                  <span className="shrink-0 font-mono text-sm font-extrabold text-brand">{e.progressPercent}%</span>
+                  <span className="shrink-0 font-mono text-base font-black text-brand">{e.progressPercent}%</span>
                 </div>
                 <Progress value={e.progressPercent} />
-                <p className="text-[11px] font-semibold text-muted">
+                <p className="text-xs font-semibold text-muted">
                   أكمل {e.videosCompleted} من {e.videosTotal} فيديو
                 </p>
               </Card>
@@ -94,7 +95,8 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
       {/* Exam results */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-sm font-extrabold text-ink">
+        <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
           <ClipboardList size={16} className="text-brand" />
           نتائج الاختبارات
         </h2>
@@ -108,7 +110,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
           <Card className="overflow-hidden">
             <table className="w-full text-start text-sm">
               <thead>
-                <tr className="border-b border-line bg-surface2/60 text-[11px] font-bold text-muted">
+                <tr className="border-b border-line bg-surface2/60 text-xs font-bold text-muted">
                   <th className="px-4 py-3 text-start">الاختبار</th>
                   <th className="px-4 py-3 text-start hidden md:table-cell">الكورس</th>
                   <th className="px-4 py-3 text-start">الدرجة</th>
@@ -122,16 +124,16 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
                   return (
                     <tr key={`${a.examTitle}-${i}`} className="border-b border-line/60 last:border-0">
                       <td className="max-w-56 truncate px-4 py-3.5 font-bold text-ink">{a.examTitle}</td>
-                      <td className="max-w-48 truncate px-4 py-3.5 text-xs font-semibold text-muted hidden md:table-cell">
+                      <td className="max-w-48 truncate px-4 py-3.5 text-sm font-semibold text-muted hidden md:table-cell">
                         {a.courseTitle}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 font-mono text-xs font-bold text-ink">
+                      <td className="whitespace-nowrap px-4 py-3.5 font-mono text-sm font-bold text-ink">
                         {a.score}/{a.totalMarks}
                       </td>
                       <td className="px-4 py-3.5">
                         <Badge tone={attemptTone(percent)}>{percent}%</Badge>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-[11px] font-semibold text-muted hidden sm:table-cell">
+                      <td className="whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-muted hidden sm:table-cell">
                         {formatDateTime(a.submittedAt)}
                       </td>
                     </tr>

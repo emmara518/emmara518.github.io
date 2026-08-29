@@ -159,12 +159,12 @@ export function KpiCard({
         <Icon size={22} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-muted">{label}</p>
-        <p className="mt-0.5 text-2xl font-bold tabular-nums tracking-normal text-ink">{value}</p>
+        <p className="text-xs font-bold uppercase tracking-tag text-muted">{label}</p>
+        <p className="mt-0.5 font-mono text-2xl font-black tabular-nums tracking-normal text-ink">{value}</p>
         {hint ? (
           <span
             className={cn(
-              "mt-0.5 block text-[11px] font-medium",
+              "mt-0.5 block text-xs font-semibold",
               hintTone === "muted" && "text-muted",
               hintTone === "success" && "text-success",
               hintTone === "brand" && "text-brand",
@@ -196,7 +196,7 @@ export function SectionHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <h3 className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+        <h3 className="inline-flex items-center gap-2 font-brand text-base font-bold text-ink">
           <Icon size={18} className="shrink-0 text-brand" />
           {title}
           {typeof count === "number" ? <span className="tabular-nums text-muted">({count})</span> : null}

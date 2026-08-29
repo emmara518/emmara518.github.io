@@ -49,26 +49,26 @@ export function InvoiceTable({
         {!compact && (
           <thead className="border-b border-line bg-surface2/60 text-muted">
             <tr>
-              <th className="px-3.5 py-2.5 text-start text-[11px] font-bold">رقم الفاتورة</th>
-              <th className="px-3.5 py-2.5 text-start text-[11px] font-bold">الكورس</th>
-              <th className="px-3.5 py-2.5 text-start text-[11px] font-bold">الحالة</th>
-              <th className="px-3.5 py-2.5 text-start text-[11px] font-bold">التاريخ</th>
-              <th className="px-3.5 py-2.5 text-end text-[11px] font-bold">الإجمالي</th>
+              <th className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-tag">رقم الفاتورة</th>
+              <th className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-tag">الكورس</th>
+              <th className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-tag">الحالة</th>
+              <th className="px-3.5 py-2.5 text-start text-xs font-bold uppercase tracking-tag">التاريخ</th>
+              <th className="px-3.5 py-2.5 text-end text-xs font-bold uppercase tracking-tag">الإجمالي</th>
             </tr>
           </thead>
         )}
         <tbody className={cn(compact ? "divide-y divide-line" : "divide-y divide-line")}>
           {invoices.map((inv) => (
             <tr key={inv.id} className="hover:bg-surface2/40">
-              <td className="p-3.5 font-mono text-xs font-bold text-brand" dir="ltr">
+              <td className="p-3.5 font-mono text-sm font-bold text-brand" dir="ltr">
                 {inv.number}
               </td>
-              <td className="p-3.5 text-xs font-semibold text-ink">{inv.courseTitle}</td>
+              <td className="p-3.5 text-sm font-semibold text-ink">{inv.courseTitle}</td>
               <td className="p-3.5">
                 <Badge tone={STATUS_TONE[inv.status]}>{STATUS_LABEL[inv.status]}</Badge>
               </td>
-              <td className="p-3.5 text-[11px] text-muted">{formatDate(inv.issuedAt)}</td>
-              <td className="p-3.5 text-end font-mono text-xs font-black text-ink">
+              <td className="p-3.5 text-xs text-muted">{formatDate(inv.issuedAt)}</td>
+              <td className="p-3.5 text-end font-mono text-sm font-black text-ink">
                 {formatEGP(inv.totalCents)}
               </td>
             </tr>

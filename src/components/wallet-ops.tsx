@@ -210,7 +210,7 @@ export function WalletOps({
       <div className="order-2 space-y-6 lg:order-1">
         {/* code redemption */}
         <Card className="space-y-3 p-5">
-          <h2 className="flex items-center gap-2 text-sm font-black text-ink">
+          <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
             <Ticket size={15} className="text-brand" />
             شحن بكود
           </h2>
@@ -243,7 +243,7 @@ export function WalletOps({
           {result?.type === "wallet" ? (
             <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-2.5">
               <BadgeCheck size={16} className="shrink-0 text-success" />
-              <p className="text-xs font-bold text-ink">
+              <p className="text-sm font-bold text-ink">
                 تم شحن {formatEGP(result.amountCents)} — رصيدك الآن{" "}
                 <span className="font-mono text-success">{formatEGP(result.balanceCents)}</span>
               </p>
@@ -252,7 +252,7 @@ export function WalletOps({
 
           {result?.type === "course" ? (
             <div className="space-y-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-3">
-              <p className="flex items-center gap-2 text-xs font-bold text-ink">
+              <p className="flex items-center gap-2 text-sm font-bold text-ink">
                 <BadgeCheck size={16} className="shrink-0 text-success" />
                 تم فتح كورس «{result.courseTitle}» بالكامل
               </p>
@@ -267,13 +267,13 @@ export function WalletOps({
           ) : null}
 
           {error ? (
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-danger" role="alert">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-danger" role="alert">
               <CircleAlert size={13} className="shrink-0" />
               {error}
             </p>
           ) : null}
 
-          <p className="text-[11px] leading-5 text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             الكود يوصلك داخل الإشعارات بعد تأكيد الإدارة للتحويل — أكواد الرصيد تُضاف فورًا، وأكواد الاكسس تفتح الكورس
             كامل.
           </p>
@@ -281,7 +281,7 @@ export function WalletOps({
 
         {/* transfer request */}
         <Card className="space-y-4 p-5">
-          <h2 className="flex items-center gap-2 text-sm font-black text-ink">
+          <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
             <ReceiptText size={15} className="text-brand" />
             شحن بالتحويل (إنستاباي / محافظ رقمية)
           </h2>
@@ -293,8 +293,8 @@ export function WalletOps({
                 className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface2/50 px-3 py-2"
               >
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-ink">{ch.label}</p>
-                  <p className="font-mono text-[11px] text-muted" dir="ltr">
+                  <p className="text-xs font-bold text-ink">{ch.label}</p>
+                  <p className="font-mono text-xs text-muted" dir="ltr">
                     {ch.account}
                     {ch.owner ? ` — ${ch.owner}` : ""}
                   </p>
@@ -314,13 +314,13 @@ export function WalletOps({
           {reqDone ? (
             <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-3.5 py-2.5">
               <BadgeCheck size={16} className="shrink-0 text-success" />
-              <p className="text-xs font-bold text-ink">
+              <p className="text-sm font-bold text-ink">
                 وصل طلبك — هيتم مراجعة الإيصال وإرسال الكود في الإشعارات.
               </p>
             </div>
           ) : (
             <div className="space-y-2.5 rounded-xl bg-surface2/40 p-3">
-              <p className="text-[11px] font-bold text-ink">حوّل المبلغ على أحد الأرقام ثم أرسل الإيصال:</p>
+              <p className="text-xs font-bold text-ink">حوّل المبلغ على أحد الأرقام ثم أرسل الإيصال:</p>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   type="number"
@@ -357,9 +357,9 @@ export function WalletOps({
                 aria-label="صورة إيصال التحويل"
               />
               {reqFile ? (
-                <p className="truncate font-mono text-[10px] text-muted" dir="ltr">
-                  {reqFile.name}
-                </p>
+<p className="truncate font-mono text-xs text-muted" dir="ltr">
+                    {reqFile.name}
+                  </p>
               ) : null}
               <Button onClick={() => void submitRequest()} disabled={reqBusy} className="w-full">
                 {reqBusy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
@@ -368,7 +368,7 @@ export function WalletOps({
             </div>
           )}
           {reqError ? (
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-danger" role="alert">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-danger" role="alert">
               <CircleAlert size={13} className="shrink-0" />
               {reqError}
             </p>
@@ -380,11 +380,11 @@ export function WalletOps({
       <div className="order-1 space-y-6 lg:order-2">
         {/* my requests */}
         <Card className="space-y-3 p-5">
-          <h2 className="text-sm font-black text-ink">طلبات الشحن</h2>
+          <h2 className="text-base font-black text-ink">طلبات الشحن</h2>
           {!reqsLoaded ? (
-            <p className="py-4 text-center text-xs font-semibold text-muted">جارِ التحميل…</p>
+            <p className="py-4 text-center text-sm font-semibold text-muted">جارِ التحميل…</p>
           ) : requests.length === 0 ? (
-            <p className="py-4 text-center text-xs font-semibold text-muted">لا توجد طلبات بعد.</p>
+            <p className="py-4 text-center text-sm font-semibold text-muted">لا توجد طلبات بعد.</p>
           ) : (
             <ul className="space-y-2">
               {requests.map((r) => {
@@ -392,20 +392,20 @@ export function WalletOps({
                 return (
                   <li key={r.id} className="space-y-1 rounded-xl border border-line/60 px-3.5 py-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-ink">
+                      <span className="text-sm font-bold text-ink">
                         {formatEGP(r.amountEgp * 100)} · {channelLabel(r.method)}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${st.cls}`}>{st.label}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${st.cls}`}>{st.label}</span>
                     </div>
                     {r.status === "approved" && r.issuedCode ? (
-                      <p className="select-all font-mono text-[11px] font-bold text-brand" dir="ltr">
+                      <p className="select-all font-mono text-xs font-bold text-brand" dir="ltr">
                         {r.issuedCode}
                       </p>
                     ) : null}
                     {r.status === "rejected" && r.adminNote ? (
-                      <p className="text-[11px] text-muted">السبب: {r.adminNote}</p>
+                      <p className="text-xs text-muted">السبب: {r.adminNote}</p>
                     ) : null}
-                    <p className="font-mono text-[10px] text-muted/70">{timeAgo(r.createdAt)}</p>
+                    <p className="font-mono text-xs text-muted/70">{timeAgo(r.createdAt)}</p>
                   </li>
                 );
               })}
@@ -415,19 +415,19 @@ export function WalletOps({
 
         {/* ledger */}
         <Card className="space-y-3 p-5">
-          <h2 className="text-sm font-black text-ink">آخر الحركات</h2>
+          <h2 className="text-base font-black text-ink">آخر الحركات</h2>
           {transactions.length === 0 ? (
-            <p className="py-4 text-center text-xs font-semibold text-muted">لا توجد حركات بعد.</p>
+            <p className="py-4 text-center text-sm font-semibold text-muted">لا توجد حركات بعد.</p>
           ) : (
             <ul className="divide-y divide-line">
               {transactions.map((t) => (
                 <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-ink">{TXN_KIND_LABELS[t.kind] ?? t.kind}</p>
-                    <p className="truncate font-mono text-[10px] text-muted">{timeAgo(t.createdAt)}</p>
+                    <p className="text-sm font-bold text-ink">{TXN_KIND_LABELS[t.kind] ?? t.kind}</p>
+                    <p className="truncate font-mono text-xs text-muted">{timeAgo(t.createdAt)}</p>
                   </div>
                   <span
-                    className={`shrink-0 font-mono text-xs font-bold ${t.amountCents >= 0 ? "text-success" : "text-danger"}`}
+                    className={`shrink-0 font-mono text-sm font-bold ${t.amountCents >= 0 ? "text-success" : "text-danger"}`}
                   >
                     {t.amountCents >= 0 ? "+" : "−"}
                     {formatEGP(Math.abs(t.amountCents))}

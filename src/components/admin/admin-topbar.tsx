@@ -29,7 +29,7 @@ export function AdminTopbar({ onToggleMobileMenu }: AdminTopbarProps) {
       </button>
 
       {/* Breadcrumb */}
-      <nav aria-label="مسار التنقل" className="flex min-w-0 items-center gap-1.5 text-xs font-semibold">
+      <nav aria-label="مسار التنقل" className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
         <button
           type="button"
           onClick={() => setCategory("overview")}

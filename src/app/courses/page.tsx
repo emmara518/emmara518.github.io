@@ -25,9 +25,9 @@ export default async function CoursesPage({
       <div className="relative overflow-hidden border-b border-line">
         <MathCanvas className="opacity-60" />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6">
-          <p className="font-mono text-xs tracking-[0.3em] text-gold">CATALOG</p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight">كورسات دروس ماث</h1>
-          <p className="mt-3 max-w-xl leading-8 text-muted">
+          <p className="font-mono text-sm font-bold tracking-[0.3em] text-gold">CATALOG</p>
+          <h1 className="mt-3 text-5xl font-black tracking-tight">كورسات دروس ماث</h1>
+          <p className="mt-3 max-w-xl text-base leading-8 text-muted">
             اختر صفك وفرع الرياضيات، وابدأ بالدروس المجانية قبل الاشتراك — كل كورس يشمل ملفات واختبارات إلكترونية.
           </p>
         </div>

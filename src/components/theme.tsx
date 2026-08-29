@@ -182,7 +182,7 @@ export function ThemeToggle({
             />
           </span>
         </div>
-        <span className="font-ui text-[11px] text-muted group-hover:text-ink pointer-events-none transition-colors duration-200">
+        <span className="font-ui text-xs text-muted group-hover:text-ink pointer-events-none transition-colors duration-200">
           {isDark ? "الوضع الفاتح" : "الوضع الداكن"}
         </span>
       </button>

@@ -39,16 +39,16 @@ export default async function CommunityPage() {
         <div className="min-w-0 space-y-4 pb-24 lg:pb-0">
           {groups.length > 0 && (
             <Card className="space-y-2 p-4">
-              <p className="text-[11px] font-bold text-muted">مجموعات النقاش المتاحة لك</p>
+              <p className="text-xs font-bold text-muted">مجموعات النقاش المتاحة لك</p>
               <div className="flex flex-wrap gap-1.5">
                 {groups.map((g) => (
                   <a
                     key={g.id}
                     href={`#group-${g.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface2 px-2.5 py-1 text-[11px] font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
+                    className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface2 px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-brand hover:text-brand"
                   >
                     <span className="size-1.5 rounded-full bg-brand" /> {g.name}
-                    <span className="text-[9px] opacity-70">
+                    <span className="text-xs opacity-70">
                       {g.scope === "public" ? "عام" : g.scope === "course" ? "كورس" : g.scope === "stage" ? "مرحلة" : "خاص"}
                     </span>
                   </a>
@@ -70,7 +70,7 @@ export default async function CommunityPage() {
               <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold lg:cursor-default lg:pointer-events-none">
                 <FileText size={15} className="text-brand" /> إرشادات المجتمع
               </summary>
-              <ul className="mt-2 list-inside list-disc space-y-1.5 text-[11px] leading-relaxed text-muted">
+              <ul className="mt-2 list-inside list-disc space-y-1.5 text-xs leading-relaxed text-muted">
                 <li>اكتب رقم السؤال أو الجزء المطلوب شرحه بدقة.</li>
                 <li>كل منشور يمر على مراجعة المشرفين قبل ظهوره.</li>
                 <li>الحلول من فريق المساعدين فقط وتظهر كتعليق موثق.</li>

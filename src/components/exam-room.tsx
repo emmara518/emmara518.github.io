@@ -132,7 +132,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
                 className="transition-all duration-1000"
               />
             </svg>
-            <span className="font-mono text-3xl font-extrabold">{pct}%</span>
+            <span className="font-mono text-4xl font-black">{pct}%</span>
           </div>
           <div>
             <h1 className="text-2xl font-extrabold">
@@ -207,7 +207,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
       <Card className="sticky top-20 z-20 flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="space-y-0.5">
           <h1 className="font-extrabold">{room.exam.title}</h1>
-          <p className="font-mono text-[11px] text-muted">
+          <p className="font-mono text-xs text-muted">
             {room.exam.courseTitle} · {room.questions.length} سؤال · {room.exam.totalMarks} درجة
           </p>
         </div>

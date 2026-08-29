@@ -74,7 +74,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-line">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-surface border border-line text-[11px] font-mono tracking-tag text-neon-lime shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-surface border border-line text-xs font-mono tracking-tag text-neon-lime shadow-sm">
             <Zap size={13} className="text-neon-lime animate-pulse" />
             <span>3D INTERACTIVE CURRICULUM</span>
           </div>
@@ -175,21 +175,21 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
 
                       {/* Top Floating Badges */}
                       <div className="absolute start-3.5 top-3.5 flex items-center gap-1.5 z-10 font-ui">
-                        <span className="rounded-full bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-[11px] font-bold text-neon-lime shadow-md">
+                        <span className="rounded-full bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-xs font-bold text-neon-lime shadow-md">
                           {course.subjectName}
                         </span>
-                        <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-line px-2.5 py-1 text-[11px] font-semibold text-ink dark:text-white">
+                        <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-line px-2.5 py-1 text-xs font-semibold text-ink dark:text-white">
                           {course.gradeName}
                         </span>
                       </div>
 
                       {/* Hero Spotlight Indicator Badge */}
                       {isHero ? (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-extrabold text-black shadow-[0_0_15px_rgba(255,196,0,0.6)] animate-bounce font-mono tracking-tag">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-xs font-extrabold text-black shadow-[0_0_15px_rgba(255,196,0,0.6)] animate-bounce font-mono tracking-tag">
                           HERO FOCUS ★
                         </span>
                       ) : (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-black/85 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[10px] font-mono text-white/90">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-black/85 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-xs font-mono text-white/90">
                           أ/ محمد سعيد
                         </span>
                       )}
@@ -214,7 +214,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
 
                       <div className="space-y-3.5 mt-auto">
                         {/* Course Metadata Strip */}
-                        <div className="flex items-center gap-3.5 font-mono text-[11px] text-muted pt-1 border-t border-line">
+                        <div className="flex items-center gap-3.5 font-mono text-xs text-muted pt-1 border-t border-line">
                           <span className="inline-flex items-center gap-1 font-semibold text-ink">
                             <BookOpen size={13} className="text-neon-lime" /> {course.lessonsCount} درس
                           </span>
@@ -229,7 +229,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                         {/* Pricing and Action CTA */}
                         <div className="flex items-center justify-between border-t border-line pt-3.5 font-ui">
                           <div>
-                            <span className="text-[10px] font-mono text-muted block">تكلفة الاشتراك</span>
+                            <span className="text-xs font-mono text-muted block">تكلفة الاشتراك</span>
                             <span className="text-base sm:text-lg font-extrabold text-ink font-brand">
                               {formatEGP(course.priceCents)}
                             </span>
@@ -258,13 +258,13 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
 
       {/* Explore Full Catalog Link Bar */}
       <div className="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4 font-ui">
-        <div className="flex items-center gap-2 text-xs text-muted">
+        <div className="flex items-center gap-2 text-sm text-muted">
           <CheckCircle2 size={15} className="text-neon-lime" />
           <span>كل كورس يشمل شيتات وامتحانات تدريبية.</span>
         </div>
         <Link
           href="/courses"
-          className="inline-flex items-center gap-2 text-xs font-bold text-neon-lime hover:text-ink bg-surface hover:bg-surface2 px-5 py-2.5 rounded-xl border border-line hover:border-neon-lime transition-all duration-300 shadow-sm"
+          className="inline-flex items-center gap-2 text-sm font-bold text-neon-lime hover:text-ink bg-surface hover:bg-surface2 px-5 py-2.5 rounded-xl border border-line hover:border-neon-lime transition-all duration-300 shadow-sm"
         >
           <span>جميع الكورسات</span>
           <ArrowLeft size={15} />

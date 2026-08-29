@@ -59,12 +59,12 @@ export function LogoutAllButton({ disabled }: { disabled?: boolean }) {
         تسجيل الخروج من باقي الأجهزة
       </Button>
       {done !== null && !error ? (
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-success">
+        <span className="inline-flex items-center gap-1.5 text-sm font-bold text-success">
           <ShieldCheck size={14} />
           {done > 0 ? `تم إنهاء ${done} جلسة أخرى` : "لا توجد جلسات أخرى"}
         </span>
       ) : null}
-      {error ? <span className="text-xs font-semibold text-danger">{error}</span> : null}
+      {error ? <span className="text-sm font-semibold text-danger">{error}</span> : null}
 
       <ConfirmDialog request={confirm} onDone={() => setConfirm(null)} />
     </div>

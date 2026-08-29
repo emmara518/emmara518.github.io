@@ -44,7 +44,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-line py-5 bg-surface2/30">
-        <p className="mx-auto max-w-7xl px-4 text-center font-mono text-[11px] text-muted sm:px-6">
+        <p className="mx-auto max-w-7xl px-4 text-center font-mono text-xs text-muted sm:px-6">
           © {new Date().getFullYear()} DROS MATH · MR. MOHAMED SAEED — ALL RIGHTS RESERVED
         </p>
       </div>

@@ -86,12 +86,12 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
           <PartyPopper size={14} />
           أهلاً {firstName}!
         </p>
-        <h1 className="text-2xl font-black text-ink">خلّينا نعدّي دلوقتي على خطوات سريعة</h1>
-        <p className="text-xs font-semibold text-muted">ثلاث خطوات بسيطة قبل ما تبدئي.</p>
+        <h1 className="type-display text-3xl font-black text-ink">خلّينا نعدّي دلوقتي على خطوات سريعة</h1>
+        <p className="text-sm font-semibold text-muted">ثلاث خطوات بسيطة قبل ما تبدئي.</p>
       </header>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-[11px] font-bold text-muted">
+        <div className="flex items-center justify-between text-sm font-bold text-muted">
           <span>
             {index + 1} / {total}
           </span>
@@ -102,8 +102,8 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
 
       <Card className="space-y-5 p-6">
         <div className="space-y-1 text-center">
-          <h2 className="text-base font-black text-ink">{current.title}</h2>
-          <p className="text-xs font-semibold text-muted">{current.subtitle}</p>
+          <h2 className="text-xl font-black text-ink">{current.title}</h2>
+          <p className="text-base text-muted">{current.subtitle}</p>
         </div>
 
         {current.key === "stage" ? (
@@ -122,8 +122,8 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
                       : "border-line bg-surface hover:border-brand/50",
                   )}
                 >
-                  <p className="text-sm font-black text-ink">{opt.label}</p>
-                  <p className="mt-1 text-[11px] leading-5 text-muted">{opt.hint}</p>
+                  <p className="text-base font-black text-ink">{opt.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">{opt.hint}</p>
                 </button>
               );
             })}
@@ -155,8 +155,8 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
                   >
                     <Icon size={16} />
                   </span>
-                  <p className="text-sm font-black text-ink">{opt.title}</p>
-                  <p className="mt-1 text-[11px] leading-5 text-muted">{opt.hint}</p>
+                  <p className="text-base font-black text-ink">{opt.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">{opt.hint}</p>
                 </button>
               );
             })}
@@ -195,7 +195,7 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
           <ArrowRight size={14} className="rtl:rotate-180" />
           السابق
         </button>
-        <Link href="/dashboard" className="text-xs font-bold text-muted hover:text-ink hover:underline">
+        <Link href="/dashboard" className="text-sm font-bold text-muted hover:text-ink hover:underline">
           تخطّي كل الخطوات
         </Link>
         {isLast ? (

@@ -90,8 +90,11 @@ export default async function StudentDashboardPage() {
 
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-ink">فواتيري</h2>
-            <Link href="/dashboard/invoices" className="text-xs font-bold text-brand hover:underline">
+            <h2 className="inline-flex items-center text-base font-black text-ink">
+              <span className="type-rule" aria-hidden />
+              فواتيري
+            </h2>
+            <Link href="/dashboard/invoices" className="text-sm font-bold text-brand hover:underline">
               عرض الكل ←
             </Link>
           </div>

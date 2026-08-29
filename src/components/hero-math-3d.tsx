@@ -141,7 +141,7 @@ export function HeroMath3DUniverse() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-neon-lime" />
           </span>
-          <span className="font-mono text-xs font-black text-neon-lime">3D MATH ORBIT SYSTEM</span>
+          <span className="font-mono text-sm font-black text-neon-lime">3D MATH ORBIT SYSTEM</span>
         </div>
 
         {/* Orbit Controls */}
@@ -157,7 +157,7 @@ export function HeroMath3DUniverse() {
           <button
             type="button"
             onClick={() => setSpeedMultiplier((prev) => (prev === 1 ? 2 : prev === 2 ? 0.5 : 1))}
-            className="px-2 py-1 rounded-xl font-mono text-[10px] font-bold text-neon-lime hover:bg-slate-800 transition-colors"
+            className="px-2 py-1 rounded-xl font-mono text-xs font-bold text-neon-lime hover:bg-slate-800 transition-colors"
             title="تغيير السرعة"
           >
             {speedMultiplier}x
@@ -239,7 +239,7 @@ export function HeroMath3DUniverse() {
                     className="object-contain filter drop-shadow-[0_0_12px_rgba(255,196,0,0.3)] transition-all pointer-events-none"
                   />
                 </div>
-                <span className="mt-0.5 font-mono text-[9px] font-bold text-yellow-300/80 drop-shadow">
+                <span className="mt-0.5 font-mono text-xs font-bold text-yellow-300/80 drop-shadow">
                   {item.glyph}
                 </span>
               </div>
@@ -273,7 +273,7 @@ export function HeroMath3DUniverse() {
               {/* Floating Verified Badge */}
               <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-slate-950/90 border border-yellow-400/50 px-2 py-0.5 shadow-lg backdrop-blur-md">
                 <CheckCircle2 size={12} className="text-neon-lime" />
-                <span className="text-[10px] font-black text-neon-lime">معتمد</span>
+                <span className="text-xs font-black text-neon-lime">معتمد</span>
               </div>
             </div>
 
@@ -286,7 +286,7 @@ export function HeroMath3DUniverse() {
                 <GraduationCap size={14} className="text-neon-lime" />
                 <h3 className="text-sm sm:text-base font-black text-white">أ/ محمد سعيد</h3>
               </div>
-              <p className="text-[11px] font-bold text-slate-300 mt-0.5">
+              <p className="text-xs font-bold text-slate-300 mt-0.5">
                 خبير تدريس الرياضيات للمرحلتين الإعدادية والثانوية
               </p>
             </div>
@@ -320,7 +320,7 @@ export function HeroMath3DUniverse() {
                     className="object-contain filter drop-shadow-[0_0_16px_rgba(255,196,0,0.45)] group-hover:drop-shadow-[0_0_28px_rgba(255,196,0,0.85)] transition-all pointer-events-none transform-gpu group-hover:scale-110"
                   />
                 </div>
-                <span className="mt-0.5 font-mono text-[10px] font-black text-[#FFC400] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30">
+                <span className="mt-0.5 font-mono text-xs font-black text-[#FFC400] drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-yellow-400/30">
                   {item.glyph}
                 </span>
               </div>
@@ -328,7 +328,7 @@ export function HeroMath3DUniverse() {
         </div>
 
         {/* Drag Hint on Bottom */}
-        <div className="absolute bottom-2 inset-x-0 text-center text-[10px] text-slate-400 font-medium pointer-events-none flex items-center justify-center gap-1">
+        <div className="absolute bottom-2 inset-x-0 text-center text-xs text-slate-400 font-medium pointer-events-none flex items-center justify-center gap-1">
           <Sparkles size={11} className="text-neon-lime animate-spin-slow" />
           <span>اسحب بالماوس للتدوير الحر ثلاثي الأبعاد</span>
         </div>
@@ -351,9 +351,9 @@ export function HeroMath3DUniverse() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs font-black text-neon-lime">{hoveredSymbol.glyph}</span>
-                  <span className="text-xs font-bold text-ink">{hoveredSymbol.label}</span>
+                  <span className="text-sm font-bold text-ink">{hoveredSymbol.label}</span>
                 </div>
-                <span className="text-[11px] font-semibold text-muted">{hoveredSymbol.branch}</span>
+                <span className="text-xs font-semibold text-muted">{hoveredSymbol.branch}</span>
               </div>
             </div>
             <div className="text-left font-mono text-xs font-black text-neon-lime bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700">
@@ -366,7 +366,7 @@ export function HeroMath3DUniverse() {
               <span className="text-neon-lime font-bold">DEMO ACCESS</span>
               <span className="text-slate-300">student@dros-math.com / 12345678</span>
             </div>
-            <span className="text-emerald-400 font-bold text-[11px]">متاح للتجربة فوراً</span>
+            <span className="text-emerald-400 font-bold text-xs">متاح للتجربة فوراً</span>
           </div>
         )}
       </div>

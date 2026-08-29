@@ -11,7 +11,7 @@ import { safeNext } from "@/lib/safe-next";
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm font-semibold leading-6 text-danger">{message}</p>
+    <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm font-bold leading-relaxed text-danger">{message}</p>
   );
 }
 
@@ -71,7 +71,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
   return (
     <form onSubmit={submit} className="space-y-4">
       {authDisabled && (
-        <div className="rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-[13px] font-medium leading-relaxed text-brand">
+        <div className="rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-sm font-semibold leading-relaxed text-brand">
           وضع التطوير: المصادقة معطّلة مؤقتاً — جميع صفحات المنصة تُفتح تلقائياً بصلاحيات مدير النظام.
         </div>
       )}
@@ -105,7 +105,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
 
       {IS_DEV && (
         <div className="space-y-2 pt-2">
-          <p className="text-center font-mono text-[11px] text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
+          <p className="text-center font-mono text-xs tracking-wider text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
           <div className="grid grid-cols-2 gap-2">
             {([
               ["student", "طالب"],
@@ -116,7 +116,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
                 type="button"
                 disabled={loading}
                 onClick={quickLogin(who)}
-                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
+                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-sm font-extrabold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
               >
                 {label}
               </button>
@@ -276,7 +276,7 @@ export function ParentRegisterForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-[13px] font-semibold leading-6 text-gold">
+      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-sm font-bold leading-relaxed text-gold">
         أدخل رقم الموبايل الذي أدخله ابنك في خانة «رقم موبايل ولي الأمر» وقت إنشاء حسابه — سنربط حسابك بكل أبنائه المشتركين تلقائيًا.
       </div>
       <Field label="اسم ولي الأمر">

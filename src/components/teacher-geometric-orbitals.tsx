@@ -584,12 +584,12 @@ export function TeacherGeometricOrbitals() {
               {/* Interactive HUD Tooltip on Hover */}
               {isHovered && (
                 <div className="absolute z-50 bottom-full mb-3 left-1/2 -translate-x-1/2 w-52 p-3 rounded-xl bg-slate-950/95 border border-yellow-400/80 shadow-[0_12px_35px_rgba(0,0,0,0.95),0_0_25px_rgba(252,211,77,0.4)] backdrop-blur-2xl text-center pointer-events-none transition-all animate-in fade-in zoom-in-95">
-                  <div className="text-[9px] font-bold text-slate-400 flex items-center justify-center gap-1">
+                  <div className="text-xs font-bold text-slate-400 flex items-center justify-center gap-1">
                     <span className="size-1.5 rounded-full bg-neon-lime shadow-[0_0_8px_#FFC400]" />
                     <span>{solid.category}</span>
                   </div>
-                  <div className="text-xs font-black text-white mt-1">{solid.name}</div>
-                  <div className="mt-1.5 px-2 py-0.5 rounded-md bg-[#0a101d] border border-[#1b2a42] font-mono text-[9px] font-black text-neon-lime truncate shadow-[0_0_10px_rgba(252,211,77,0.2)]">
+                  <div className="text-sm font-black text-white mt-1">{solid.name}</div>
+                  <div className="mt-1.5 px-2 py-0.5 rounded-md bg-[#0a101d] border border-[#1b2a42] font-mono text-xs font-black text-neon-lime truncate shadow-[0_0_10px_rgba(252,211,77,0.2)]">
                     {solid.formula}
                   </div>
                 </div>
@@ -656,9 +656,9 @@ export function TeacherGeometricOrbitals() {
           key={eq.id}
           className={`absolute ${eq.positionClass} ${eq.animationClass} pointer-events-auto z-10`}
         >
-          <div className={`px-3 py-1 rounded-full border ${eq.borderClass} ${eq.colorClass} backdrop-blur-md text-[10px] sm:text-xs font-mono font-black shadow-[0_4px_20px_rgba(0,0,0,0.8)] flex items-center gap-1.5 transition-all duration-300 hover:scale-110`}>
+          <div className={`px-3 py-1 rounded-full border ${eq.borderClass} ${eq.colorClass} backdrop-blur-md text-xs sm:text-sm font-mono font-black shadow-[0_4px_20px_rgba(0,0,0,0.8)] flex items-center gap-1.5 transition-all duration-300 hover:scale-110`}>
             <span className="size-1.5 rounded-full bg-current animate-ping" />
-            <span className="font-sans font-bold text-slate-400 text-[9px]">{eq.title}:</span>
+            <span className="font-sans font-bold text-slate-400 text-xs">{eq.title}:</span>
             <span>{eq.equation}</span>
           </div>
         </div>

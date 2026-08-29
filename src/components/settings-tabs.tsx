@@ -152,7 +152,10 @@ function ProfileTab({ profile }: { profile: ProfileShape }) {
 function SecurityTab({ sessions }: { sessions: SessionRow[] }) {
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-black text-ink">الأجهزة والجلسات</h2>
+      <h2 className="inline-flex items-center text-base font-black text-ink">
+        <span className="type-rule" aria-hidden />
+        الأجهزة والجلسات
+      </h2>
       <SettingsSessionsList sessions={sessions} />
     </div>
   );
@@ -168,7 +171,10 @@ function SubscriptionsTab({
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <h2 className="text-sm font-black text-ink">اشتراكاتي</h2>
+        <h2 className="inline-flex items-center text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
+          اشتراكاتي
+        </h2>
         <Card className="divide-y divide-line">
           {subscriptions.length === 0 ? (
             <div className="space-y-3 px-4 py-6 text-center">
@@ -191,7 +197,7 @@ function SubscriptionsTab({
                     </Link>
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold leading-5",
+                        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold leading-5",
                         st.tone === "success" && "bg-success/10 text-success",
                         st.tone === "danger" && "bg-danger/10 text-danger",
                         st.tone === "muted" && "bg-surface2 text-muted",
@@ -200,7 +206,7 @@ function SubscriptionsTab({
                       {st.label}
                     </span>
                   </div>
-                  <p className="font-mono text-[10px] text-muted">
+                  <p className="font-mono text-xs text-muted">
                     بدأ: {formatDate(s.startsAt)}
                     {s.endsAt ? ` · ينتهي: ${formatDate(s.endsAt)}` : ""}
                   </p>
@@ -212,7 +218,10 @@ function SubscriptionsTab({
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-sm font-black text-ink">فواتيري</h2>
+        <h2 className="inline-flex items-center text-base font-black text-ink">
+          <span className="type-rule" aria-hidden />
+          فواتيري
+        </h2>
         {invoices.length === 0 ? (
           <EmptyState
             compact
@@ -231,7 +240,10 @@ function SubscriptionsTab({
 function NotificationsTab({ preferences }: { preferences: UserPreferences }) {
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-black text-ink">تفضيلات الإشعارات</h2>
+      <h2 className="inline-flex items-center text-base font-black text-ink">
+        <span className="type-rule" aria-hidden />
+        تفضيلات الإشعارات
+      </h2>
       <SettingsNotificationsForm initial={preferences} />
     </div>
   );
@@ -240,7 +252,10 @@ function NotificationsTab({ preferences }: { preferences: UserPreferences }) {
 function AppearanceTab({ preferences }: { preferences: UserPreferences }) {
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-black text-ink">المظهر</h2>
+      <h2 className="inline-flex items-center text-base font-black text-ink">
+        <span className="type-rule" aria-hidden />
+        المظهر
+      </h2>
       <SettingsAppearanceForm initial={preferences} />
     </div>
   );

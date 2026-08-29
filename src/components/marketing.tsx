@@ -129,7 +129,7 @@ export function SectionHead({
 }) {
   return (
     <div className={cn("space-y-3", align === "center" ? "text-center mx-auto" : "text-start")}>
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface2 border border-line font-mono text-[11px] font-bold text-neon-lime">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface2 border border-line font-mono text-xs font-bold text-neon-lime">
         <span>{kicker}</span>
       </div>
       <h2 className="text-2xl font-black tracking-tight text-ink sm:text-4xl">{title}</h2>
@@ -197,20 +197,20 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
 
           {/* Top Badges */}
           <div className="absolute start-3.5 top-3.5 flex gap-1.5 z-10">
-            <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-[11px] font-extrabold text-neon-lime shadow-md">
+            <span className="rounded-full bg-surface/90 dark:bg-black/90 backdrop-blur-md border border-neon-lime/40 px-3 py-1 text-xs font-extrabold text-neon-lime shadow-md">
               {course.subjectName}
             </span>
-            <span className="rounded-full bg-surface2/90 backdrop-blur-md border border-line px-2.5 py-1 text-[11px] font-semibold text-ink">
+            <span className="rounded-full bg-surface2/90 backdrop-blur-md border border-line px-2.5 py-1 text-xs font-semibold text-ink">
               {course.gradeName}
             </span>
           </div>
 
           {owned ? (
-            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-[11px] font-black text-black shadow-[0_0_12px_rgba(255,196,0,0.4)]">
+            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-neon-lime px-3 py-1 text-xs font-black text-black shadow-[0_0_12px_rgba(255,196,0,0.4)]">
               مشترك ✓
             </span>
           ) : (
-            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-surface/80 dark:bg-black/80 backdrop-blur-md border border-line px-2.5 py-0.5 text-[10px] font-mono text-muted">
+            <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-surface/80 dark:bg-black/80 backdrop-blur-md border border-line px-2.5 py-0.5 text-xs font-mono text-muted">
               أ/ محمد سعيد
             </span>
           )}
@@ -225,7 +225,7 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
           </div>
 
           <div className="space-y-3 mt-auto">
-            <div className="flex items-center gap-4 font-mono text-[11px] text-muted pt-1">
+            <div className="flex items-center gap-4 font-mono text-xs text-muted pt-1">
               <span className="inline-flex items-center gap-1">
                 <BookOpen size={13} className="text-neon-lime" /> {course.lessonsCount} درس
               </span>

@@ -87,14 +87,14 @@ export function LogoWordmark({
       {!compact && (
         <div className="flex flex-col text-start">
           <div className="flex items-center gap-1.5 leading-none">
-            <span className="text-lg font-black tracking-tight text-white font-mono">
+            <span className="text-xl font-black tracking-tight text-white font-mono">
               DROS
             </span>
-            <span className="text-lg font-black tracking-tight text-[#FFC400] font-mono">
+            <span className="text-xl font-black tracking-tight text-[#FFC400] font-mono">
               MATH
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-1 text-[9px] font-semibold text-[#A9B3B0] tracking-wide">
+          <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#A9B3B0] tracking-wide">
             <span>ENGLISH MATH · MR. MOHAMED SAEED</span>
           </div>
         </div>

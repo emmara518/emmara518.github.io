@@ -188,14 +188,14 @@ export function CommandPalette({
             aria-label="ابحث في الأوامر"
             className="h-13 w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted"
           />
-          <kbd className="shrink-0 rounded-md border border-line bg-surface2 px-1.5 py-0.5 font-mono text-[10px] text-muted" dir="ltr">
+          <kbd className="shrink-0 rounded-md border border-line bg-surface2 px-1.5 py-0.5 font-mono text-xs text-muted" dir="ltr">
             ESC
           </kbd>
         </div>
 
         <div ref={listRef} className="custom-scrollbar max-h-[46vh] overflow-y-auto p-2">
           {filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">لا توجد نتائج مطابقة.</p>
+            <p className="py-8 text-center text-base text-muted">لا توجد نتائج مطابقة.</p>
           ) : (
             filtered.map((cmd, idx) => {
               const showGroup = cmd.group !== lastGroup;
@@ -204,7 +204,7 @@ export function CommandPalette({
               return (
                 <div key={cmd.id}>
                   {showGroup && (
-                    <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <p className="px-2 pb-1 pt-3 text-xs font-semibold uppercase tracking-tag text-muted">
                       {cmd.group}
                     </p>
                   )}
@@ -214,7 +214,7 @@ export function CommandPalette({
                     onMouseEnter={() => setActiveIdx(idx)}
                     onClick={() => runCommand(cmd)}
                     className={cn(
-                      "flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-start text-[13px] transition-colors",
+                      "flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm transition-colors",
                       active ? "bg-brand/10 text-ink" : "text-muted hover:bg-surface2"
                     )}
                   >
@@ -228,7 +228,7 @@ export function CommandPalette({
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-line bg-surface2/60 px-4 py-2.5 text-[11px] text-muted">
+        <div className="flex items-center justify-between gap-3 border-t border-line bg-surface2/60 px-4 py-2.5 text-xs text-muted">
           <span className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <kbd className="rounded border border-line bg-surface px-1 font-mono" dir="ltr">↑↓</kbd> تنقل

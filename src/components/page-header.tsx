@@ -19,13 +19,13 @@ export function PageHeader({
   return (
     <header className="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-4">
       <div className="space-y-1">
-        <h1 className="text-lg font-black text-ink">{title}</h1>
-        {subtitle ? <p className="text-xs font-semibold text-muted">{subtitle}</p> : null}
+        <h1 className="type-display text-xl font-black text-ink">{title}</h1>
+        {subtitle ? <p className="text-sm font-semibold text-muted">{subtitle}</p> : null}
       </div>
       <div className="flex items-center gap-3">
         {actions}
         {backHref ? (
-          <Link href={backHref} className="text-xs font-bold text-brand hover:underline">
+          <Link href={backHref} className="text-sm font-bold text-brand hover:underline">
             ← {backLabel}
           </Link>
         ) : null}

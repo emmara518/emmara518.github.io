@@ -104,8 +104,8 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
       <Link href={identityHref} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar name={user.name} src={user.avatarUrl} size="sm" />
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-xs font-extrabold text-ink">{user.name}</p>
-          <p className="text-[10px] font-semibold text-muted">{roleLabel}</p>
+          <p className="truncate text-sm font-extrabold text-ink">{user.name}</p>
+          <p className="text-xs font-semibold text-muted">{roleLabel}</p>
         </div>
       </Link>
 
@@ -121,7 +121,7 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
           >
             <Bell size={17} />
             {unread > 0 && (
-              <span className="absolute -top-1 -end-1 grid size-4 place-items-center rounded-full bg-danger font-mono text-[9px] font-bold text-white">
+              <span className="absolute -top-1 -end-1 grid size-4 place-items-center rounded-full bg-danger font-mono text-xs font-bold text-white">
                 {unread > 9 ? "+9" : unread}
               </span>
             )}
@@ -130,12 +130,12 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
           {bellOpen && (
             <div className="absolute end-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-lift">
               <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-                <span className="text-xs font-extrabold text-ink">الإشعارات</span>
+                <span className="text-sm font-extrabold text-ink">الإشعارات</span>
                 {unread > 0 && (
                   <button
                     onClick={markAllRead}
                     disabled={marking}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:underline disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline disabled:opacity-50"
                   >
                     <CheckCheck size={13} />
                     تعليم الكل كمقروء
@@ -152,8 +152,8 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
                         <p className="text-xs font-bold text-ink">{n.title}</p>
                         {!n.read && <span className="mt-1 size-1.5 shrink-0 rounded-full bg-brand" aria-hidden />}
                       </div>
-                      {n.body ? <p className="mt-0.5 line-clamp-2 text-[11px] leading-5 text-muted">{n.body}</p> : null}
-                      <p className="mt-1 font-mono text-[10px] text-muted/70">{timeAgo(n.createdAt)}</p>
+                      {n.body ? <p className="mt-0.5 line-clamp-2 text-sm leading-relaxed text-muted">{n.body}</p> : null}
+                      <p className="mt-1 font-mono text-xs text-muted/70">{timeAgo(n.createdAt)}</p>
                     </li>
                   ))
                 )}
@@ -186,7 +186,7 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
 
         <Link
           href="/"
-          className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-muted/80 hover:text-ink sm:inline-flex"
+          className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-muted/80 hover:text-ink sm:inline-flex"
         >
           <Home size={14} />
           الرئيسية العامة

@@ -55,11 +55,11 @@ export function CompactFeaturesSection() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] font-bold tracking-tag text-neon-lime uppercase">
+                <span className="font-mono text-xs font-bold tracking-tag text-neon-lime uppercase">
                   WHY DROS MATH
                 </span>
                 <span className="inline-block size-1 rounded-full bg-neon-lime" />
-                <span className="text-[11px] font-ui text-muted">المزايا المحورية</span>
+                <span className="text-xs font-ui text-muted">المزايا المحورية</span>
               </div>
               <h2 className="type-h3 text-ink leading-snug">
                 لماذا تختار منصة دروس ماث مع مستر محمد سعيد؟
@@ -68,7 +68,7 @@ export function CompactFeaturesSection() {
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-line px-3 py-1 text-[11px] font-mono text-muted shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-line px-3 py-1 text-xs font-mono text-muted shadow-sm">
               <span className="size-1.5 rounded-full bg-neon-lime animate-ping" />
               عرض تفاعلي متحرك
             </span>
@@ -117,7 +117,7 @@ export function CompactFeaturesSection() {
                       >
                         <Icon size={16} />
                       </div>
-                      <span className="font-mono text-[10px] font-bold text-muted tracking-tag">
+                      <span className="font-mono text-xs font-bold text-muted tracking-tag">
                         {item.tag}
                       </span>
                     </div>
@@ -127,16 +127,16 @@ export function CompactFeaturesSection() {
 
                   {/* Body Content */}
                   <div className="space-y-1">
-                    <h3 className="type-h3 text-sm text-ink group-hover:text-neon-lime transition-colors flex items-center gap-1.5">
+                    <h3 className="type-h3 text-base font-bold text-ink group-hover:text-neon-lime transition-colors flex items-center gap-1.5">
                       {item.title}
                     </h3>
-                    <p className="text-[11px] font-ui leading-relaxed text-muted line-clamp-2 font-normal">
+                    <p className="text-xs font-ui leading-relaxed text-muted line-clamp-2 font-normal">
                       {item.text}
                     </p>
                   </div>
 
                   {/* Micro Footer Accent */}
-                  <div className="mt-3 pt-2 border-t border-line flex items-center justify-between text-[10px] font-mono text-muted">
+                  <div className="mt-3 pt-2 border-t border-line flex items-center justify-between text-xs font-mono text-muted">
                     <span className="flex items-center gap-1 group-hover:text-ink transition-colors font-ui">
                       <CheckCircle2 size={11} className="text-neon-lime" />
                       ميزة نشطة
