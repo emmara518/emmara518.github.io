@@ -112,6 +112,7 @@ export const CATEGORIES: CategoryDef[] = [
       { id: "orders_table", label: "جدول الطلبات", icon: ShoppingCart },
       { id: "subscriptions_table", label: "جداول الاشتراكات", icon: CalendarClock },
       { id: "invoices_table", label: "جداول الفواتير", icon: Receipt },
+      { id: "cancel_subscription", label: "إلغاء اشتراك", icon: Banknote },
     ],
   },
   {
@@ -124,6 +125,7 @@ export const CATEGORIES: CategoryDef[] = [
       { id: "add_student", label: "إضافة طالب جديد", icon: UserPlus },
       { id: "manage_admin", label: "إدارة المسؤولين والمشرفين", icon: ShieldCheck },
       { id: "users_stats", label: "إحصائيات الطلاب", icon: BarChart3 },
+      { id: "login_sessions", label: "مراجعة جلسات الدخول", icon: History },
     ],
   },
   {
@@ -133,7 +135,9 @@ export const CATEGORIES: CategoryDef[] = [
     description: "تنبيهات جماعية للطلاب، وإشراف ومتابعة منشورات المجتمع",
     subFeatures: [
       { id: "sms_messages", label: "إرسال تنبيه جماعي", icon: Send },
+      { id: "community_groups", label: "مجموعات المجتمع", icon: Users },
       { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب", icon: MessagesSquare },
+      { id: "moderator_stats", label: "إحصائيات المشرفين", icon: BarChart3 },
     ],
   },
   {

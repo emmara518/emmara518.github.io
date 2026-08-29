@@ -7,6 +7,7 @@ import {
   ArrowDown,
   ArrowUp,
   Ban,
+  Banknote,
   BarChart3,
   BookOpen,
   Check,
@@ -33,6 +34,7 @@ import {
   ListChecks,
   Loader2,
   MessageSquare,
+  MessagesSquare,
   Paperclip,
   Pencil,
   Plus,
@@ -607,9 +609,82 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
   const [newStudentPhone, setNewStudentPhone] = useState("");
   const [newStudentPass, setNewStudentPass] = useState("12345678");
 
+  /* Community groups management */
+  const [cgList, setCgList] = useState<{ id: string; name: string; description: string; scope: string; courseId?: string | null; courseTitle?: string; stageId?: string | null; stageName?: string; coverImageUrl?: string | null; isActive: boolean; moderationRequired: boolean; sortOrder: number; postsCount: number; membersCount: number; createdAt: string }[]>([]);
+  const [cgFormOpen, setCgFormOpen] = useState(false);
+  const [cgName, setCgName] = useState("");
+  const [cgDescription, setCgDescription] = useState("");
+  const [cgScope, setCgScope] = useState<"public" | "course" | "stage" | "custom">("public");
+  const [cgCourseId, setCgCourseId] = useState("");
+  const [cgStageId, setCgStageId] = useState("");
+  const [cgCover, setCgCover] = useState("");
+  const [cgSortOrder, setCgSortOrder] = useState("0");
+  const [cgMembers, setCgMembers] = useState("");
+  const [cgModeration, setCgModeration] = useState(true);
+  const [cgBusy, setCgBusy] = useState(false);
+
+  // Load community groups on mount of community section
+  useEffect(() => {
+    if (activeCategory !== "communications" || activeSubFeature !== "community_groups") return;
+    const cookie = (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "");
+    let cancelled = false;
+    fetch("/api/v1/admin/community-groups", { headers: { cookie: "dros_session=" + cookie } })
+      .then((r) => r.json())
+      .then((j) => { if (!cancelled && j.ok) setCgList(j.data || []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [activeCategory, activeSubFeature]);
+
+  async function createCommunityGroup(e: FormEvent) {
+    e.preventDefault();
+    if (cgBusy) return;
+    setCgBusy(true);
+    const body: Record<string, unknown> = {
+      name: cgName,
+      description: cgDescription,
+      scope: cgScope,
+      moderationRequired: cgModeration,
+      sortOrder: Number(cgSortOrder) || 0,
+    };
+    if (cgCover) body.coverImageUrl = cgCover;
+    if (cgScope === "course" && cgCourseId) body.courseId = cgCourseId;
+    if (cgScope === "stage" && cgStageId) body.stageId = cgStageId;
+    if (cgScope === "custom" && cgMembers) {
+      body.memberUserIds = cgMembers.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+    const data = await api("/api/v1/admin/community-groups", {
+      method: "POST", body: JSON.stringify(body),
+    }, { noRefresh: true, silent: true });
+    setCgBusy(false);
+    if (!data) { pushToast("err", "فشل إنشاء المجموعة"); return; }
+    setCgList((prev) => [...prev, data.group]);
+    setCgName(""); setCgDescription(""); setCgScope("public");
+    setCgCourseId(""); setCgStageId(""); setCgCover(""); setCgSortOrder("0");
+    setCgMembers(""); setCgModeration(true); setCgFormOpen(false);
+    pushToast("ok", "تم إنشاء المجموعة بنجاح");
+  }
+
+  async function toggleCgActive(g: { id: string; isActive: boolean }) {
+    const res = await api(`/api/v1/admin/community-groups/${g.id}`, {
+      method: "PATCH", body: JSON.stringify({ isActive: !g.isActive }),
+    }, { noRefresh: true, silent: true });
+    if (res) {
+      setCgList((prev) => prev.map((x) => x.id === g.id ? { ...x, isActive: !g.isActive } : x));
+    }
+  }
+
+  async function deleteCommunityGroup(id: string) {
+    const res = await api(`/api/v1/admin/community-groups/${id}`, { method: "DELETE" }, { noRefresh: true, silent: true });
+    if (res !== null) {
+      setCgList((prev) => prev.filter((g) => g.id !== id));
+      pushToast("ok", "تم حذف المجموعة");
+    } else {
+      pushToast("err", "فشل الحذف");
+    }
+  }
+
   /* Broadcast */
   const [smsTarget, setSmsTarget] = useState<"all" | "students" | "parents" | "centers" | "specific_students" | "course_students">("students");
-  const setSmsTargetTyped = (val: string) => setSmsTarget(val as "all" | "students" | "parents" | "centers" | "specific_students" | "course_students");
   const [smsTitle, setSmsTitle] = useState("");
   const [smsText, setSmsText] = useState("");
   const [smsStudentIds, setSmsStudentIds] = useState("");
@@ -4519,6 +4594,151 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       )}
 
       {/* ═══ 6. COMMUNICATIONS & FORUM ═══ */}
+      {activeCategory === "communications" && activeSubFeature === "community_groups" && (
+        <Card className="space-y-4 p-6">
+          <SectionHeader
+            icon={Users}
+            title="مجموعات المجتمع"
+            count={cgList.length}
+            hint="أنشئ مجموعات نقاش عامة، أو مرتبطة بكورس محدد، أو بمرحلة، أو مخصصة لمستخدمين بعينهم"
+            actions={
+              <Button onClick={() => setCgFormOpen((v) => !v)} variant="primary" size="sm">
+                <Plus size={14} /> مجموعة جديدة
+              </Button>
+            }
+          />
+
+          {cgFormOpen && (
+            <form
+              onSubmit={createCommunityGroup}
+              className="space-y-3 rounded-xl border border-brand/40 bg-brand/5 p-4"
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="اسم المجموعة">
+                  <Input required value={cgName} onChange={(e) => setCgName(e.target.value)} placeholder="مثال: جروب الفائقين" />
+                </Field>
+                <Field label="النطاق (من يستطيع رؤية النقاشات)">
+                  <Select value={cgScope} onChange={(e) => setCgScope(e.target.value as typeof cgScope)}>
+                    <option value="public">متاح للعامه</option>
+                    <option value="course">للمشتركين في كورس محدد</option>
+                    <option value="stage">لطلاب مرحلة محددة</option>
+                    <option value="custom">حسب تخصيص الأدمن (يدوي)</option>
+                  </Select>
+                </Field>
+              </div>
+              {cgScope === "course" && (
+                <Field label="اختر الكورس">
+                  <Select value={cgCourseId} onChange={(e) => setCgCourseId(e.target.value)}>
+                    <option value="">— اختر كورس —</option>
+                    {localCourses.map((c) => (
+                      <option key={c.id} value={c.id}>{c.title}</option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+              {cgScope === "stage" && (
+                <Field label="اختر المرحلة الدراسية">
+                  <Select value={cgStageId} onChange={(e) => setCgStageId(e.target.value)}>
+                    <option value="">— اختر مرحلة —</option>
+                    {localStages.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </Select>
+                </Field>
+              )}
+              {cgScope === "custom" && (
+                <Field label="IDs الأعضاء (افصل بفواصل)">
+                  <Input value={cgMembers} onChange={(e) => setCgMembers(e.target.value)} placeholder="uuid1,uuid2,uuid3" className="font-mono text-xs" />
+                </Field>
+              )}
+              <Field label="الوصف">
+                <Input value={cgDescription} onChange={(e) => setCgDescription(e.target.value)} placeholder="وصف مختصر للمجموعة" />
+              </Field>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="رابط صورة الغلاف (اختياري)">
+                  <Input dir="ltr" value={cgCover} onChange={(e) => setCgCover(e.target.value)} placeholder="https://..." />
+                </Field>
+                <Field label="الترتيب">
+                  <Input type="number" min="0" value={cgSortOrder} onChange={(e) => setCgSortOrder(e.target.value)} />
+                </Field>
+              </div>
+              <label className="flex items-center gap-2 text-xs font-medium text-ink">
+                <input type="checkbox" checked={cgModeration} onChange={(e) => setCgModeration(e.target.checked)} className="rounded accent-brand" />
+                تتطلب مراجعة المشرفين قبل ظهور المنشورات
+              </label>
+              <div className="flex justify-end gap-2">
+                <Button type="button" onClick={() => setCgFormOpen(false)} variant="ghost" size="sm">إلغاء</Button>
+                <Button type="submit" disabled={cgBusy} variant="primary" size="sm">
+                  {cgBusy ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                  إنشاء المجموعة
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {cgList.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted">لا توجد مجموعات بعد — أنشئ أول مجموعة باستخدام الزر أعلاه.</p>
+          ) : (
+            <DraggableList
+              items={cgList}
+              onReorder={(newOrder) => {
+                setCgList(newOrder.map((g, i) => ({ ...g, sortOrder: i + 1 })));
+                // Optional: persist to backend
+              }}
+              renderItem={(g, handleProps) => {
+                const scopeLabels: Record<string, { label: string; cls: string }> = {
+                  public: { label: "عام", cls: "bg-brand/10 text-brand" },
+                  course: { label: "كورس", cls: "bg-gold/10 text-gold" },
+                  stage: { label: "مرحلة", cls: "bg-success/10 text-success" },
+                  custom: { label: "مخصص", cls: "bg-surface2 text-muted" },
+                };
+                const sl = scopeLabels[g.scope] ?? scopeLabels.public;
+                return (
+                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface2/40 p-3">
+                    <button type="button" {...handleProps} title="اسحب" aria-label="اسحب المجموعة">
+                      <GripVertical size={14} />
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-bold text-ink">{g.name}</p>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${sl.cls}`}>{sl.label}</span>
+                        {!g.isActive && <span className="rounded-full border border-line bg-surface px-2 py-0.5 text-[10px] font-bold text-muted">معطل</span>}
+                      </div>
+                      <p className="mt-0.5 truncate text-[11px] text-muted">{g.description || "—"}</p>
+                      <p className="font-mono text-[10px] text-muted">
+                        {(g as any).courseTitle ?? ""} {(g as any).stageName ?? ""} · {g.postsCount} منشور · {g.membersCount} عضو
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleCgActive(g)}
+                        className={`rounded-md border px-2 py-1 text-[10px] font-bold transition-colors ${
+                          g.isActive ? "border-success/30 text-success" : "border-line text-muted"
+                        }`}
+                        title={g.isActive ? "تعطيل" : "تفعيل"}
+                      >
+                        {g.isActive ? "مفعّل" : "معطل"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`حذف المجموعة "${g.name}"؟`)) void deleteCommunityGroup(g.id);
+                        }}
+                        className="rounded-md p-1 text-muted transition-colors hover:text-danger"
+                        aria-label={`حذف ${g.name}`}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          )}
+        </Card>
+      )}
+
       {activeCategory === "communications" && activeSubFeature === "sms_messages" && (
         <Card className="mx-auto max-w-xl space-y-4 p-6">
           <SectionHeader icon={Send} title="إرسال تنبيه جماعي" hint="يصل التنبيه كإشعار داخلي داخل منصة الطالب فوراً" />
@@ -4527,7 +4747,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             className="space-y-4"
           >
             <Field label="الشريحة المستهدفة">
-              <Select value={smsTarget} onChange={(e) => setSmsTargetTyped(e.target.value)} className="h-10 text-xs">
+              <Select value={smsTarget} onChange={(e) => setSmsTarget(e.target.value as typeof smsTarget)} className="h-10 text-xs">
                 <option value="all">جميع المستخدمين المسجلين</option>
                 <option value="students">الطلاب فقط</option>
                 <option value="parents">أولياء الأمور</option>
@@ -5516,6 +5736,15 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       )}
 
       {/* ── Global overlays ── */}
+      {/* Login sessions review */}
+      {activeCategory === "users" && activeSubFeature === "login_sessions" && <LoginSessionsSection />}
+
+      {/* Community moderator stats */}
+      {activeCategory === "communications" && activeSubFeature === "moderator_stats" && <ModeratorStatsSection />}
+
+      {/* Cancel subscription */}
+      {activeCategory === "billing_codes" && activeSubFeature === "cancel_subscription" && <CancelSubscriptionSection />}
+
       <StudentProfileModal
         student={profileUser}
         subscriptions={localSubscriptions}
@@ -5532,5 +5761,143 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />
     </div>
     </TablePrefsProvider>
+  );
+}
+
+/* ── Login sessions review (live session audit) ── */
+function LoginSessionsSection() {
+  const [rows, setRows] = useState<Array<{ id: string; userId: string; userName: string; userEmail: string; userRole: string; expiresAt: string; createdAt: string }>>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+  useEffect(() => {
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    fetch("/api/v1/admin/sessions", { headers: { cookie: "dros_session=" + cookie } })
+      .then((r) => r.json())
+      .then((j) => { if (j.ok) setRows(j.data.sessions || []); })
+      .catch(() => {});
+  }, []);
+  return (
+    <Card className="space-y-4 p-6">
+      <SectionHeader icon={Clock} title="جلسات الدخول النشطة" count={rows.length} hint="مراجعة الأجهزة النشطة — يمكنك إلغاء جلسة مشبوهة" />
+      {rows.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted">لا توجد جلسات نشطة.</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface2/40 p-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-ink">{r.userName}</p>
+                <p className="font-mono text-[10px] text-muted" dir="ltr">{r.userEmail} · {r.userRole}</p>
+                <p className="text-[10px] text-muted">بدأت: {new Date(r.createdAt).toLocaleString("ar-EG")} · تنتهي: {new Date(r.expiresAt).toLocaleString("ar-EG")}</p>
+              </div>
+              <Button
+                disabled={busy === r.id}
+                onClick={async () => {
+                  setBusy(r.id);
+                  const res = await fetch(`/api/v1/admin/sessions/${r.id}`, { method: "DELETE", headers: { cookie: "dros_session=" + (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "") } });
+                  setBusy(null);
+                  if (res.ok) setRows((prev) => prev.filter((x) => x.id !== r.id));
+                }}
+                variant="outline"
+                size="sm"
+                className="text-danger"
+              >
+                {busy === r.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                إلغاء الجلسة
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ── Community moderator stats ── */
+function ModeratorStatsSection() {
+  const [data, setData] = useState<{ totals: { replies: number; approvedPosts: number; pendingPosts: number; rejectedPosts: number }; top: Array<{ userId: string; userName: string; repliesCount: number; lastReplyAt: string }> } | null>(null);
+  useEffect(() => {
+    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+    fetch("/api/v1/admin/community/stats", { headers: { cookie: "dros_session=" + cookie } })
+      .then((r) => r.json())
+      .then((j) => { if (j.ok) setData(j.data); })
+      .catch(() => {});
+  }, []);
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-4">
+        <KpiCard icon={MessagesSquare} label="منشورات معتمدة" value={data?.totals.approvedPosts ?? 0} hint="ظهرت للطلاب" />
+        <KpiCard icon={HelpCircle} label="قيد المراجعة" value={data?.totals.pendingPosts ?? 0} hint="بانتظار المشرفين" />
+        <KpiCard icon={MessageSquare} label="ردود المشرفين" value={data?.totals.replies ?? 0} hint="إجمالي الردود" />
+        <KpiCard icon={Send} label="مرفوضة" value={data?.totals.rejectedPosts ?? 0} hint="لم تظهر" />
+      </div>
+      <Card className="space-y-3 p-5">
+        <SectionHeader icon={ShieldCheck} title="أكثر المشرفين نشاطاً" count={data?.top.length ?? 0} hint="حسب عدد الردود على منشورات الطلاب" />
+        {data && data.top.length > 0 ? (
+          <ul className="space-y-2">
+            {data.top.map((m) => (
+              <li key={m.userId} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface2/40 p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-ink">{m.userName}</p>
+                  <p className="text-[10px] text-muted">آخر رد: {new Date(m.lastReplyAt).toLocaleString("ar-EG")}</p>
+                </div>
+                <span className="rounded-md bg-brand/10 px-2 py-1 text-xs font-bold text-brand">{m.repliesCount} رد</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="py-6 text-center text-sm text-muted">لا توجد بيانات بعد.</p>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+/* ── Cancel subscription (admin) ── */
+function CancelSubscriptionSection() {
+  const [subscriptionId, setSubscriptionId] = useState("");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  return (
+    <Card className="mx-auto max-w-xl space-y-4 p-6">
+      <SectionHeader icon={Banknote} title="إلغاء اشتراك طالب" hint="يستخدمه الأدمن لإلغاء اشتراك قائم لمستخدم بعينه، غالباً في حالات الإرجاع أو الاحتيال" />
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!subscriptionId) return;
+          if (!confirm("هل أنت متأكد من إلغاء هذا الاشتراك؟")) return;
+          setBusy(true);
+          const res = await fetch(`/api/v1/admin/subscriptions/${subscriptionId}/cancel`, {
+            method: "POST",
+            headers: { cookie: "dros_session=" + (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? ""), "content-type": "application/json" },
+            body: JSON.stringify({ reason: reason || undefined }),
+          });
+          const json = await res.json().catch(() => null);
+          setBusy(false);
+          if (json?.ok) {
+            setDone(subscriptionId);
+            setSubscriptionId("");
+            setReason("");
+          } else {
+            alert(json?.error?.message ?? "فشل الإلغاء");
+          }
+        }}
+        className="space-y-3"
+      >
+        <Field label="معرّف الاشتراك (UUID)">
+          <Input dir="ltr" required value={subscriptionId} onChange={(e) => setSubscriptionId(e.target.value)} placeholder="معرّف من جدول الاشتراكات" className="font-mono" />
+        </Field>
+        <Field label="سبب الإلغاء (اختياري)">
+          <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="مثال: طلب استرداد، احتيال..." />
+        </Field>
+        {done && (
+          <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-xs font-bold text-success">تم إلغاء الاشتراك {done.slice(0, 8)}…</p>
+        )}
+        <Button type="submit" disabled={busy || !subscriptionId} variant="primary" className="w-full">
+          {busy ? <Loader2 size={16} className="animate-spin" /> : <Banknote size={16} />}
+          إلغاء الاشتراك
+        </Button>
+      </form>
+    </Card>
   );
 }

@@ -18,11 +18,14 @@ import {
   subscriptions,
   communityPosts,
   communityReplies,
+  communityGroups,
+  communityGroupMembers,
   academicStages,
   auditLogs,
   paymentChannels,
   paymentChannelTypeEnum,
   examGroups,
+  sessions,
 } from "@/db/schema";
 import { ServiceError } from "../errors";
 import type { SessionUser } from "../auth";
@@ -668,6 +671,132 @@ export async function listInvoicesAdmin() {
     .limit(100);
 }
 
+export async function listCommunityGroupsAdmin() {
+  return db
+    .select({
+      id: communityGroups.id,
+      name: communityGroups.name,
+      description: communityGroups.description,
+      scope: communityGroups.scope,
+      courseId: communityGroups.courseId,
+      courseTitle: courses.title,
+      stageId: communityGroups.stageId,
+      stageName: academicStages.name,
+      coverImageUrl: communityGroups.coverImageUrl,
+      iconKey: communityGroups.iconKey,
+      isActive: communityGroups.isActive,
+      moderationRequired: communityGroups.moderationRequired,
+      sortOrder: communityGroups.sortOrder,
+      membersCount: sql<number>`(SELECT count(*)::int FROM ${communityGroupMembers} WHERE ${communityGroupMembers.groupId} = ${communityGroups.id})`,
+      postsCount: sql<number>`(SELECT count(*)::int FROM ${communityPosts} WHERE ${communityPosts.groupId} = ${communityGroups.id})`,
+      createdAt: communityGroups.createdAt,
+    })
+    .from(communityGroups)
+    .leftJoin(courses, eq(communityGroups.courseId, courses.id))
+    .leftJoin(academicStages, eq(communityGroups.stageId, academicStages.id))
+    .orderBy(communityGroups.sortOrder, desc(communityGroups.createdAt))
+    .limit(100);
+}
+
+export async function createCommunityGroup(
+  actor: SessionUser,
+  input: {
+    name: string;
+    description?: string;
+    scope: "public" | "course" | "stage" | "custom";
+    courseId?: string | null;
+    stageId?: string | null;
+    coverImageUrl?: string | null;
+    iconKey?: string | null;
+    moderationRequired?: boolean;
+    sortOrder?: number;
+    memberUserIds?: string[];
+  }
+) {
+  const [created] = await db
+    .insert(communityGroups)
+    .values({
+      name: input.name,
+      description: input.description ?? "",
+      scope: input.scope,
+      courseId: input.courseId ?? null,
+      stageId: input.stageId ?? null,
+      coverImageUrl: input.coverImageUrl ?? null,
+      iconKey: input.iconKey ?? null,
+      moderationRequired: input.moderationRequired ?? true,
+      sortOrder: input.sortOrder ?? 0,
+      isActive: true,
+    })
+    .returning({ id: communityGroups.id, name: communityGroups.name });
+  if (input.scope === "custom" && Array.isArray(input.memberUserIds) && input.memberUserIds.length > 0) {
+    await db
+      .insert(communityGroupMembers)
+      .values(input.memberUserIds.map((userId) => ({ groupId: created.id, userId })))
+      .onConflictDoNothing();
+  }
+  await audit(actor, "community_groups.create", "community_groups", created.id, input);
+  return created;
+}
+
+export async function updateCommunityGroup(
+  actor: SessionUser,
+  id: string,
+  input: Partial<{
+    name: string;
+    description: string;
+    scope: "public" | "course" | "stage" | "custom";
+    courseId: string | null;
+    stageId: string | null;
+    coverImageUrl: string | null;
+    iconKey: string | null;
+    isActive: boolean;
+    moderationRequired: boolean;
+    sortOrder: number;
+  }>
+) {
+  const set: Record<string, unknown> = { updatedAt: new Date() };
+  if (input.name !== undefined) set.name = input.name;
+  if (input.description !== undefined) set.description = input.description;
+  if (input.scope !== undefined) set.scope = input.scope;
+  if (input.courseId !== undefined) set.courseId = input.courseId;
+  if (input.stageId !== undefined) set.stageId = input.stageId;
+  if (input.coverImageUrl !== undefined) set.coverImageUrl = input.coverImageUrl;
+  if (input.iconKey !== undefined) set.iconKey = input.iconKey;
+  if (input.isActive !== undefined) set.isActive = input.isActive;
+  if (input.moderationRequired !== undefined) set.moderationRequired = input.moderationRequired;
+  if (input.sortOrder !== undefined) set.sortOrder = input.sortOrder;
+  await db.update(communityGroups).set(set).where(eq(communityGroups.id, id));
+  await audit(actor, "community_groups.update", "community_groups", id, input);
+  return { id };
+}
+
+export async function deleteCommunityGroup(actor: SessionUser, id: string) {
+  await db.delete(communityGroups).where(eq(communityGroups.id, id));
+  await audit(actor, "community_groups.delete", "community_groups", id);
+  return { id };
+}
+
+export async function listCommunityGroupMembersAdmin(groupId: string) {
+  return db
+    .select({ id: communityGroupMembers.id, userId: communityGroupMembers.userId, name: users.name, email: users.email, role: users.role, createdAt: communityGroupMembers.createdAt })
+    .from(communityGroupMembers)
+    .innerJoin(users, eq(communityGroupMembers.userId, users.id))
+    .where(eq(communityGroupMembers.groupId, groupId))
+    .orderBy(users.name);
+}
+
+export async function addCommunityGroupMember(actor: SessionUser, groupId: string, userId: string) {
+  await db.insert(communityGroupMembers).values({ groupId, userId }).onConflictDoNothing();
+  await audit(actor, "community_groups.add_member", "community_groups", groupId, { userId });
+  return { groupId, userId };
+}
+
+export async function removeCommunityGroupMember(actor: SessionUser, groupId: string, userId: string) {
+  await db.delete(communityGroupMembers).where(and(eq(communityGroupMembers.groupId, groupId), eq(communityGroupMembers.userId, userId)));
+  await audit(actor, "community_groups.remove_member", "community_groups", groupId, { userId });
+  return { groupId, userId };
+}
+
 export async function listCommunityPostsAdmin() {
   return db
     .select({
@@ -679,13 +808,96 @@ export async function listCommunityPostsAdmin() {
       authorName: users.name,
       authorRole: users.role,
       courseTitle: courses.title,
+      groupId: communityPosts.groupId,
+      groupName: communityGroups.name,
       repliesCount: sql<number>`(SELECT count(*)::int FROM ${communityReplies} WHERE ${communityReplies.postId} = ${communityPosts.id})`,
     })
     .from(communityPosts)
     .innerJoin(users, eq(communityPosts.userId, users.id))
     .leftJoin(courses, eq(communityPosts.courseId, courses.id))
+    .leftJoin(communityGroups, eq(communityPosts.groupId, communityGroups.id))
     .orderBy(desc(communityPosts.createdAt))
     .limit(100);
+}
+
+/* ── session & login audit ── */
+
+export async function listActiveSessionsAdmin(limit = 100) {
+  return db
+    .select({
+      id: sessions.id,
+      userId: sessions.userId,
+      userName: users.name,
+      userEmail: users.email,
+      userRole: users.role,
+      expiresAt: sessions.expiresAt,
+      createdAt: sessions.createdAt,
+    })
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .orderBy(desc(sessions.createdAt))
+    .limit(limit);
+}
+
+export async function revokeSessionAdmin(actor: SessionUser, sessionId: string) {
+  await db.delete(sessions).where(eq(sessions.id, sessionId));
+  await audit(actor, "auth.session.revoke", "sessions", sessionId);
+  return { id: sessionId };
+}
+
+export async function cancelSubscriptionAdmin(actor: SessionUser, subscriptionId: string, reason?: string) {
+  const [updated] = await db
+    .update(subscriptions)
+    .set({ status: "cancelled", endsAt: new Date() })
+    .where(eq(subscriptions.id, subscriptionId))
+    .returning({ id: subscriptions.id, userId: subscriptions.userId, courseId: subscriptions.courseId });
+  if (!updated) throw new ServiceError(404, "SUB_NOT_FOUND", "الاشتراك غير موجود");
+  await audit(actor, "subscriptions.cancel", "subscriptions", subscriptionId, { reason });
+  return updated;
+}
+
+/** Community moderator stats: top moderators + activity counts. */
+export async function getCommunityModeratorStats() {
+  const [repliesCount] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(communityReplies);
+  const [approvedCount] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(communityPosts)
+    .where(eq(communityPosts.status, "approved"));
+  const [pendingCount] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(communityPosts)
+    .where(eq(communityPosts.status, "pending"));
+  const [rejectedCount] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(communityPosts)
+    .where(eq(communityPosts.status, "rejected"));
+  const top = await db
+    .select({
+      userId: communityReplies.userId,
+      userName: users.name,
+      repliesCount: sql<number>`count(*)::int`,
+      lastReplyAt: sql<string>`max(${communityReplies.createdAt})::text`,
+    })
+    .from(communityReplies)
+    .innerJoin(users, eq(communityReplies.userId, users.id))
+    .groupBy(communityReplies.userId, users.name)
+    .orderBy(sql`count(*) DESC`)
+    .limit(10);
+  const num = (r: { value: number } | { value: number }[] | undefined) => {
+    if (Array.isArray(r)) return r[0]?.value ?? 0;
+    return r?.value ?? 0;
+  };
+  return {
+    totals: {
+      replies: num(repliesCount),
+      approvedPosts: num(approvedCount),
+      pendingPosts: num(pendingCount),
+      rejectedPosts: num(rejectedCount),
+    },
+    top,
+  };
 }
 
 export async function listStagesAdmin() {

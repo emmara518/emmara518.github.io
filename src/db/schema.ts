@@ -560,6 +560,7 @@ export const communityPosts = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     courseId: uuid("course_id").references(() => courses.id, { onDelete: "cascade" }),
+    groupId: uuid("group_id").references(() => communityGroups.id, { onDelete: "set null" }),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -570,7 +571,11 @@ export const communityPosts = pgTable(
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("posts_course_idx").on(t.courseId), index("posts_status_idx").on(t.status)],
+  (t) => [
+    index("posts_course_idx").on(t.courseId),
+    index("posts_status_idx").on(t.status),
+    index("posts_group_idx").on(t.groupId),
+  ],
 );
 
 /** Moderator/assistant answers under a student post — text plus optional media (video/image/file). */
@@ -592,6 +597,59 @@ export const communityReplies = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("replies_post_idx").on(t.postId)],
+);
+
+/* ── community groups (scoped discussion areas) ── */
+export const communityGroupScopeEnum = pgEnum("community_group_scope", [
+  "public",
+  "course",
+  "stage",
+  "custom",
+]);
+
+export const communityGroups = pgTable(
+  "community_groups",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    /** public | course | stage | custom — who can see the group & its posts. */
+    scope: communityGroupScopeEnum("scope").notNull().default("public"),
+    /** Set when scope = 'course'. */
+    courseId: uuid("course_id").references(() => courses.id, { onDelete: "cascade" }),
+    /** Set when scope = 'stage'. */
+    stageId: uuid("stage_id").references(() => academicStages.id, { onDelete: "cascade" }),
+    /** Cover image shown in the group list. */
+    coverImageUrl: text("cover_image_url"),
+    iconKey: text("icon_key"),
+    isActive: boolean("is_active").notNull().default(true),
+    /** Soft gating — moderation required before posts appear. */
+    moderationRequired: boolean("moderation_required").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("community_groups_scope_idx").on(t.scope),
+    index("community_groups_course_idx").on(t.courseId),
+    index("community_groups_stage_idx").on(t.stageId),
+  ],
+);
+
+/** Custom membership: when scope = 'custom', admin specifies which users can access. */
+export const communityGroupMembers = pgTable(
+  "community_group_members",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => communityGroups.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("cg_member_unique").on(t.groupId, t.userId)],
 );
 
 /* ── parent portal ── */

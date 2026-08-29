@@ -397,6 +397,48 @@ CREATE UNIQUE INDEX IF NOT EXISTS "invoices_order_unique" ON "invoices" ("order_
 CREATE UNIQUE INDEX IF NOT EXISTS "parent_child_unique" ON "parent_links" ("parent_id","student_id");
 CREATE UNIQUE INDEX IF NOT EXISTS "progress_user_video_unique" ON "student_progress" ("user_id","video_id");
 
+/* -- v4 community groups -- */
+DO $ BEGIN
+	CREATE TYPE "public"."community_group_scope" AS ENUM('public', 'course', 'stage', 'custom');
+EXCEPTION
+	WHEN duplicate_object THEN null;
+END $;
+
+CREATE TABLE IF NOT EXISTS "community_groups" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	"description" text DEFAULT '' NOT NULL,
+	"scope" "public"."community_group_scope" DEFAULT 'public' NOT NULL,
+	"course_id" uuid REFERENCES "courses"("id") ON DELETE cascade,
+	"stage_id" uuid REFERENCES "academic_stages"("id") ON DELETE cascade,
+	"cover_image_url" text,
+	"icon_key" text,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"moderation_required" boolean DEFAULT true NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "community_groups_scope_idx" ON "community_groups" ("scope");
+CREATE INDEX IF NOT EXISTS "community_groups_course_idx" ON "community_groups" ("course_id");
+CREATE INDEX IF NOT EXISTS "community_groups_stage_idx" ON "community_groups" ("stage_id");
+
+CREATE TABLE IF NOT EXISTS "community_group_members" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"group_id" uuid NOT NULL REFERENCES "community_groups"("id") ON DELETE cascade,
+	"user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE cascade,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "cg_member_unique" ON "community_group_members" ("group_id","user_id");
+
+ALTER TABLE "community_posts" ADD COLUMN IF NOT EXISTS "group_id" uuid;
+DO $ BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'community_posts_group_id_fkey') THEN
+		ALTER TABLE "community_posts" ADD CONSTRAINT "community_posts_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "community_groups"("id") ON DELETE set null;
+	END IF;
+END $;
+CREATE INDEX IF NOT EXISTS "posts_group_idx" ON "community_posts" ("group_id");
+
 /* -- v3 exams/question bank advanced -- */
 ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "group_id" uuid;
 ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "description" text DEFAULT '' NOT NULL;

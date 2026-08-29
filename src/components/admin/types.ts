@@ -168,6 +168,8 @@ export type PostRow = {
   authorName: string;
   authorRole: string;
   courseTitle: string | null;
+  groupId?: string | null;
+  groupName?: string | null;
   repliesCount: number;
 };
 
