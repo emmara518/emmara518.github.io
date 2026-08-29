@@ -614,6 +614,21 @@ export async function markAllNotificationsRead(userId: string) {
   return { marked: rows.length };
 }
 
+export async function markNotificationRead(userId: string, notificationId: string) {
+  const rows = await db
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, userId),
+        isNull(notifications.readAt),
+      ),
+    )
+    .returning({ id: notifications.id });
+  return { read: rows.length };
+}
+
 export async function getUserNotifications(userId: string, limit = 50) {
   return db
     .select()

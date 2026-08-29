@@ -239,7 +239,7 @@ export default async function CourseDetailPage({
 
         {/* sidebar */}
         <aside className="lg:sticky lg:top-24 h-fit space-y-5">
-          <Card ticks className="space-y-5 p-6">
+          <Card className="space-y-5 p-6">
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted">سعر الاشتراك الكامل</p>

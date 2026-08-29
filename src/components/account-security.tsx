@@ -4,14 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle as Loader2, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "./ui";
+import { ConfirmDialog, type ConfirmRequest } from "@/components/admin/confirm-dialog";
 
+/**
+ * Wrapped in a ConfirmDialog with `requireText="خروج"` so a stray click
+ * can't log the user out of every other device. The visual treatment of
+ * the button itself is preserved — only the click handler is gated.
+ */
 export function LogoutAllButton({ disabled }: { disabled?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmRequest | null>(null);
 
-  async function revokeAll() {
+  async function revokeAll(): Promise<void> {
     setBusy(true);
     setError(null);
     try {
@@ -32,7 +39,22 @@ export function LogoutAllButton({ disabled }: { disabled?: boolean }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Button variant="outline" size="sm" disabled={busy || disabled} onClick={revokeAll}>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={busy || disabled}
+        onClick={() =>
+          setConfirm({
+            title: "إنهاء كل الجلسات الأخرى؟",
+            description:
+              "سيتم تسجيل خروجك من كل الأجهزة الأخرى فوراً. هذا الإجراء لا يمكن التراجع عنه.",
+            confirmLabel: "إنهاء الجلسات",
+            tone: "danger",
+            requireText: "خروج",
+            onConfirm: revokeAll,
+          })
+        }
+      >
         {busy ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} className="-scale-x-100" />}
         تسجيل الخروج من باقي الأجهزة
       </Button>
@@ -43,6 +65,8 @@ export function LogoutAllButton({ disabled }: { disabled?: boolean }) {
         </span>
       ) : null}
       {error ? <span className="text-xs font-semibold text-danger">{error}</span> : null}
+
+      <ConfirmDialog request={confirm} onDone={() => setConfirm(null)} />
     </div>
   );
 }

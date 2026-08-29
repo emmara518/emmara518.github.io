@@ -6,6 +6,8 @@ import { getSessionUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
 import { getChildren } from "@/lib/services/parent.service";
 import { Badge, Card, EmptyState, buttonStyles } from "@/components/ui";
+import { Avatar } from "@/components/avatar";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = { title: "بوابة ولي الأمر" };
 
@@ -26,12 +28,12 @@ export default async function ParentHomePage() {
 
   return (
     <div className="space-y-5">
-      <header className="space-y-1">
-        <h1 className="text-lg font-black text-ink">متابعة الأبناء</h1>
-        <p className="text-xs font-semibold text-muted">
-          نتائج الاختبارات وتقدّم الكورسات لكل ابن مشترك في المنصة — محدّثة لحظة بلحظة.
-        </p>
-      </header>
+      <PageHeader
+        title="متابعة الأبناء"
+        subtitle="نتائج الاختبارات وتقدّم الكورسات لكل ابن مشترك في المنصة — محدّثة لحظة بلحظة."
+        backHref=""
+        backLabel=""
+      />
 
       {children.length === 0 ? (
         <EmptyState
@@ -49,21 +51,7 @@ export default async function ParentHomePage() {
             <Card key={child.id} hover className="flex flex-col gap-4 p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  {child.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={child.avatarUrl}
-                      alt=""
-                      className="size-11 shrink-0 rounded-full object-cover ring-1 ring-line"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden
-                      className="grid size-11 shrink-0 place-items-center rounded-full bg-neon-lime-soft text-sm font-black text-brand ring-1 ring-line"
-                    >
-                      {child.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}
-                    </span>
-                  )}
+                  <Avatar name={child.name} src={child.avatarUrl} size="lg" tone="brand" className="size-11" />
                   <div className="min-w-0 space-y-0.5 leading-tight">
                     <p className="truncate text-sm font-extrabold text-ink">{child.name}</p>
                     <p className="truncate text-[11px] font-semibold text-muted">{child.gradeName ?? "بدون صف دراسي"}</p>

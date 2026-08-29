@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, ClipboardList, Clock } from "lucide-react";
+import { ArrowLeft, Clock, ClipboardList } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
 import { getStudentDashboard } from "@/lib/services/dashboard.service";
 import { Badge, Card, EmptyState, buttonStyles } from "@/components/ui";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = { title: "اختباراتي" };
 
@@ -18,10 +19,10 @@ export default async function StudentExamsPage() {
 
   return (
     <div className="space-y-5">
-      <header className="space-y-1">
-        <h1 className="text-lg font-black text-ink">اختباراتي</h1>
-        <p className="text-xs font-semibold text-muted">الاختبارات المتاحة لكورساتك المشترك بها</p>
-      </header>
+      <PageHeader
+        title="اختباراتي"
+        subtitle="الاختبارات المتاحة لكورساتك المشترك بها"
+      />
 
       {data.upcomingExams.length === 0 ? (
         <EmptyState
@@ -33,7 +34,11 @@ export default async function StudentExamsPage() {
               <Link href="/courses" className={buttonStyles("primary", "sm")}>
                 تصفح الكورسات
               </Link>
-            ) : undefined
+            ) : (
+              <Link href="/dashboard" className={buttonStyles("surface", "sm")}>
+                العودة للرئيسية
+              </Link>
+            )
           }
         />
       ) : (

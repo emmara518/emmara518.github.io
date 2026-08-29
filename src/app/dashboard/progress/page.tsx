@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, GraduationCap } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
 import { listMyEnrollments } from "@/lib/services/dashboard.service";
 import { listMyAttempts } from "@/lib/services/exams.service";
 import { PageHeader } from "@/components/page-header";
-import { ProgressBar } from "@/components/dashboard-widgets";
-import { Badge, Card, EmptyState } from "@/components/ui";
+import { Progress, Badge, Card, EmptyState } from "@/components/ui";
 import { formatDateTime } from "@/lib/format";
 
 export const metadata: Metadata = { title: "تقدمي" };
@@ -57,9 +56,16 @@ export default async function ProgressPage() {
       <section className="space-y-3">
         <h2 className="text-sm font-black text-ink">تقدم الكورسات</h2>
         {enrollments.length === 0 ? (
-          <Card className="px-4 py-6 text-center text-xs font-semibold text-muted">
-            لا توجد كورسات نشطة — اشترك في كورس لبدء تتبع تقدمك.
-          </Card>
+          <EmptyState
+            icon={<GraduationCap size={22} />}
+            title="لا توجد كورسات نشطة بعد."
+            hint="اشترك في كورس لبدء تتبع تقدمك."
+            action={
+              <Link href="/courses" className="rounded-xl bg-brand px-3.5 py-2 text-sm font-semibold text-white">
+                تصفح الكورسات
+              </Link>
+            }
+          />
         ) : (
           <Card className="divide-y divide-line">
             {enrollments.map((e) => {
@@ -75,7 +81,7 @@ export default async function ProgressPage() {
                     </Link>
                     <span className="shrink-0 font-mono text-xs font-black text-brand">{pct}%</span>
                   </div>
-                  <ProgressBar value={pct} />
+                  <Progress value={pct} />
                   <p className="font-mono text-[10px] text-muted">
                     {e.progress.completed}/{e.progress.total} فيديو
                   </p>

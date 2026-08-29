@@ -11,7 +11,8 @@ import {
   Paperclip,
   ShieldCheck,
 } from "lucide-react";
-import { Badge, Card } from "./ui";
+import { Avatar } from "@/components/avatar";
+import { Badge, Card, EmptyState } from "./ui";
 import { timeAgo } from "@/lib/format";
 
 export type FeedReply = {
@@ -34,6 +35,8 @@ export type FeedPost = {
   authorName: string;
   authorRole: string;
   courseTitle: string | null;
+  groupId?: string | null;
+  groupName?: string | null;
   replies: FeedReply[];
 };
 
@@ -87,13 +90,11 @@ export function CommunityFeed({ posts }: { posts: FeedPost[] }) {
 
   if (posts.length === 0) {
     return (
-      <Card className="grid place-items-center gap-3 p-14 text-center">
-        <MessagesSquare size={26} className="text-muted" />
-        <p className="font-bold">لا توجد منشورات بعد</p>
-        <p className="max-w-sm text-sm leading-7 text-muted">
-          كن أول من يطرح سؤالاً — اكتبه في نموذج «اسأل» وسيظهر هنا بعد المراجعة.
-        </p>
-      </Card>
+      <EmptyState
+        icon={<MessagesSquare size={22} />}
+        title="لا توجد منشورات بعد"
+        hint="كن أول من يطرح سؤالاً — اكتبه في نموذج «اسأل» وسيظهر هنا بعد المراجعة."
+      />
     );
   }
 
@@ -131,13 +132,12 @@ export function CommunityFeed({ posts }: { posts: FeedPost[] }) {
           {/* head */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span className="flex items-center gap-2 font-bold text-ink">
-              <span className="grid size-7 place-items-center rounded-full bg-surface2 text-[10px] font-black text-muted">
-                {p.authorName.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}
-              </span>
+              <Avatar name={p.authorName} size="xs" className="size-7" />
               {p.authorName}
             </span>
             <div className="flex flex-wrap items-center gap-2">
               {p.courseTitle ? <Badge tone="brand">{p.courseTitle}</Badge> : null}
+                      {p.groupName ? <Badge tone="gold">مجموعة: {p.groupName}</Badge> : null}
               {p.status === "pending" ? (
                 <span className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-[10px] font-semibold text-gold">
                   <Hourglass size={11} /> قيد مراجعة المشرفين

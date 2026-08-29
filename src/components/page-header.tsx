@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-/** Consistent sub-page header — title, one-line subtitle, back navigation. */
+/** Consistent sub-page header — title, one-line subtitle, optional back navigation. */
 export function PageHeader({
   title,
   subtitle,
@@ -11,6 +11,7 @@ export function PageHeader({
 }: {
   title: string;
   subtitle?: string;
+  /** Pass an empty string to suppress the back link. */
   backHref?: string;
   backLabel?: string;
   actions?: ReactNode;
@@ -23,9 +24,11 @@ export function PageHeader({
       </div>
       <div className="flex items-center gap-3">
         {actions}
-        <Link href={backHref} className="text-xs font-bold text-brand hover:underline">
-          ← {backLabel}
-        </Link>
+        {backHref ? (
+          <Link href={backHref} className="text-xs font-bold text-brand hover:underline">
+            ← {backLabel}
+          </Link>
+        ) : null}
       </div>
     </header>
   );

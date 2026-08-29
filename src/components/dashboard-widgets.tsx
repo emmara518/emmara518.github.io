@@ -1,27 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
-import {
-  ArrowLeft,
-  Bell,
-  BookOpen,
-  CheckCircle2,
-  ClipboardList,
-  Clock,
-  Play,
-} from "lucide-react";
-import type { NextAction, DashboardActivity } from "@/lib/services/dashboard.service";
-import { Badge, Card, buttonStyles } from "@/components/ui";
+import { ArrowLeft, BookOpen, Clock, Play, Sparkles } from "lucide-react";
+import type { NextAction } from "@/lib/services/dashboard.service";
+import { Badge, Card, EmptyState, buttonStyles } from "@/components/ui";
+import { LearningCard, type LearningCardEnrollment } from "@/components/learning-card";
 
 /** Student workspace widgets — real data only, quiet visual language. */
-
-type Enrollment = {
-  id: string;
-  slug: string;
-  title: string;
-  gradeName: string;
-  subjectName: string;
-  progress: { total: number; completed: number };
-};
 
 type ExamItem = {
   id: string;
@@ -38,16 +21,41 @@ type Stats = {
   examsCount: number;
 };
 
-export function ProgressBar({ value }: { value: number }) {
+export type { LearningCardEnrollment, ExamItem as DashboardExam, Stats as DashboardStats };
+
+/* ── 0. NEXT BEST ACTION CHIP (header) ──────────────────────────────────── */
+
+/** Compact "what to do next" pill for the greeting row. Hidden when there's
+ *  no actionable next step. */
+export function NextBestActionChip({ action }: { action: NextAction | null }) {
+  if (!action) {
+    return (
+      <Link
+        href="/courses"
+        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-bold text-ink hover:border-brand hover:text-brand"
+      >
+        <Sparkles size={12} />
+        تصفّح الكورسات
+      </Link>
+    );
+  }
+  const label =
+    action.kind === "lesson"
+      ? `الدرس التالي: ${action.courseTitle} — ${action.lessonTitle}`
+      : `اختبار متاح: ${action.examTitle}`;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface2">
-      <div
-        className="h-full rounded-full bg-brand transition-all duration-500"
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-      />
-    </div>
+    <Link
+      href={action.href}
+      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-bold text-ink hover:border-brand hover:text-brand"
+    >
+      {action.kind === "lesson" ? <Play size={12} fill="currentColor" /> : <Sparkles size={12} />}
+      {label}
+    </Link>
   );
 }
+
+/** Backwards-compat alias for the original MentorChip import. */
+export const MentorChip = NextBestActionChip;
 
 /* ── 1. NEXT ACTION ─────────────────────────────────────────────────────── */
 
@@ -117,42 +125,11 @@ export function NextActionCard({
 
 /* ── 2. MY LEARNING ─────────────────────────────────────────────────────── */
 
-function LearningCard({ e }: { e: Enrollment }) {
-  const pct = e.progress.total > 0 ? Math.round((e.progress.completed / e.progress.total) * 100) : 0;
-  return (
-    <Card hover className="flex flex-col gap-3 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-extrabold text-ink">{e.title}</p>
-          <div className="mt-1.5 flex gap-1.5">
-            <Badge tone="brand">{e.subjectName}</Badge>
-            <Badge tone="muted">{e.gradeName}</Badge>
-          </div>
-        </div>
-        <span className="shrink-0 font-mono text-sm font-black text-brand">{pct}%</span>
-      </div>
-      <ProgressBar value={pct} />
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[11px] font-semibold text-muted">
-          {e.progress.completed}/{e.progress.total} فيديو
-        </span>
-        <Link
-          href={`/dashboard/courses/${e.slug}`}
-          className="inline-flex items-center gap-1 text-xs font-bold text-brand hover:underline"
-        >
-          كمل
-          <ArrowLeft size={13} />
-        </Link>
-      </div>
-    </Card>
-  );
-}
-
 export function MyLearningList({
   enrollments,
   viewAll,
 }: {
-  enrollments: Enrollment[];
+  enrollments: LearningCardEnrollment[];
   viewAll?: boolean;
 }) {
   return (
@@ -176,13 +153,16 @@ export function MyLearningList({
       </div>
 
       {enrollments.length === 0 ? (
-        <Card className="flex flex-col items-center gap-2 px-6 py-8 text-center" ticks>
-          <BookOpen size={20} className="text-muted" />
-          <p className="text-sm font-bold text-ink">لسه مفيش كورسات.</p>
-          <Link href="/courses" className={buttonStyles("primary", "sm")}>
-            تصفح الكورسات
-          </Link>
-        </Card>
+        <EmptyState
+          icon={<BookOpen size={20} />}
+          title="لسه مفيش كورسات."
+          hint="ابدأ بتصفح الكورسات المتاحة واشترك في أي كورس."
+          action={
+            <Link href="/courses" className={buttonStyles("primary", "sm")}>
+              تصفح الكورسات
+            </Link>
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
           {enrollments.map((e) => (
@@ -280,67 +260,3 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
     </section>
   );
 }
-
-/* ── 5. RECENT ACTIVITY ─────────────────────────────────────────────────── */
-
-const ACTIVITY_ICONS = {
-  lesson: CheckCircle2,
-  exam: ClipboardList,
-  enrolled: BookOpen,
-  notification: Bell,
-} as const;
-
-export function ActivityCard({ items }: { items: DashboardActivity[] }) {
-  return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black text-ink">آخر نشاط</h2>
-        {items.length > 0 ? (
-          <Link href="/dashboard/activity" className="text-xs font-bold text-brand hover:underline">
-            عرض الكل ←
-          </Link>
-        ) : null}
-      </div>
-      <Card className="divide-y divide-line">
-        {items.length === 0 ? (
-          <p className="px-4 py-6 text-center text-xs font-semibold text-muted">لا يوجد نشاط بعد.</p>
-        ) : (
-          items.slice(0, 3).map((item) => {
-            const Icon = ACTIVITY_ICONS[item.kind];
-            return (
-              <div key={`${item.kind}-${item.id}`} className="flex items-start gap-2.5 px-4 py-3">
-                <Icon
-                  size={14}
-                  className={item.kind === "lesson" ? "mt-0.5 shrink-0 text-success" : "mt-0.5 shrink-0 text-muted"}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-ink">{item.title}</p>
-                  {item.meta ? <p className="truncate text-[11px] text-muted">{item.meta}</p> : null}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </Card>
-    </section>
-  );
-}
-
-/* ── MENTOR IDENTITY (light) ────────────────────────────────────────────── */
-
-export function MentorChip() {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1">
-      <Image
-        src="/images/assets/teacher.webp"
-        alt=""
-        width={16}
-        height={16}
-        className="size-4 rounded-full object-cover object-top"
-      />
-      <span className="text-[11px] font-bold text-muted">مع مستر محمد سعيد</span>
-    </span>
-  );
-}
-
-export type { Enrollment as DashboardEnrollment, ExamItem as DashboardExam, Stats as DashboardStats };

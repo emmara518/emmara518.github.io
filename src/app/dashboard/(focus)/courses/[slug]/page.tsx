@@ -44,9 +44,5 @@ export default async function LearningRoomPage({
     }
   }
 
-  return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <LessonRoom room={room} initialVideoId={initialVideoId} />
-    </main>
-  );
+  return <LessonRoom room={room} initialVideoId={initialVideoId} />;
 }

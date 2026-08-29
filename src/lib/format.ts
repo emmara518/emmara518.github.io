@@ -45,6 +45,14 @@ export function timeAgo(date: Date | string): string {
   return formatDate(d);
 }
 
+/** Shared labels for wallet transaction kinds — used by `wallet-card.tsx` and `wallet-ops.tsx`. */
+export const TXN_KIND_LABELS: Record<string, string> = {
+  topup: "شحن رصيد",
+  grant: "شحن بكود",
+  purchase: "شراء كورس",
+  refund: "استرداد",
+};
+
 /** Deterministic hue per id — drives generative course artwork. */
 export function hueFromId(id: string): number {
   let h = 0;

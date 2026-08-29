@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Wallet } from "lucide-react";
 import { Card } from "./ui";
-import { formatEGP, timeAgo } from "@/lib/format";
+import { formatEGP, timeAgo, TXN_KIND_LABELS } from "@/lib/format";
 
 export type WalletTxnView = {
   id: string;
@@ -9,13 +9,6 @@ export type WalletTxnView = {
   kind: string;
   note: string;
   createdAt: Date | string;
-};
-
-const TXN_LABELS: Record<string, string> = {
-  topup: "شحن رصيد",
-  grant: "شحن بكود",
-  purchase: "شراء كورس",
-  refund: "استرداد",
 };
 
 /** Compact dashboard balance card — all wallet operations live in /dashboard/wallet. */
@@ -47,7 +40,7 @@ export function WalletCard({
           {transactions.slice(0, 3).map((t) => (
             <li key={t.id} className="flex items-center justify-between gap-2 text-[11px]">
               <span className="min-w-0 truncate text-muted">
-                {TXN_LABELS[t.kind] ?? t.kind} · {timeAgo(t.createdAt)}
+                {TXN_KIND_LABELS[t.kind] ?? t.kind} · {timeAgo(t.createdAt)}
               </span>
               <span className={`shrink-0 font-mono font-bold ${t.amountCents >= 0 ? "text-success" : "text-danger"}`}>
                 {t.amountCents >= 0 ? "+" : "−"}
