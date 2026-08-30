@@ -75,6 +75,24 @@ export default async function AdminPage() {
   }
   const user = sessionUser;
 
+  // Each admin section fetch is wrapped so that a DB failure is
+  // surfaced in the UI as a non-blocking banner instead of silently
+  // returning an empty table.
+  const safe = async <T,>(
+    section: string,
+    fallback: T,
+    p: Promise<T>
+  ): Promise<T> => {
+    try {
+      return await p;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      fetchErrors.push({ section, message: msg });
+      return fallback;
+    }
+  };
+  const fetchErrors: { section: string; message: string }[] = [];
+
   const [
     overview,
     courseRows,
@@ -94,23 +112,23 @@ export default async function AdminPage() {
     stageRows,
     lessonRows,
   ] = await Promise.all([
-    getAdminOverview().catch(() => ({ stats: { students: 0, publishedCourses: 0, revenueCents: 0, activeSubscriptions: 0 }, revenueByMonth: [], recentOrders: [], recentAudit: [] })),
-    listCoursesAdmin().catch(() => []),
-    listUsersAdmin().catch(() => []),
-    listCouponsAdmin().catch(() => []),
-    listOrdersAdmin().catch(() => []),
-    listGrades().catch(() => []),
-    listSubjects().catch(() => []),
-    listExamsAdmin().catch(() => []),
-    listExamAttemptsAdmin().catch(() => []),
-    listVideosAdmin().catch(() => []),
-    listCourseFilesAdmin().catch(() => []),
-    listQuestionBankAdmin().catch(() => []),
-    listSubscriptionsAdmin().catch(() => []),
-    listInvoicesAdmin().catch(() => []),
-    listCommunityPostsAdmin().catch(() => []),
-    listStagesAdmin().catch(() => []),
-    listLessonsAdmin().catch(() => []),
+    safe("overview", { stats: { students: 0, publishedCourses: 0, revenueCents: 0, activeSubscriptions: 0 }, revenueByMonth: [], recentOrders: [], recentAudit: [] }, getAdminOverview()),
+    safe("courses", [] as Awaited<ReturnType<typeof listCoursesAdmin>>, listCoursesAdmin()),
+    safe("users", [] as Awaited<ReturnType<typeof listUsersAdmin>>, listUsersAdmin()),
+    safe("coupons", [] as Awaited<ReturnType<typeof listCouponsAdmin>>, listCouponsAdmin()),
+    safe("orders", [] as Awaited<ReturnType<typeof listOrdersAdmin>>, listOrdersAdmin()),
+    safe("grades", [] as Awaited<ReturnType<typeof listGrades>>, listGrades()),
+    safe("subjects", [] as Awaited<ReturnType<typeof listSubjects>>, listSubjects()),
+    safe("exams", [] as Awaited<ReturnType<typeof listExamsAdmin>>, listExamsAdmin()),
+    safe("exam_attempts", [] as Awaited<ReturnType<typeof listExamAttemptsAdmin>>, listExamAttemptsAdmin()),
+    safe("videos", [] as Awaited<ReturnType<typeof listVideosAdmin>>, listVideosAdmin()),
+    safe("course_files", [] as Awaited<ReturnType<typeof listCourseFilesAdmin>>, listCourseFilesAdmin()),
+    safe("question_bank", [] as Awaited<ReturnType<typeof listQuestionBankAdmin>>, listQuestionBankAdmin()),
+    safe("subscriptions", [] as Awaited<ReturnType<typeof listSubscriptionsAdmin>>, listSubscriptionsAdmin()),
+    safe("invoices", [] as Awaited<ReturnType<typeof listInvoicesAdmin>>, listInvoicesAdmin()),
+    safe("community_posts", [] as Awaited<ReturnType<typeof listCommunityPostsAdmin>>, listCommunityPostsAdmin()),
+    safe("stages", [] as Awaited<ReturnType<typeof listStagesAdmin>>, listStagesAdmin()),
+    safe("lessons", [] as Awaited<ReturnType<typeof listLessonsAdmin>>, listLessonsAdmin()),
   ]);
 
   return (
@@ -144,6 +162,7 @@ export default async function AdminPage() {
       invoices={(invoiceRows || []).map((i) => ({ ...i, issuedAt: new Date(i.issuedAt).toISOString() }))}
       communityPosts={(postRows || []).map((p) => ({ ...p, createdAt: new Date(p.createdAt).toISOString() }))}
       stages={(stageRows || []).map((s) => ({ ...s }))}
+      fetchErrors={fetchErrors}
     />
   );
 }

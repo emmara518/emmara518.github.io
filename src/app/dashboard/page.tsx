@@ -24,10 +24,19 @@ export const revalidate = 0;
 
 export const metadata: Metadata = { title: "لوحة الطالب" };
 
-export default async function StudentDashboardPage() {
+export default async function StudentDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/dashboard");
   if (isAdminRole(user.role)) redirect("/admin");
+  // The register form appends ?welcome=1 to its post-signup redirect
+  // as a one-shot onboarding hint. Honour it by forwarding to the
+  // dedicated /welcome stepper the first time around.
+  const sp = await searchParams;
+  if (sp.welcome === "1") redirect("/welcome");
 
   const data = await getStudentDashboard(user);
   const firstName = user.name.trim().split(/\s+/)[0];
@@ -58,6 +67,7 @@ export default async function StudentDashboardPage() {
       {/* Greeting — student is the center */}
       <PageHeader
         title={`أهلاً، ${firstName}`}
+        overline="DROS MATH · مساحة الطالب"
         backHref=""
         actions={
           <>
@@ -69,6 +79,10 @@ export default async function StudentDashboardPage() {
 
       {/* 1. NEXT ACTION */}
       <NextActionCard action={data.nextAction} progressPct={nextActionPct} />
+
+      <div className="type-divider-ornament" aria-hidden>
+        <span>◆</span>
+      </div>
 
       {/* 2. MY LEARNING */}
       <MyLearningList enrollments={data.enrollments.slice(0, 4)} viewAll />
@@ -82,6 +96,10 @@ export default async function StudentDashboardPage() {
         <ActivityCard items={data.recentActivity} />
       </div>
 
+      <div className="type-divider-ornament" aria-hidden>
+        <span>◆</span>
+      </div>
+
       {/* Secondary tools */}
       <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <div className="min-w-0">
@@ -90,8 +108,8 @@ export default async function StudentDashboardPage() {
 
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-ink">فواتيري</h2>
-            <Link href="/dashboard/invoices" className="text-xs font-bold text-brand hover:underline">
+            <h2 className="type-section-heading">فواتيري</h2>
+            <Link href="/dashboard/invoices" className="text-sm font-bold text-brand hover:underline">
               عرض الكل ←
             </Link>
           </div>

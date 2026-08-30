@@ -30,7 +30,7 @@ export default async function ProgressPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <PageHeader title="تقدمي" subtitle="ملخص تقدمك الحقيقي عبر كورساتك واختباراتك" />
+      <PageHeader title="تقدمي" subtitle="ملخص تقدمك الحقيقي عبر كورساتك واختباراتك" overline="تقدمي" />
 
       {/* stat strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
@@ -46,15 +46,15 @@ export default async function ProgressPage() {
             : []),
         ].map((c) => (
           <Card key={c.label} className="px-4 py-3.5">
-            <span className="block font-mono text-xl font-black text-ink">{c.value}</span>
-            <span className="mt-0.5 block text-[11px] font-bold text-muted">{c.label}</span>
+            <span className="block type-stat-display">{c.value}</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">{c.label}</span>
           </Card>
         ))}
       </div>
 
       {/* per-course progress */}
       <section className="space-y-3">
-        <h2 className="text-sm font-black text-ink">تقدم الكورسات</h2>
+        <h2 className="type-section-heading">تقدم الكورسات</h2>
         {enrollments.length === 0 ? (
           <EmptyState
             icon={<GraduationCap size={22} />}
@@ -75,14 +75,14 @@ export default async function ProgressPage() {
                   <div className="flex items-center justify-between gap-3">
                     <Link
                       href={`/dashboard/courses/${e.slug}`}
-                      className="truncate text-xs font-extrabold text-ink hover:text-brand"
+                      className="truncate text-sm font-extrabold text-ink hover:text-brand"
                     >
                       {e.title}
                     </Link>
-                    <span className="shrink-0 font-mono text-xs font-black text-brand">{pct}%</span>
+                    <span className="shrink-0 font-mono text-sm font-black text-brand">{pct}%</span>
                   </div>
                   <Progress value={pct} />
-                  <p className="font-mono text-[10px] text-muted">
+                  <p className="font-mono text-xs text-muted">
                     {e.progress.completed}/{e.progress.total} فيديو
                   </p>
                 </div>
@@ -95,8 +95,8 @@ export default async function ProgressPage() {
       {/* exam results */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-black text-ink">نتائج الاختبارات</h2>
-          <Link href="/dashboard/exams" className="text-xs font-bold text-brand hover:underline">
+          <h2 className="type-section-heading">نتائج الاختبارات</h2>
+          <Link href="/dashboard/exams" className="text-sm font-bold text-brand hover:underline">
             اختباراتي ←
           </Link>
         </div>
@@ -109,8 +109,8 @@ export default async function ProgressPage() {
               return (
                 <div key={a.id} className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-extrabold text-ink">{a.examTitle}</p>
-                    <p className="mt-0.5 font-mono text-[10px] text-muted">{formatDateTime(a.submittedAt)}</p>
+                    <p className="truncate text-sm font-extrabold text-ink">{a.examTitle}</p>
+                    <p className="mt-0.5 font-mono text-xs text-muted">{formatDateTime(a.submittedAt)}</p>
                   </div>
                   <Badge tone={ratio >= 0.6 ? "success" : "danger"}>
                     {a.score}/{a.totalMarks}

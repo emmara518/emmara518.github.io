@@ -171,17 +171,17 @@ function PillarCard({
         </div>
 
         {/* Drag Helper Tip on Hover */}
-        <div className="absolute bottom-1.5 inset-x-0 text-center text-[9px] text-yellow-400/90 font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div className="absolute bottom-1.5 inset-x-0 text-center text-xs text-yellow-400/90 font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           اسحب للتدوير 3D
         </div>
       </div>
 
       {/* Pillar Info */}
       <div className="space-y-1">
-        <h3 className="text-xs sm:text-sm font-black text-ink group-hover:text-neon-lime transition-colors">
+        <h3 className="text-sm sm:text-base font-black text-ink group-hover:text-neon-lime transition-colors">
           {item.label.split("—")[0].trim()}
         </h3>
-        <span className="block text-[10px] font-bold text-muted truncate">
+        <span className="block text-xs font-bold text-muted truncate">
           {item.branch}
         </span>
 
@@ -192,7 +192,7 @@ function PillarCard({
             e.stopPropagation();
             onSelect(item);
           }}
-          className="mt-1.5 flex items-center justify-center gap-1 w-full rounded-lg bg-slate-900/70 border border-slate-700/60 px-2 py-1.5 text-[10px] font-mono font-semibold text-slate-200 hover:text-neon-lime hover:border-yellow-400/80 transition-colors cursor-pointer"
+          className="mt-1.5 flex items-center justify-center gap-1 w-full rounded-lg bg-slate-900/70 border border-slate-700/60 px-2 py-1.5 text-xs font-mono font-semibold text-slate-200 hover:text-neon-lime hover:border-yellow-400/80 transition-colors cursor-pointer"
         >
           <Sparkles className="size-2.5 text-neon-lime shrink-0" />
           <span className="truncate">{item.formula.split("·")[0]}</span>
@@ -215,14 +215,14 @@ export function MathPillarsInteractive() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold text-neon-lime">3D MATHEMATICAL PILLARS</span>
-            <span className="inline-flex items-center rounded-full bg-yellow-500/15 border border-yellow-400/40 px-2.5 py-0.5 text-[11px] font-black text-neon-lime">
+            <span className="type-eyebrow-display">3D MATHEMATICAL PILLARS</span>
+            <span className="inline-flex items-center rounded-full bg-yellow-500/15 border border-yellow-400/40 px-2.5 py-0.5 text-xs font-black text-neon-lime">
               تفاعلي 3D حر
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-ink mt-1">ركائز الرياضيات وفروع المنهج</h2>
         </div>
-        <p className="text-xs font-medium text-slate-300 max-w-md">
+        <p className="text-sm font-medium text-slate-300 max-w-md">
           حرّك الماوس فوق الرموز أو اسحبها لتدويرها 3D في الفراغ، واضغط على أي رمز لفتحه واستكشاف قوانينه بالتفصيل.
         </p>
       </div>
@@ -296,14 +296,14 @@ export function MathPillarsInteractive() {
 
             {/* Formula Block */}
             <div className="rounded-2xl border border-line bg-surface/80 p-4 font-mono text-center mb-4">
-              <span className="block text-[11px] text-muted font-bold mb-1">الصيغة الرياضية والقانون الأساسي</span>
+              <span className="block text-xs text-muted font-bold mb-1">الصيغة الرياضية والقانون الأساسي</span>
               <span className="text-base sm:text-lg font-black text-neon-lime tracking-wide dir-ltr inline-block">
                 {selectedSymbol.formula}
               </span>
             </div>
 
             {/* Concept Description */}
-            <p className="text-sm text-slate-200 leading-relaxed text-center mb-6 font-medium">
+            <p className="text-base text-slate-200 leading-relaxed text-center mb-6 font-medium">
               {selectedSymbol.desc}
             </p>
 

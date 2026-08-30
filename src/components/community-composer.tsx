@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle as Loader2, Send } from "lucide-react";
-import { Button, Card, Field, Select, Textarea } from "./ui";
+import { Button, Card, Select, Textarea } from "./ui";
+import { Field } from "./ui-field";
 
 export function CommunityComposer({
   courses,
@@ -51,8 +52,8 @@ export function CommunityComposer({
   if (courses.length === 0) {
     return (
       <Card className="space-y-2 p-5 text-center">
-        <p className="text-sm font-bold">مجتمع الطلاب</p>
-        <p className="text-xs leading-relaxed text-muted">
+        <p className="text-base font-bold">مجتمع الطلاب</p>
+        <p className="text-sm leading-relaxed text-muted">
           اشترك في أي كورس لتستطيع طرح أسئلتك على مستر محمد سعيد وفريق المساعدين.
         </p>
       </Card>
@@ -61,10 +62,10 @@ export function CommunityComposer({
 
   return (
     <Card className="fixed inset-x-0 bottom-0 z-20 space-y-3 rounded-none border-x-0 border-b-0 bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lift lg:static lg:inset-auto lg:z-auto lg:space-y-3 lg:rounded-2xl lg:border lg:bg-surface lg:p-5 lg:pb-5 lg:shadow-none">
-      <p className="text-sm font-bold">اسأل مستر محمد سعيد وفريق المساعدين</p>
+      <p className="text-base font-bold">اسأل مستر محمد سعيد وفريق المساعدين</p>
       <form onSubmit={submit} className="space-y-3">
         <Field label="الكورس">
-          <Select value={slug} onChange={(e) => setSlug(e.target.value)} className="h-10 text-xs">
+          <Select value={slug} onChange={(e) => setSlug(e.target.value)} className="h-10 text-sm">
             {courses.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.title}
@@ -74,7 +75,7 @@ export function CommunityComposer({
         </Field>
         {groups.length > 0 && (
           <Field label="مجموعة النقاش (اختياري)">
-            <Select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="h-10 text-xs">
+            <Select value={groupId} onChange={(e) => setGroupId(e.target.value)} className="h-10 text-sm">
               <option value="">— بدون مجموعة (عام) —</option>
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -93,17 +94,17 @@ export function CommunityComposer({
           />
         </Field>
         {done && !busy && (
-          <p className="rounded-xl border border-gold/30 bg-gold/10 px-3 py-2 text-[11px] font-semibold text-gold">
+          <p className="rounded-xl border border-gold/30 bg-gold/10 px-3 py-2 text-xs font-bold text-gold">
             تم إرسال سؤالك — سيظهر هنا للجميع بعد مراجعة المشرفين.
           </p>
         )}
         {error && (
-          <p className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-[11px] font-semibold text-danger">
+          <p className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-xs font-bold text-danger">
             {error}
           </p>
         )}
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] leading-relaxed text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             يُنشر السؤال بعد مراجعة المشرفين، وسيصلك الحل كتعليق من فريق المساعدين.
           </p>
           <Button type="submit" disabled={busy || body.trim().length < 2} variant="primary" size="sm">

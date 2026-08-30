@@ -59,7 +59,7 @@ export function ToastViewport({
             )}
           >
             <Icon size={17} className={cn("mt-0.5 shrink-0", s.iconColor)} />
-            <p className="flex-1 text-[13px] font-medium leading-relaxed text-ink">{t.text}</p>
+            <p className="flex-1 text-sm font-medium leading-relaxed text-ink">{t.text}</p>
             <button
               type="button"
               onClick={() => onDismiss(t.id)}

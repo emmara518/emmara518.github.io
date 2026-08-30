@@ -36,9 +36,11 @@ export function AdminShell({ actorName, actorRole, children }: AdminShellProps) 
           />
         )}
 
-        {/* Mobile drawer — RTL: slides in from the right edge */}
+        {/* Mobile drawer — RTL: slides in from the right edge. `inert`
+           blocks focus and pointer interaction when the drawer is closed. */}
         <div
           aria-hidden={!mobileOpen}
+          inert={!mobileOpen}
           className={cn(
             "fixed inset-y-0 right-0 z-50 w-80 max-w-[85vw] bg-surface shadow-2xl transition-[transform,visibility] duration-300 ease-in-out lg:hidden",
             mobileOpen ? "visible translate-x-0" : "invisible translate-x-full"

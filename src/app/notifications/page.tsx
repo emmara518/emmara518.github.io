@@ -23,7 +23,7 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الإشعارات" subtitle="كل التنبيهات والتحديثات الخاصة بك." backHref={backHref} />
+      <PageHeader title="الإشعارات" subtitle="كل التنبيهات والتحديثات الخاصة بك." overline="كل الإشعارات" backHref={backHref} />
       <NotificationsList notifications={items} />
     </div>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { Topbar } from "./topbar";
 import { PARENT_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,13 @@ export function ParentShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function logout() {
+    await fetch("/api/v1/auth/logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-ink font-sans">
@@ -49,6 +57,16 @@ export function ParentShell({
               </Link>
             );
           })}
+          <div className="ms-auto" />
+          <button
+            type="button"
+            onClick={logout}
+            aria-label="تسجيل الخروج"
+            className="flex items-center gap-2 px-3.5 py-3 text-sm font-bold text-muted transition-colors hover:text-danger"
+          >
+            <LogOut size={14} className="-scale-x-100" />
+            تسجيل الخروج
+          </button>
         </nav>
       </div>
 

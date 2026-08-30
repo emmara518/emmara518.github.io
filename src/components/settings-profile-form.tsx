@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Pencil, Save, X } from "lucide-react";
 import { Avatar } from "@/components/avatar";
-import { Badge, buttonStyles, Card, Field, Input } from "@/components/ui";
+import { Badge, buttonStyles, Card, Input } from "@/components/ui";
+import { Field } from "@/components/ui-field";
 import { formatDate } from "@/lib/format";
 
 export type ProfileShape = {
@@ -149,9 +150,9 @@ export function SettingsProfileForm({ profile }: { profile: ProfileShape }) {
           </Field>
           <div className="sm:col-span-2 flex flex-wrap items-center justify-end gap-2">
             {error ? (
-              <span className="ms-auto text-xs font-semibold text-danger">{error}</span>
+              <span className="ms-auto text-sm font-semibold text-danger">{error}</span>
             ) : info ? (
-              <span className="ms-auto text-xs font-semibold text-success">{info}</span>
+              <span className="ms-auto text-sm font-semibold text-success">{info}</span>
             ) : null}
             <button
               type="button"

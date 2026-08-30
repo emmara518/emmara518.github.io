@@ -4,14 +4,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { LoaderCircle as Loader2, LogIn, UserPlus } from "lucide-react";
-import { Button, Field, Input } from "./ui";
+import { Button, Input } from "./ui";
+import { Field, PasswordInput } from "./ui-field";
 import { isAdminRole, type Role } from "@/lib/rbac";
 import { safeNext } from "@/lib/safe-next";
 
 function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm font-semibold leading-6 text-danger">{message}</p>
+    <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm font-bold leading-relaxed text-danger">{message}</p>
   );
 }
 
@@ -23,10 +24,14 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   async function performLogin(targetEmail: string, targetPass: string, redirectPath?: string) {
     setLoading(true);
     setError(null);
+    setEmailError(null);
+    setPasswordError(null);
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
@@ -35,7 +40,18 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
       });
       const json = await res.json();
       if (!json.ok) {
-        setError(json.error?.message ?? "تعذر تسجيل الدخول");
+        const code = json.error?.code as string | undefined;
+        const msg = json.error?.message ?? "تعذر تسجيل الدخول";
+        // Map known server codes to the most useful field. Unknown
+        // codes still surface in the form-level note.
+        if (code === "BAD_CREDENTIALS") {
+          setEmailError("بيانات الدخول غير صحيحة");
+          setPasswordError("بيانات الدخول غير صحيحة");
+        } else if (code === "EMAIL_TAKEN" /* not for login, but kept for future */) {
+          setEmailError(msg);
+        } else {
+          setError(msg);
+        }
         return;
       }
       const role = json.data.user.role as Role;
@@ -71,12 +87,12 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
   return (
     <form onSubmit={submit} className="space-y-4">
       {authDisabled && (
-        <div className="rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-[13px] font-medium leading-relaxed text-brand">
+        <div className="rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-sm font-semibold leading-relaxed text-brand">
           وضع التطوير: المصادقة معطّلة مؤقتاً — جميع صفحات المنصة تُفتح تلقائياً بصلاحيات مدير النظام.
         </div>
       )}
 
-      <Field label="البريد الإلكتروني / رقم موبايل ولي الأمر">
+      <Field label="البريد الإلكتروني / رقم موبايل ولي الأمر" error={emailError ?? undefined}>
         <Input
           dir="ltr"
           required
@@ -86,9 +102,8 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
           autoComplete="username"
         />
       </Field>
-      <Field label="كلمة المرور">
-        <Input
-          type="password"
+      <Field label="كلمة المرور" error={passwordError ?? undefined}>
+        <PasswordInput
           dir="ltr"
           required
           value={password}
@@ -105,7 +120,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
 
       {IS_DEV && (
         <div className="space-y-2 pt-2">
-          <p className="text-center font-mono text-[11px] text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
+          <p className="text-center font-mono text-xs tracking-wider text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
           <div className="grid grid-cols-2 gap-2">
             {([
               ["student", "طالب"],
@@ -116,7 +131,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
                 type="button"
                 disabled={loading}
                 onClick={quickLogin(who)}
-                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-xs font-bold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
+                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-sm font-extrabold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
               >
                 {label}
               </button>
@@ -216,8 +231,7 @@ export function RegisterForm() {
         />
       </Field>
       <Field label="كلمة المرور" hint="8 أحرف على الأقل">
-        <Input
-          type="password"
+        <PasswordInput
           dir="ltr"
           required
           minLength={8}
@@ -276,7 +290,7 @@ export function ParentRegisterForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-[13px] font-semibold leading-6 text-gold">
+      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-sm font-bold leading-relaxed text-gold">
         أدخل رقم الموبايل الذي أدخله ابنك في خانة «رقم موبايل ولي الأمر» وقت إنشاء حسابه — سنربط حسابك بكل أبنائه المشتركين تلقائيًا.
       </div>
       <Field label="اسم ولي الأمر">
@@ -296,8 +310,7 @@ export function ParentRegisterForm() {
         />
       </Field>
       <Field label="كلمة المرور" hint="8 أحرف على الأقل — ستدخل بها لاحقًا برقم موبايلك">
-        <Input
-          type="password"
+        <PasswordInput
           dir="ltr"
           required
           minLength={8}

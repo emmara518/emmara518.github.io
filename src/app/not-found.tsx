@@ -5,9 +5,11 @@ export default function NotFound() {
   return (
     <main className="mx-auto grid max-w-lg place-items-center px-4 py-24 sm:px-6">
       <Card className="grid w-full place-items-center gap-4 p-12 text-center">
-        <p className="font-mono text-6xl font-extrabold text-brand">404</p>
-        <h1 className="text-xl font-extrabold">صفحة خارج نطاق الحل</h1>
-        <p className="text-sm leading-7 text-muted">
+        <div className="type-eyebrow-display">404 · NOT FOUND</div>
+        <p className="font-mono text-6xl font-black text-brand">404</p>
+        <h1 className="type-headline-display">صفحة خارج نطاق الحل</h1>
+        <div className="type-flourish" aria-hidden />
+        <p className="text-base leading-relaxed text-muted max-w-md">
           كما في المعادلات… أحيانًا نبحث عن قيمة غير موجودة في المجال. عُد إلى الصفحة الرئيسية وواصل رحلتك.
         </p>
         <Link href="/" className={buttonStyles("primary", "md")}>

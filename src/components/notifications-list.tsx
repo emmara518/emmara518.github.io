@@ -73,7 +73,7 @@ export function NotificationsList({ notifications }: { notifications: ListItem[]
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-full border border-line bg-surface p-0.5 text-xs font-bold">
+        <div className="inline-flex rounded-full border border-line bg-surface p-0.5 text-sm font-bold">
           <button
             onClick={() => setFilter("all")}
             className={cn(
@@ -97,7 +97,7 @@ export function NotificationsList({ notifications }: { notifications: ListItem[]
           <button
             onClick={markAll}
             disabled={markingAll}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:underline disabled:opacity-50"
           >
             {markingAll ? <Loader2 size={13} className="animate-spin" /> : <CheckCheck size={13} />}
             تعليم الكل كمقروء
@@ -134,20 +134,20 @@ export function NotificationsList({ notifications }: { notifications: ListItem[]
                   ) : (
                     <p className="block text-sm font-bold text-ink">{n.title}</p>
                   )}
-                  {n.body ? <p className="mt-0.5 line-clamp-2 text-xs leading-6 text-muted">{n.body}</p> : null}
-                  <p className="mt-1 font-mono text-[10px] text-muted/70">{timeAgo(n.createdAt)}</p>
+                  {n.body ? <p className="mt-0.5 line-clamp-2 text-sm leading-relaxed text-muted">{n.body}</p> : null}
+                  <p className="mt-1 font-mono text-xs text-muted/70">{timeAgo(n.createdAt)}</p>
                 </div>
                 {!n.read ? (
                   <button
                     onClick={() => void markOne(n.id)}
                     disabled={busyId === n.id}
-                    className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold text-brand hover:underline disabled:opacity-50"
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-brand hover:underline disabled:opacity-50"
                   >
                     {busyId === n.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                     تعليم كمقروء
                   </button>
                 ) : (
-                  <span className="mt-1 inline-flex shrink-0 items-center gap-1 text-[10px] font-semibold text-muted/70">
+                  <span className="mt-1 inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-muted/70">
                     <Check size={11} /> مقروء
                   </span>
                 )}
@@ -161,7 +161,7 @@ export function NotificationsList({ notifications }: { notifications: ListItem[]
         <div className="flex justify-center">
           <button
             onClick={() => setVisible((v) => v + PAGE_SIZE)}
-            className="rounded-full border border-line bg-surface px-4 py-2 text-xs font-bold text-muted hover:text-ink"
+            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-bold text-muted hover:text-ink"
           >
             تحميل المزيد ({filtered.length - visible} متبقي)
           </button>

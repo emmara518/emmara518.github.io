@@ -15,7 +15,10 @@ function ExamError({ code, message }: { code: string; message: string }) {
   return (
     <Card className="grid place-items-center gap-4 p-12 text-center">
       <Lock size={28} className="text-muted" />
-      <h1 className="text-xl font-extrabold">{notEnrolled ? "الاختبار للمشتركين فقط" : "الاختبار غير متاح"}</h1>
+      <h1 className="type-headline-display">
+        {notEnrolled ? "الاختبار للمشتركين فقط" : "الاختبار غير متاح"}
+      </h1>
+      <div className="type-flourish" aria-hidden />
       <p className="text-sm leading-7 text-muted">{message}</p>
       <Link href="/dashboard/exams" className={buttonStyles("primary", "md")}>
         العودة إلى الاختبارات

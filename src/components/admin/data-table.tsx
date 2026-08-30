@@ -159,8 +159,8 @@ export function DataTable<T extends { id: string }>({
         <div className="grid size-12 place-items-center rounded-2xl bg-surface2 text-muted">
           <Inbox size={22} />
         </div>
-        <p className="font-brand font-semibold text-ink">{emptyTitle}</p>
-        {emptyHint ? <p className="max-w-sm text-[13px] leading-relaxed text-muted">{emptyHint}</p> : null}
+        <p className="type-card-heading">{emptyTitle}</p>
+        {emptyHint ? <p className="max-w-sm text-sm leading-relaxed text-muted">{emptyHint}</p> : null}
         {emptyAction}
       </div>
     );
@@ -195,14 +195,14 @@ export function DataTable<T extends { id: string }>({
                     {selected ? <CheckSquare size={17} /> : <Square size={17} />}
                   </button>
                 )}
-                <div className="font-semibold text-[13px] text-ink leading-relaxed flex-1">
+                <div className="font-semibold text-sm text-ink leading-relaxed flex-1">
                   {mobileTitle ? mobileTitle(row) : columns[0]?.render(row)}
                 </div>
               </div>
               <div className="space-y-1.5">
                 {columns.slice(1).map((col) =>
                   col.hideOnMobile ? null : (
-                    <div key={col.key} className="flex items-center justify-between gap-3 text-xs">
+                    <div key={col.key} className="flex items-center justify-between gap-3 text-sm">
                       <span className="text-muted shrink-0">{col.header}</span>
                       <span className="text-ink text-end">{col.render(row)}</span>
                     </div>
@@ -221,11 +221,11 @@ export function DataTable<T extends { id: string }>({
           stickyHeader && "max-h-[70vh]"
         )}
       >
-        <table className="w-full text-right text-[13px]">
+        <table className="w-full text-right text-sm">
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <thead
             className={cn(
-              "border-b border-line text-xs text-muted bg-surface2 z-10",
+              "border-b border-line text-xs font-bold uppercase tracking-tag text-muted bg-surface2 z-10",
               stickyHeader && "sticky top-0"
             )}
           >
@@ -312,7 +312,7 @@ export function DataTable<T extends { id: string }>({
       </div>
 
       {/* ── Pagination + page size ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-muted" dir="rtl">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-sm text-muted" dir="rtl">
         <div className="flex items-center gap-3">
           <span className="tabular-nums">
             عرض {rows.length === 0 ? 0 : start + 1}–{Math.min(start + pageSize, rows.length)} من {rows.length}

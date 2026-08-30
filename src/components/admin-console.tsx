@@ -57,7 +57,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
+import { Badge, Button, Card, Input, Select, Textarea } from "./ui";
+import { Field } from "./ui-field";
 import { CATEGORIES, findSubFeature, type CategoryId } from "./admin/nav-config";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -197,7 +198,7 @@ function DateRangeInputs({
         <button
           type="button"
           onClick={() => onChange({ from: "", to: "" })}
-          className="cursor-pointer rounded-lg border border-line px-2 py-1.5 text-[11px] text-muted transition-colors hover:text-ink"
+          className="cursor-pointer rounded-lg border border-line px-2 py-1.5 text-xs text-muted transition-colors hover:text-ink"
         >
           مسح
         </button>
@@ -279,7 +280,7 @@ export function parseBulkQuestions(text: string): {
 function RevenueChart({ data }: { data: { month: string; total: number }[] }) {
   const max = Math.max(...data.map((d) => d.total), 1);
   if (data.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted">لا توجد بيانات إيرادات بعد.</p>;
+    return <p className="py-8 text-center text-base text-muted">لا توجد بيانات إيرادات بعد.</p>;
   }
   return (
     <div className="space-y-3">
@@ -328,6 +329,7 @@ export function AdminConsole({
   invoices,
   communityPosts,
   stages,
+  fetchErrors = [],
 }: {
   actor: { name: string; role: Role };
   canManageUsers: boolean;
@@ -348,6 +350,10 @@ export function AdminConsole({
   invoices: InvoiceRow[];
   communityPosts: PostRow[];
   stages: StageRow[];
+  /** Optional list of sections whose server fetch failed. The
+   *  console surfaces them in a single inline banner so the operator
+   *  is never silently looking at empty tables. */
+  fetchErrors?: { section: string; message: string }[];
 }) {
   const router = useRouter();
   const { toasts, push: pushToast, dismiss: dismissToast } = useToasts();
@@ -2105,8 +2111,8 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (c) => (
         <div>
           <p className="font-semibold text-ink">{c.title}</p>
-          <span className="text-[11px] text-muted" dir="ltr">
-            /{c.slug}
+<span className="text-xs text-muted" dir="ltr">
+            {c.slug}
           </span>
         </div>
       ),
@@ -2212,7 +2218,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (o) => (
         <div>
           <p className="font-semibold text-ink">{o.studentName}</p>
-          <span className="text-[11px] text-muted" dir="ltr">{o.studentEmail}</span>
+          <span className="text-xs text-muted" dir="ltr">{o.studentEmail}</span>
         </div>
       ),
     },
@@ -2261,7 +2267,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         const isLast = e.sortOrder >= siblings.length;
         return (
           <div className="flex items-center gap-1">
-            <span className="grid size-6 place-items-center rounded-md bg-surface2 text-[11px] font-bold tabular-nums text-muted">
+            <span className="grid size-6 place-items-center rounded-md bg-surface2 text-xs font-bold tabular-nums text-muted">
               {e.sortOrder}
             </span>
             <button
@@ -2293,7 +2299,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (e) => (
         <div>
           <p className="font-semibold text-ink">{e.title}</p>
-          <span className="text-[11px] text-muted">{e.courseTitle}</span>
+          <span className="text-xs text-muted">{e.courseTitle}</span>
         </div>
       ),
     },
@@ -2390,7 +2396,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (q) => (
         <div className="max-w-xs">
           <p className="line-clamp-2 font-medium text-ink">{q.prompt}</p>
-          {q.explanation ? <p className="mt-0.5 line-clamp-1 text-[11px] text-muted">{q.explanation}</p> : null}
+          {q.explanation ? <p className="mt-0.5 line-clamp-1 text-xs text-muted">{q.explanation}</p> : null}
         </div>
       ),
     },
@@ -2452,7 +2458,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (a) => (
         <div>
           <p className="font-semibold text-ink">{a.studentName}</p>
-          <span className="text-[11px] text-muted" dir="ltr">{a.studentEmail}</span>
+          <span className="text-xs text-muted" dir="ltr">{a.studentEmail}</span>
         </div>
       ),
     },
@@ -2517,7 +2523,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (c) => {
         if (c.usedCount >= c.maxUses) {
           return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-[11px] font-bold text-success">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-bold text-success">
               <CheckCircle2 size={11} />
               تم الاستخدام
             </span>
@@ -2525,14 +2531,14 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         }
         if (c.usedCount > 0) {
           return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold">
               <Hourglass size={11} />
               {c.usedCount} / {c.maxUses} (جزئي)
             </span>
           );
         }
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-2.5 py-1 text-[11px] font-bold text-muted">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-2.5 py-1 text-xs font-bold text-muted">
             <Ticket size={11} />
             {c.usedCount} / {c.maxUses} (متاح)
           </span>
@@ -2596,7 +2602,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (s) => (
         <div>
           <p className="font-semibold text-ink">{s.studentName}</p>
-          <span className="text-[11px] text-muted" dir="ltr">{s.studentEmail}</span>
+          <span className="text-xs text-muted" dir="ltr">{s.studentEmail}</span>
         </div>
       ),
     },
@@ -2661,7 +2667,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           >
             {hl(u.name)}
           </button>
-          <span className="flex items-center gap-1 text-[11px] text-muted">
+          <span className="flex items-center gap-1 text-xs text-muted">
             <span dir="ltr">{u.email}</span>
             <button
               type="button"
@@ -2782,7 +2788,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       render: (u) => (
         <div>
           <p className="font-semibold text-ink">{u.name}</p>
-          <span className="text-[11px] text-muted" dir="ltr">{u.email}</span>
+          <span className="text-xs text-muted" dir="ltr">{u.email}</span>
         </div>
       ),
     },
@@ -2810,7 +2816,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         return (
           <div className="flex max-w-56 flex-wrap gap-1">
             {ids.map((cid) => (
-              <span key={cid} className="rounded-md bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold text-brand">
+              <span key={cid} className="rounded-md bg-brand/10 px-1.5 py-0.5 text-xs font-semibold text-brand">
                 {localCourses.find((c) => c.id === cid)?.title ?? "كورس"}
               </span>
             ))}
@@ -2858,6 +2864,31 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       value={{ density, pageSize, onPageSizeChange: changePageSize }}
     >
     <div ref={viewRef} className="view-enter space-y-6">
+      {/* ── Server fetch error banner ── */}
+      {fetchErrors.length > 0 ? (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm font-bold text-danger"
+        >
+          <span aria-hidden className="mt-0.5">⚠</span>
+          <div className="space-y-1">
+            <p className="font-extrabold">
+              تعذّر تحميل بعض الأقسام ({fetchErrors.length})
+            </p>
+            <ul className="list-inside list-disc text-xs font-semibold text-danger/90">
+              {fetchErrors.map((e) => (
+                <li key={e.section}>
+                  {e.section}: {e.message}
+                </li>
+              ))}
+            </ul>
+            <p className="text-[11px] font-medium text-muted">
+              هذه الأقسام قد تبدو فارغة لكنها لم تُحمَّل. أعد تحديث الصفحة أو تحقّق من السجل.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {/* ── TOP HEADER ── */}
       <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
         <div>
@@ -2868,10 +2899,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             </span>
             <span className="text-xs font-medium text-muted">· مرحبًا، {actor.name}</span>
           </div>
-          <h1 className="font-brand text-2xl font-bold text-ink sm:text-3xl">لوحة الإدارة الأكاديمية</h1>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted sm:text-sm">
+          <h1 className="type-headline-display">لوحة الإدارة الأكاديمية</h1>
+          <p className="mt-1 text-base leading-relaxed text-muted">
             إدارة متكاملة لجميع محتويات المنصة، الطلاب، المقررات، الامتحانات، والعمليات المالية.
           </p>
+          <div className="type-flourish mt-3" aria-hidden />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -2884,7 +2916,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           >
             <Search size={14} className="text-brand" />
             <span className="hidden sm:inline">أوامر سريعة</span>
-            <kbd className="rounded-md border border-line bg-surface2 px-1.5 py-0.5 font-mono text-[10px]" dir="ltr">
+            <kbd className="rounded-md border border-line bg-surface2 px-1.5 py-0.5 font-mono text-xs" dir="ltr">
               Ctrl K
             </kbd>
           </button>
@@ -2913,7 +2945,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             <Zap size={14} className={autoRefresh ? "text-brand" : "text-brand opacity-70"} />
             <span>تحديث تلقائي</span>
           </button>
-          <span className="hidden items-center gap-1.5 text-[11px] text-muted lg:inline-flex" title="وقت آخر تحديث للبيانات">
+          <span className="hidden items-center gap-1.5 text-xs text-muted lg:inline-flex" title="وقت آخر تحديث للبيانات">
             <Timer size={13} />
             {relativeTime(lastRefreshed.toISOString())}
           </span>
@@ -3110,7 +3142,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="space-y-3 border-brand/20 bg-gradient-to-br from-surface to-surface2 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-brand">
+              <div className="flex items-center gap-2 text-base font-semibold text-brand">
                 <Sparkles size={18} /> تفعيل فوري سريع
               </div>
               <p className="text-xs leading-relaxed text-muted">
@@ -3121,7 +3153,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               </Button>
             </Card>
             <Card className="space-y-3 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <div className="flex items-center gap-2 text-base font-semibold text-ink">
                 <GraduationCap size={18} className="text-gold" /> بنك الأسئلة والامتحانات
               </div>
               <p className="text-xs leading-relaxed text-muted">
@@ -3132,7 +3164,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               </Button>
             </Card>
             <Card className="space-y-3 p-5">
-              <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <div className="flex items-center gap-2 text-base font-semibold text-ink">
                 <KeyRound size={18} className="text-brand" /> أكواد السنتر والشحن
               </div>
               <p className="text-xs leading-relaxed text-muted">
@@ -3147,24 +3179,24 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-brand text-sm font-semibold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Receipt size={16} className="text-brand" /> أحدث عمليات الشراء والاشتراك
                 </h3>
                 <span className="text-xs tabular-nums text-muted">{overview.recentOrders.length} عمليات</span>
               </div>
               {overview.recentOrders.length === 0 ? (
-                <p className="py-6 text-center text-xs text-muted">لا توجد عمليات شراء بعد.</p>
+                <p className="py-6 text-center text-base text-muted">لا توجد عمليات شراء بعد.</p>
               ) : (
                 <div className="divide-y divide-line/60">
                   {overview.recentOrders.map((o) => (
                     <div key={o.id} className="flex items-center justify-between py-2.5 text-xs">
                       <div>
                         <p className="font-semibold text-ink">{o.studentName}</p>
-                        <p className="text-[11px] text-muted">{o.courseTitle}</p>
+                        <p className="text-xs text-muted">{o.courseTitle}</p>
                       </div>
                       <div className="text-left">
                         <p className="font-semibold tabular-nums text-brand">{formatEGP(o.totalCents)}</p>
-                        <Badge tone={statusTone(o.status)} className="text-[10px]">
+                        <Badge tone={statusTone(o.status)} className="text-xs">
                           {statusLabel(o.status)}
                         </Badge>
                       </div>
@@ -3176,7 +3208,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-brand text-sm font-semibold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Clock size={16} className="text-gold" /> سجل تدقيق العمليات الأخير
                 </h3>
                 <Button onClick={() => selectSubFeature("overview", "updates")} variant="ghost" size="sm" className="h-8 text-xs">
@@ -3184,14 +3216,14 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                 </Button>
               </div>
               {overview.recentAudit.length === 0 ? (
-                <p className="py-6 text-center text-xs text-muted">لا توجد عمليات مسجلة بعد.</p>
+                <p className="py-6 text-center text-base text-muted">لا توجد عمليات مسجلة بعد.</p>
               ) : (
                 <div className="divide-y divide-line/60">
                   {overview.recentAudit.map((a) => (
                     <div key={a.id} className="flex items-center justify-between py-2.5 text-xs">
                       <div>
                         <p className="font-semibold text-ink">{actionLabel(a.action)}</p>
-                        <p className="text-[11px] text-muted">
+                        <p className="text-xs text-muted">
                           بواسطة: {a.actorName ?? "النظام"} · <span dir="ltr">{formatDate(a.createdAt)}</span>
                         </p>
                       </div>
@@ -3398,7 +3430,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               />
               <span>
                 <span className="block text-xs font-bold text-ink">تسلسل إجباري للمشاهدة</span>
-                <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">
+                <span className="mt-0.5 block text-xs leading-relaxed text-muted">
                   لن يستطيع الطالب فتح الفيديو التالي قبل إكمال الفيديو السابق بالترتيب.
                 </span>
               </span>
@@ -3420,7 +3452,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               count={localCourses.length}
               hint="اختر كورساً لفتح لوحة التخصيص الكاملة: ترتيب الدروس والمحاضرات وحد المشاهدات"
             />
-            <span className="rounded-xl border border-line bg-surface2 px-3 py-2 text-[11px] font-medium text-muted">
+            <span className="rounded-xl border border-line bg-surface2 px-3 py-2 text-xs font-medium text-muted">
               اترك حقل المشاهدات فارغاً = غير محدود
             </span>
           </Card>
@@ -3460,20 +3492,20 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-ink group-hover:text-brand">{course.title}</p>
-                        <p className="mt-0.5 truncate text-[11px] text-muted">{course.gradeName} · {course.subjectName}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted">{course.gradeName} · {course.subjectName}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-muted">
+                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold tabular-nums text-muted">
                         <Layers size={11} className="me-1 inline text-brand" />
                         {lessonsTotal} درس
                       </span>
-                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-semibold tabular-nums text-muted">
+                      <span className="rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold tabular-nums text-muted">
                         <Film size={11} className="me-1 inline text-brand" />
                         {videosTotal} فيديو
                       </span>
                       {course.requireSequentialProgress && (
-                        <span className="rounded-lg bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
+                        <span className="rounded-lg bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
                           <Link2 size={11} className="me-1 inline" />
                           متسلسل
                         </span>
@@ -3526,7 +3558,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             </form>
 
             {localStages.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted">لا توجد مراحل بعد — أضف أول مرحلة من النموذج أعلاه.</p>
+              <p className="py-8 text-center text-base text-muted">لا توجد مراحل بعد — أضف أول مرحلة من النموذج أعلاه.</p>
             ) : (
               <DraggableList
                 items={[...localStages].sort((a, b) => a.sortOrder - b.sortOrder)}
@@ -3560,7 +3592,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       aria-label={`اسم المرحلة ${s.name}`}
                       className="h-9 flex-1 rounded-lg border border-line bg-surface px-2.5 text-sm font-semibold text-ink outline-none transition-colors focus:border-brand"
                     />
-                    <span className="font-mono text-[11px] text-muted" dir="ltr">/{s.slug}</span>
+                    <span className="font-mono text-xs text-muted" dir="ltr">/{s.slug}</span>
                     <input
                       type="number"
                       min={0}
@@ -3625,7 +3657,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-ink">{g.name}</p>
-                          <p className="truncate text-[10px] text-muted">{courseTitle}</p>
+                          <p className="truncate text-xs text-muted">{courseTitle}</p>
                         </div>
                         <button
                           type="button"
@@ -3978,7 +4010,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               <Input value={bulkTopic} onChange={(e) => setBulkTopic(e.target.value)} placeholder="عام" />
             </Field>
           </div>
-          <div className="rounded-xl border border-line bg-surface2/60 p-3.5 text-[13px] leading-relaxed text-muted">
+          <div className="rounded-xl border border-line bg-surface2/60 p-3.5 text-sm leading-relaxed text-muted">
             <p className="font-semibold text-ink">صيغة كل سؤال:</p>
             <p>
               سطر السؤال (يمكن أن يبدأ بترقيم)، ثم كل خيار في سطر، ثم سطر{" "}
@@ -4000,7 +4032,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           {bulkResult && (
             <div
               className={cn(
-                "rounded-xl border p-4 text-[13px] leading-relaxed",
+                "rounded-xl border p-4 text-sm leading-relaxed",
                 bulkResult.added > 0 ? "border-success/30 bg-success/10" : "border-danger/30 bg-danger/10"
               )}
               role="status"
@@ -4120,7 +4152,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             {generatedCodes.length === 0 ? (
               <div className="space-y-2 py-12 text-center text-muted">
                 <KeyRound size={32} className="mx-auto text-brand opacity-30" />
-                <p className="text-sm">حدد الخيارات واضغط «توليد وحفظ» لإنشاء الأكواد وعرضها.</p>
+                <p className="text-base">حدد الخيارات واضغط «توليد وحفظ» لإنشاء الأكواد وعرضها.</p>
               </div>
             ) : (
               <div className="custom-scrollbar grid max-h-96 gap-2.5 overflow-y-auto sm:grid-cols-2">
@@ -4254,11 +4286,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           />
 
           {!prLoaded ? (
-            <p className="py-10 text-center text-sm text-muted">جارِ التحميل…</p>
+            <p className="py-10 text-center text-base text-muted">جارِ التحميل…</p>
           ) : paymentRequests.filter((r) => prFilter === "all" || r.status === prFilter).length === 0 ? (
             <div className="space-y-2 py-12 text-center text-muted">
               <Receipt size={32} className="mx-auto text-brand opacity-30" />
-              <p className="text-sm">لا توجد طلبات في هذه القائمة.</p>
+              <p className="text-base">لا توجد طلبات في هذه القائمة.</p>
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
@@ -4273,13 +4305,13 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-extrabold text-ink">{r.studentName}</p>
-                          <p className="truncate font-mono text-[11px] text-muted" dir="ltr">
+                          <p className="truncate font-mono text-xs text-muted" dir="ltr">
                             {r.studentEmail}
                             {r.studentPhone ? ` · ${r.studentPhone}` : ""}
                           </p>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
                             r.status === "pending"
                               ? "bg-amber-500/15 text-amber-600"
                               : r.status === "approved"
@@ -4297,7 +4329,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         </span>
                         <span>الطريقة: {r.method}</span>
                         {r.senderName ? <span>المحوّل: {r.senderName}</span> : null}
-                        <span className="font-mono text-[10px]">{new Date(r.createdAt).toLocaleString("ar-EG")}</span>
+                        <span className="font-mono text-xs">{new Date(r.createdAt).toLocaleString("ar-EG")}</span>
                       </div>
 
                       {/* proof screenshot */}
@@ -4322,7 +4354,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                               setPrCopiedId(r.id);
                               setTimeout(() => setPrCopiedId(null), 1500);
                             }}
-                            className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-bold text-success hover:underline"
+                            className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-success hover:underline"
                           >
                             {prCopiedId === r.id ? <Check size={12} /> : <Copy size={12} />} نسخ
                           </button>
@@ -4330,7 +4362,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       ) : null}
 
                       {r.status === "rejected" && r.adminNote ? (
-                        <p className="text-[11px] text-muted">سبب الرفض: {r.adminNote}</p>
+                        <p className="text-xs text-muted">سبب الرفض: {r.adminNote}</p>
                       ) : null}
 
                       {/* actions for pending */}
@@ -4358,7 +4390,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                               <button
                                 type="button"
                                 onClick={() => setPrIssueKind({ ...prIssueKind, [r.id]: "wallet_balance" })}
-                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-[11px] font-bold transition-colors ${
+                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${
                                   kind === "wallet_balance"
                                     ? "border-brand bg-neon-lime-soft text-brand"
                                     : "border-line text-muted hover:text-ink"
@@ -4369,7 +4401,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                               <button
                                 type="button"
                                 onClick={() => setPrIssueKind({ ...prIssueKind, [r.id]: "course_access" })}
-                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-[11px] font-bold transition-colors ${
+                                className={`flex-1 cursor-pointer rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${
                                   kind === "course_access"
                                     ? "border-brand bg-neon-lime-soft text-brand"
                                     : "border-line text-muted hover:text-ink"
@@ -4507,7 +4539,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             mobileTitle={(u) => (
               <div>
                 <p className="font-semibold text-ink">{u.name}</p>
-                <span className="text-[11px] text-muted" dir="ltr">{u.email}</span>
+<span className="text-xs text-muted" dir="ltr">{u.email}</span>
               </div>
             )}
             emptyTitle="لا يوجد مستخدمون مطابقون"
@@ -4555,7 +4587,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           <SectionHeader icon={ShieldCheck} title="المسؤولون والمشرفون" hint="الفريق الذي يملك صلاحيات الدخول إلى لوحة الإدارة" />
           <div className="divide-y divide-line">
             {localUsers.filter((u) => u.role !== "student").length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted">لا يوجد حسابات إدارية بعد.</p>
+              <p className="py-6 text-center text-base text-muted">لا يوجد حسابات إدارية بعد.</p>
             ) : (
               localUsers
                 .filter((u) => u.role !== "student")
@@ -4679,7 +4711,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           )}
 
           {cgList.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">لا توجد مجموعات بعد — أنشئ أول مجموعة باستخدام الزر أعلاه.</p>
+            <p className="py-8 text-center text-base text-muted">لا توجد مجموعات بعد — أنشئ أول مجموعة باستخدام الزر أعلاه.</p>
           ) : (
             <DraggableList
               items={cgList}
@@ -4703,11 +4735,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-bold text-ink">{g.name}</p>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${sl.cls}`}>{sl.label}</span>
-                        {!g.isActive && <span className="rounded-full border border-line bg-surface px-2 py-0.5 text-[10px] font-bold text-muted">معطل</span>}
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${sl.cls}`}>{sl.label}</span>
+                        {!g.isActive && <span className="rounded-full border border-line bg-surface px-2 py-0.5 text-xs font-bold text-muted">معطل</span>}
                       </div>
-                      <p className="mt-0.5 truncate text-[11px] text-muted">{g.description || "—"}</p>
-                      <p className="font-mono text-[10px] text-muted">
+                      <p className="mt-0.5 truncate text-xs text-muted">{g.description || "—"}</p>
+                      <p className="font-mono text-xs text-muted">
                         {(g as any).courseTitle ?? ""} {(g as any).stageName ?? ""} · {g.postsCount} منشور · {g.membersCount} عضو
                       </p>
                     </div>
@@ -4715,7 +4747,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       <button
                         type="button"
                         onClick={() => toggleCgActive(g)}
-                        className={`rounded-md border px-2 py-1 text-[10px] font-bold transition-colors ${
+                        className={`rounded-md border px-2 py-1 text-xs font-bold transition-colors ${
                           g.isActive ? "border-success/30 text-success" : "border-line text-muted"
                         }`}
                         title={g.isActive ? "تعطيل" : "تفعيل"}
@@ -4835,7 +4867,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                     onClick={() => setPostStatusFilter(value)}
                     aria-pressed={postStatusFilter === value}
                     className={cn(
-                      "cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-all",
+                      "cursor-pointer rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
                       postStatusFilter === value
                         ? "border-brand bg-brand/10 text-brand"
                         : "border-line bg-surface text-muted hover:text-ink"
@@ -4854,7 +4886,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           />
 
           {visiblePosts.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">لا توجد منشورات في هذه الحالة.</p>
+            <p className="py-8 text-center text-base text-muted">لا توجد منشورات في هذه الحالة.</p>
           ) : (
             <div className="divide-y divide-line">
               {visiblePosts.map((p) => {
@@ -4868,7 +4900,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       <span className="font-semibold text-ink">
                         {p.authorName}
                         {p.repliesCount > 0 && (
-                          <span className="ms-2 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-brand">
+                          <span className="ms-2 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-brand">
                             {p.repliesCount} رد
                           </span>
                         )}
@@ -4881,7 +4913,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         <span className="tabular-nums text-muted" dir="ltr">{formatDate(p.createdAt)}</span>
                       </div>
                     </div>
-                    <p className="rounded-xl bg-surface2 p-3 text-[13px] leading-relaxed text-ink">{p.body}</p>
+                    <p className="rounded-xl bg-surface2 p-3 text-sm leading-relaxed text-ink">{p.body}</p>
 
                     <div className="flex flex-wrap items-center gap-2">
                       {status !== "approved" && (
@@ -4898,12 +4930,12 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         <MessageSquare size={13} />
                         {replies ? "إخفاء الردود" : `الردود${p.repliesCount > 0 ? ` (${p.repliesCount})` : ""}`}
                       </Button>
-                      <span className="tabular-nums text-[11px] text-muted">👍 {p.likesCount}</span>
+                      <span className="tabular-nums text-xs text-muted">👍 {p.likesCount}</span>
                       <button
                         type="button"
                         onClick={() => requestDeletePost(p)}
                         disabled={pendingIds.has(key)}
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-[11px] transition-colors hover:border-danger/50 hover:text-danger"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line px-2 py-1.5 text-xs transition-colors hover:border-danger/50 hover:text-danger"
                       >
                         <Trash2 size={12} /> حذف
                       </button>
@@ -4917,11 +4949,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                             <Loader2 size={14} className="animate-spin" /> جارٍ تحميل الردود...
                           </p>
                         ) : replies.rows.length === 0 ? (
-                          <p className="py-2 text-center text-xs text-muted">لا توجد ردود بعد — كن أول من يجيب على الطالب.</p>
+                          <p className="py-2 text-center text-base text-muted">لا توجد ردود بعد — كن أول من يجيب على الطالب.</p>
                         ) : (
                           replies.rows.map((r) => (
                             <div key={r.id} className="space-y-1.5 rounded-lg border border-line bg-surface p-3">
-                              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                                 <span className="inline-flex items-center gap-1.5 font-semibold text-brand">
                                   <ShieldCheck size={12} /> {r.authorName}
                                   <span className="text-muted">· مشرف</span>
@@ -4982,9 +5014,9 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                   accept={draft.mediaKind === "image" ? "image/*" : draft.mediaKind === "video" ? "video/mp4,video/webm,video/quicktime" : ".pdf,.doc,.docx,.zip"}
                                   onChange={(e) => updateReplyDraft(p.id, { file: e.target.files?.[0] ?? null })}
                                   aria-label="اختيار ملف المرفق"
-                                  className="text-[11px] text-muted file:cursor-pointer file:rounded-lg file:border file:border-line file:bg-surface2 file:px-2 file:py-1 file:text-[11px] file:font-semibold"
+                                  className="text-xs text-muted file:cursor-pointer file:rounded-lg file:border file:border-line file:bg-surface2 file:px-2 file:py-1 file:text-xs file:font-semibold"
                                 />
-                                {draft.file && <span className="max-w-40 truncate text-[11px] text-muted">{draft.file.name}</span>}
+                                {draft.file && <span className="max-w-40 truncate text-xs text-muted">{draft.file.name}</span>}
                               </>
                             )}
                             <Button
@@ -5172,10 +5204,10 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                 {/* dialog header */}
                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4">
                   <div className="min-w-0">
-                    <h3 id="content-manager-title" className="truncate font-brand text-base font-bold text-ink">
+                    <h3 id="content-manager-title" className="truncate type-card-heading">
                       {course.title}
                     </h3>
-                    <p className="text-[11px] text-muted">
+                    <p className="text-xs text-muted">
                       لوحة التخصيص الكاملة · {courseLessons.length} درس ·{" "}
                       {videos.filter((v) => courseLessons.some((l) => l.id === v.lessonId)).length} فيديو
                     </p>
@@ -5229,7 +5261,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         onChange={(e) => setNlDescription(e.target.value)}
                         className="h-9 text-xs"
                       />
-                      <label className="flex items-center gap-2 text-[11px] font-semibold text-ink">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-ink">
                         <input
                           type="checkbox"
                           checked={nlFree}
@@ -5270,7 +5302,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         onChange={(e) => setNfFile(e.target.files?.[0] ?? null)}
                         className="block w-full cursor-pointer rounded-xl border border-line bg-surface text-xs text-muted file:me-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
                       />
-                      <label className="flex items-center gap-2 text-[11px] font-semibold text-ink">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-ink">
                         <input
                           type="checkbox"
                           checked={nfFree}
@@ -5279,7 +5311,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         />
                         معاينة مجانية
                       </label>
-                      {nfError && <p className="text-[11px] text-danger">{nfError}</p>}
+                      {nfError && <p className="text-xs text-danger">{nfError}</p>}
                       <div className="flex justify-end gap-2">
                         <Button type="button" onClick={() => setAddFileOpen(false)} variant="ghost" size="sm">إلغاء</Button>
                         <Button type="submit" disabled={nfBusy || !nfFile} variant="primary" size="sm">
@@ -5301,7 +5333,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                         </summary>
                         <ul className="mt-2 space-y-1.5">
                           {courseFilesList.map((f) => (
-                            <li key={f.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-[11px]">
+                            <li key={f.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-xs">
                               <div className="flex min-w-0 items-center gap-2">
                                 <FileText size={12} className="text-brand" />
                                 <div className="min-w-0">
@@ -5376,14 +5408,14 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                     autoFocus
                                     className="h-8 flex-1 text-xs"
                                   />
-                                  <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-[10px]">حفظ</Button>
-                                  <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-[10px]"><X size={11} /></Button>
+                                  <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-7 px-2 text-xs">حفظ</Button>
+                                  <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-7 px-2 text-xs"><X size={11} /></Button>
                                 </div>
                               ) : (
                                 <p className="min-w-0 flex-1 truncate text-xs font-bold text-ink">{lesson.title}</p>
                               )}
                               {lesson.isFreePreview && <Badge tone="success">مجاني</Badge>}
-                              <span className="rounded-md bg-surface px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                              <span className="rounded-md bg-surface px-2 py-0.5 text-xs font-semibold tabular-nums text-muted">
                                 {lessonVideos.length} فيديو
                               </span>
                               <button
@@ -5399,7 +5431,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                             {/* Videos (draggable) */}
                             <div className="mt-2 space-y-1.5 ms-5 border-s-2 border-line ps-3">
                               {lessonVideos.length === 0 && addVideoForLesson !== lesson.id && (
-                                <p className="text-[11px] text-muted">لا توجد فيديوهات.</p>
+                                <p className="text-xs text-muted">لا توجد فيديوهات.</p>
                               )}
                               <DraggableList
                                 items={lessonVideos}
@@ -5432,16 +5464,16 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                                 value={renameTarget.youtubeId}
                                                 onChange={(e) => updateRename({ youtubeId: e.target.value })}
                                                 placeholder="YouTube ID"
-                                                className="h-7 flex-1 font-mono text-[10px]"
+                                                className="h-7 flex-1 font-mono text-xs"
                                               />
-                                              <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-6 px-2 text-[10px]">حفظ</Button>
-                                              <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-6 px-2 text-[10px]"><X size={10} /></Button>
+                                              <Button onClick={saveRename} disabled={renameBusy} variant="primary" size="sm" className="h-6 px-2 text-xs">حفظ</Button>
+                                              <Button onClick={() => setRenameTarget(null)} variant="ghost" size="sm" className="h-6 px-2 text-xs"><X size={10} /></Button>
                                             </div>
                                           </div>
                                         ) : (
                                           <>
                                             <p className="min-w-0 flex-1 truncate text-xs font-semibold text-ink">{v.title}</p>
-                                            <p className="font-mono text-[10px] text-muted" dir="ltr">{v.youtubeVideoId}</p>
+                                            <p className="font-mono text-xs text-muted" dir="ltr">{v.youtubeVideoId}</p>
                                             <Input
                                               type="number"
                                               min="1"
@@ -5450,9 +5482,9 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                               onChange={(e) => setMaxViewsDraft((prev) => ({ ...prev, [v.id]: e.target.value }))}
                                               placeholder="∞"
                                               aria-label="حد مشاهدات"
-                                              className="h-6 w-14 text-center text-[10px]"
+                                              className="h-6 w-14 text-center text-xs"
                                             />
-                                            <Button onClick={() => saveMaxViews(v)} variant="outline" size="sm" className="h-6 px-2 text-[10px]">حفظ</Button>
+                                            <Button onClick={() => saveMaxViews(v)} variant="outline" size="sm" className="h-6 px-2 text-xs">حفظ</Button>
                                             <button
                                               type="button"
                                               onClick={() => setRenameTarget({ kind: "video", id: v.id, title: v.title, youtubeId: v.youtubeVideoId })}
@@ -5484,7 +5516,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                       value={nvYoutubeId}
                                       onChange={(e) => setNvYoutubeId(e.target.value)}
                                       placeholder="YouTube ID"
-                                      className="h-7 flex-1 font-mono text-[11px]"
+                                      className="h-7 flex-1 font-mono text-xs"
                                     />
                                     <Input
                                       type="number"
@@ -5493,12 +5525,12 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                       value={nvDuration}
                                       onChange={(e) => setNvDuration(e.target.value)}
                                       placeholder="دقيقة"
-                                      className="h-7 w-16 text-center text-[11px]"
+                                      className="h-7 w-16 text-center text-xs"
                                     />
                                   </div>
                                   <div className="flex justify-end gap-1.5">
-                                    <Button type="button" onClick={() => setAddVideoForLesson(null)} variant="ghost" size="sm" className="h-6 px-2 text-[10px]">إلغاء</Button>
-                                    <Button type="submit" disabled={nvBusy} variant="primary" size="sm" className="h-6 px-2 text-[10px]">
+                                    <Button type="button" onClick={() => setAddVideoForLesson(null)} variant="ghost" size="sm" className="h-6 px-2 text-xs">إلغاء</Button>
+                                    <Button type="submit" disabled={nvBusy} variant="primary" size="sm" className="h-6 px-2 text-xs">
                                       {nvBusy ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
                                       إضافة
                                     </Button>
@@ -5508,7 +5540,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                                 <button
                                   type="button"
                                   onClick={() => { setAddVideoForLesson(lesson.id); setNvTitle(""); setNvYoutubeId(""); }}
-                                  className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line py-1.5 text-[10px] font-bold text-muted transition-colors hover:border-brand hover:text-brand"
+                                  className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed border-line py-1.5 text-xs font-bold text-muted transition-colors hover:border-brand hover:text-brand"
                                 >
                                   <Plus size={11} /> إضافة فيديو للدرس
                                 </button>
@@ -5523,7 +5555,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
                 {/* dialog footer */}
                 <div className="flex shrink-0 items-center justify-between border-t border-line px-5 py-3">
-                  <p className="text-[11px] leading-relaxed text-muted">
+                  <p className="text-xs leading-relaxed text-muted">
                     الترتيب هنا هو نفسه ترتيب المشاهدة عند الطالب — والتسلسل الإجباري يتبعه أيضاً.
                   </p>
                   <Button onClick={() => setContentCourseId(null)} variant="primary" size="sm">
@@ -5554,7 +5586,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 id="cover-modal-title" className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+              <h3 id="cover-modal-title" className="flex items-center gap-2 type-card-heading">
                 <ImagePlus size={18} className="text-brand" /> صورة غلاف الكورس
               </h3>
               <button
@@ -5612,7 +5644,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 id="wallet-modal-title" className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+              <h3 id="wallet-modal-title" className="flex items-center gap-2 type-card-heading">
                 <Wallet size={18} className="text-brand" /> تعديل رصيد محفظة الطالب
               </h3>
               <button
@@ -5684,7 +5716,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           <div className="my-8 flex max-h-[90vh] w-full max-w-4xl flex-col space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift">
             <div className="no-print flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h3 className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Printer size={18} className="text-brand" /> بطاقات كروت السنتر الجاهزة للطباعة والقص
                 </h3>
                 <p className="text-xs text-muted">ستُطبع البطاقات فقط دون باقي عناصر الصفحة</p>
@@ -5715,19 +5747,19 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                       <span className="size-2 rounded-full bg-brand" />
                       <span className="text-xs font-semibold text-ink">دروس ماث Dros Math</span>
                     </div>
-                    <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
+                    <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">
                       كارت تفعيل كورس
                     </span>
                   </div>
 
                   <div className="space-y-1 py-2 text-center">
-                    <p className="text-[10px] text-muted">كود التفعيل والشحن</p>
+                    <p className="text-xs text-muted">كود التفعيل والشحن</p>
                     <div className="select-all rounded-lg border border-line bg-surface px-2 py-1.5 font-mono text-base font-bold tracking-wider text-brand">
                       {code}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-line/40 pt-1 text-[9px] text-muted">
+                  <div className="flex items-center justify-between border-t border-line/40 pt-1 text-xs text-muted">
                     <span>صالح لكورس واحد كامل</span>
                     <span>www.dros-math.com</span>
                   </div>
@@ -5782,15 +5814,15 @@ function LoginSessionsSection() {
     <Card className="space-y-4 p-6">
       <SectionHeader icon={Clock} title="جلسات الدخول النشطة" count={rows.length} hint="مراجعة الأجهزة النشطة — يمكنك إلغاء جلسة مشبوهة" />
       {rows.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted">لا توجد جلسات نشطة.</p>
+        <p className="py-8 text-center text-base text-muted">لا توجد جلسات نشطة.</p>
       ) : (
         <div className="space-y-2">
           {rows.map((r) => (
             <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface2/40 p-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-ink">{r.userName}</p>
-                <p className="font-mono text-[10px] text-muted" dir="ltr">{r.userEmail} · {r.userRole}</p>
-                <p className="text-[10px] text-muted">بدأت: {new Date(r.createdAt).toLocaleString("ar-EG")} · تنتهي: {new Date(r.expiresAt).toLocaleString("ar-EG")}</p>
+                <p className="font-mono text-xs text-muted" dir="ltr">{r.userEmail} · {r.userRole}</p>
+                <p className="text-xs text-muted">بدأت: {new Date(r.createdAt).toLocaleString("ar-EG")} · تنتهي: {new Date(r.expiresAt).toLocaleString("ar-EG")}</p>
               </div>
               <Button
                 disabled={busy === r.id}
@@ -5841,14 +5873,14 @@ function ModeratorStatsSection() {
               <li key={m.userId} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface2/40 p-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-ink">{m.userName}</p>
-                  <p className="text-[10px] text-muted">آخر رد: {new Date(m.lastReplyAt).toLocaleString("ar-EG")}</p>
+                  <p className="text-xs text-muted">آخر رد: {new Date(m.lastReplyAt).toLocaleString("ar-EG")}</p>
                 </div>
                 <span className="rounded-md bg-brand/10 px-2 py-1 text-xs font-bold text-brand">{m.repliesCount} رد</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="py-6 text-center text-sm text-muted">لا توجد بيانات بعد.</p>
+          <p className="py-6 text-center text-base text-muted">لا توجد بيانات بعد.</p>
         )}
       </Card>
     </div>
@@ -5985,7 +6017,7 @@ function CgMembersManager() {
 
   return (
     <div className="rounded-xl border border-line bg-surface2/30 p-3">
-      <p className="text-[11px] font-bold text-muted">إدارة أعضاء المجموعات (custom)</p>
+      <p className="text-xs font-bold text-muted">إدارة أعضاء المجموعات (custom)</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <Select value={selected} onChange={(e) => setSelected(e.target.value)} className="h-9 max-w-64 text-xs">
           {groups.map((g) => (
@@ -6010,7 +6042,7 @@ function CgMembersManager() {
               <div className="min-w-0">
                 <span className="font-bold text-ink">{m.name}</span>
                 <span className="ms-2 text-muted" dir="ltr">{m.email}</span>
-                <span className="ms-2 rounded bg-surface2 px-1.5 py-0.5 text-[10px] font-bold text-muted">{m.role}</span>
+                <span className="ms-2 rounded bg-surface2 px-1.5 py-0.5 text-xs font-bold text-muted">{m.role}</span>
               </div>
               <button type="button" onClick={() => remove(m.userId)} className="rounded p-1 text-muted hover:text-danger">
                 <Trash2 size={11} />

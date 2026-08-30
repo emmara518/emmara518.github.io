@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen, Loader2, Search } from "lucide-react";
 import { CourseCard, type CourseCardData } from "./marketing";
 import { EmptyState, Input, Select, Skeleton } from "./ui";
 import { cn } from "@/lib/utils";
@@ -59,7 +59,19 @@ export function CatalogBrowser({
       {/* filter bar */}
       <div className="grid gap-3 rounded-2xl border border-line bg-surface/70 p-3 backdrop-blur sm:grid-cols-[1fr_220px_220px]">
         <div className="relative">
-          <Search size={16} className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          {loading ? (
+            <Loader2
+              size={16}
+              aria-hidden
+              className="absolute end-3.5 top-1/2 -translate-y-1/2 animate-spin text-brand"
+            />
+          ) : (
+            <Search
+              size={16}
+              aria-hidden
+              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted"
+            />
+          )}
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}

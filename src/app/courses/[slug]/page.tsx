@@ -99,7 +99,7 @@ export default async function CourseDetailPage({
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6">
-          <nav className="mb-6 flex flex-wrap items-center gap-2 text-xs text-muted" aria-label="مسار">
+          <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted" aria-label="مسار">
             <Link href="/courses" className="hover:text-brand">الكورسات</Link>
             <span>/</span>
             <span>{course.gradeName}</span>
@@ -111,9 +111,10 @@ export default async function CourseDetailPage({
             <Badge tone="gold">{course.gradeName}</Badge>
             <Badge tone="outline">{course.stageName}</Badge>
           </div>
-          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold leading-snug tracking-tight sm:text-4xl text-white">
+          <h1 className="type-headline-display mt-4 max-w-3xl text-white">
             {course.title}
           </h1>
+          <div className="type-flourish mt-4" aria-hidden />
           <p className="mt-3 max-w-2xl leading-8 text-[#9DA8B6]">{course.summary}</p>
           <div className="mt-5 flex flex-wrap items-center gap-5 text-sm text-[#D0D5DD]">
             <span className="inline-flex items-center gap-1.5 font-bold text-[#FFC400] bg-[#1A2422] px-3 py-1 rounded-full border border-[#FFC400]/30">
@@ -134,14 +135,14 @@ export default async function CourseDetailPage({
         <div className="space-y-10">
           {/* description */}
           <section className="space-y-4">
-            <h2 className="text-xl font-extrabold">عن هذا الكورس</h2>
+            <h2 className="type-section-heading">عن هذا الكورس</h2>
             <p className="leading-8 text-muted">{course.description}</p>
           </section>
 
           {/* curriculum */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-extrabold">محتوى الكورس</h2>
+              <h2 className="type-section-heading">محتوى الكورس</h2>
               <span className="font-mono text-xs text-muted">
                 {curriculum.lessons.filter((l) => l.isFreePreview).length} درسًا مجانيًا للمعاينة
               </span>
@@ -152,12 +153,12 @@ export default async function CourseDetailPage({
                 return (
                   <div key={lesson.id} className="p-5">
                     <div className="flex items-center gap-4">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface2 font-mono text-sm font-bold text-muted">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface2 font-mono text-base font-bold text-muted">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <div className="flex-1">
                         <p className="font-bold">{lesson.title}</p>
-                        <p className="mt-0.5 text-xs leading-6 text-muted">{lesson.description}</p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-muted">{lesson.description}</p>
                       </div>
                       {lesson.isFreePreview && !owned ? <Badge tone="success">معاينة مجانية</Badge> : null}
                       {!unlocked ? <Lock size={15} className="text-muted" /> : null}
@@ -193,7 +194,7 @@ export default async function CourseDetailPage({
           {/* exams + files */}
           <section className="grid gap-5 md:grid-cols-2">
             <Card className="space-y-4 p-6">
-              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold">
+              <h2 className="inline-flex items-center gap-2 type-section-heading">
                 <ClipboardList size={18} className="text-gold" /> الاختبارات الإلكترونية
               </h2>
               <ul className="space-y-2.5 text-sm">
@@ -214,7 +215,7 @@ export default async function CourseDetailPage({
             </Card>
 
             <Card className="space-y-4 p-6">
-              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold">
+              <h2 className="inline-flex items-center gap-2 type-section-heading">
                 <FileText size={18} className="text-brand" /> ملفات الكورس
               </h2>
               <ul className="space-y-2.5 text-sm">
@@ -243,7 +244,7 @@ export default async function CourseDetailPage({
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs text-muted">سعر الاشتراك الكامل</p>
-                <p className="mt-1 text-3xl font-extrabold">{formatEGP(course.priceCents)}</p>
+                <p className="mt-1 type-stat-display">{formatEGP(course.priceCents)}</p>
               </div>
               <Badge tone="gold">وصول كامل</Badge>
             </div>
@@ -263,8 +264,8 @@ export default async function CourseDetailPage({
               م∫
             </span>
             <div>
-              <p className="text-sm font-bold">{course.teacherName}</p>
-              <p className="text-xs text-muted">معلم الرياضيات — الإعدادية والثانوية</p>
+<p className="text-base font-extrabold">{course.teacherName}</p>
+            <p className="text-sm text-muted">معلم الرياضيات — الإعدادية والثانوية</p>
             </div>
           </Card>
         </aside>

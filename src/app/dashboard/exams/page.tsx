@@ -22,6 +22,7 @@ export default async function StudentExamsPage() {
       <PageHeader
         title="اختباراتي"
         subtitle="الاختبارات المتاحة لكورساتك المشترك بها"
+        overline="الاختبارات"
       />
 
       {data.upcomingExams.length === 0 ? (
@@ -50,7 +51,7 @@ export default async function StudentExamsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 space-y-0.5">
                     <p className="truncate text-sm font-extrabold text-ink">{exam.title}</p>
-                    <p className="truncate text-[11px] font-semibold text-muted">{exam.courseTitle}</p>
+                    <p className="truncate text-xs font-semibold text-muted">{exam.courseTitle}</p>
                   </div>
                   {attempted ? (
                     <Badge tone="success">
@@ -61,7 +62,7 @@ export default async function StudentExamsPage() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-muted">
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-muted">
                   <span className="inline-flex items-center gap-1">
                     <Clock size={12} />
                     {exam.durationMin} دقيقة

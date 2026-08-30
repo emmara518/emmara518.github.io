@@ -79,7 +79,7 @@ export function StudentProfileModal({
               {student.name.trim().charAt(0)}
             </span>
             <div>
-              <h3 id="student-profile-title" className="font-brand text-lg font-semibold leading-snug text-ink">
+              <h3 id="student-profile-title" className="font-brand text-xl font-black leading-snug text-ink">
                 {student.name}
               </h3>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
@@ -89,7 +89,7 @@ export function StudentProfileModal({
                   type="button"
                   data-autofocus
                   onClick={() => navigator.clipboard.writeText(student.email)}
-                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-[10px] text-muted transition-colors hover:border-brand/50 hover:text-brand"
+                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs text-muted transition-colors hover:border-brand/50 hover:text-brand"
                 >
                   نسخ
                 </button>
@@ -110,22 +110,22 @@ export function StudentProfileModal({
           {/* Quick stats */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-xl border border-line bg-surface2/60 p-3 text-center">
-              <p className="text-[11px] text-muted">الرصيد الحالي</p>
-              <p className="mt-0.5 text-sm font-bold tabular-nums text-brand">{formatEGP(student.balanceCents)}</p>
+              <p className="text-xs text-muted">الرصيد الحالي</p>
+              <p className="mt-0.5 text-base font-bold tabular-nums text-brand">{formatEGP(student.balanceCents)}</p>
             </div>
             <div className="rounded-xl border border-line bg-surface2/60 p-3 text-center">
-              <p className="text-[11px] text-muted">الاشتراكات النشطة</p>
-              <p className="mt-0.5 text-sm font-bold tabular-nums text-ink">
+              <p className="text-xs text-muted">الاشتراكات النشطة</p>
+              <p className="mt-0.5 text-base font-bold tabular-nums text-ink">
                 {mySubs.filter((s) => s.status === "active").length}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-surface2/60 p-3 text-center">
-              <p className="text-[11px] text-muted">إجمالي المدفوع</p>
-              <p className="mt-0.5 text-sm font-bold tabular-nums text-ink">{formatEGP(spentTotal)}</p>
+              <p className="text-xs text-muted">إجمالي المدفوع</p>
+              <p className="mt-0.5 text-base font-bold tabular-nums text-ink">{formatEGP(spentTotal)}</p>
             </div>
             <div className="rounded-xl border border-line bg-surface2/60 p-3 text-center">
-              <p className="text-[11px] text-muted">متوسط الدرجات</p>
-              <p className="mt-0.5 text-sm font-bold tabular-nums text-ink">
+              <p className="text-xs text-muted">متوسط الدرجات</p>
+              <p className="mt-0.5 text-base font-bold tabular-nums text-ink">
                 {avgPct !== null ? `${avgPct}%` : "—"}
               </p>
             </div>
@@ -136,28 +136,28 @@ export function StudentProfileModal({
             <button
               type="button"
               onClick={() => onAdjustWallet(student)}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-white transition-all hover:brightness-110"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition-all hover:brightness-110"
             >
               <Wallet size={14} /> تعديل المحفظة
             </button>
-            <span className="text-[11px] text-muted">
+            <span className="text-xs text-muted">
               مسجل منذ <span dir="ltr">{formatDate(student.createdAt)}</span>
             </span>
           </div>
 
           {/* Subscriptions */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <GraduationCap size={13} /> الاشتراكات ({mySubs.length})
             </h4>
             {mySubs.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-xs text-muted">
+              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-sm text-muted">
                 لا توجد اشتراكات لهذا الطالب بعد.
               </p>
             ) : (
               <div className="space-y-1.5">
                 {mySubs.map((s) => (
-                  <div key={s.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-xs">
+                  <div key={s.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-sm">
                     <span className="font-medium text-ink">{s.courseTitle}</span>
                     <span className="flex shrink-0 items-center gap-2">
                       <span className="tabular-nums text-muted" dir="ltr">{formatDate(s.startsAt)}</span>
@@ -171,17 +171,17 @@ export function StudentProfileModal({
 
           {/* Orders */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <Receipt size={13} /> الطلبات ({myOrders.length})
             </h4>
             {myOrders.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-xs text-muted">
+              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-sm text-muted">
                 لا توجد طلبات شراء.
               </p>
             ) : (
               <div className="space-y-1.5">
                 {myOrders.map((o) => (
-                  <div key={o.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-xs">
+                  <div key={o.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-sm">
                     <span className="font-medium text-ink">{o.courseTitle}</span>
                     <span className="flex shrink-0 items-center gap-2">
                       <span className="font-semibold tabular-nums text-brand">{formatEGP(o.totalCents)}</span>
@@ -195,11 +195,11 @@ export function StudentProfileModal({
 
           {/* Exam attempts */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <Award size={13} /> محاولات الامتحانات ({myAttempts.length})
             </h4>
             {myAttempts.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-xs text-muted">
+              <p className="rounded-xl border border-dashed border-line bg-surface2/40 px-4 py-3 text-center text-sm text-muted">
                 لم يتقدّم لأي امتحان بعد.
               </p>
             ) : (
@@ -207,7 +207,7 @@ export function StudentProfileModal({
                 {myAttempts.map((a) => {
                   const pct = Math.round((a.score / (a.totalMarks || 1)) * 100);
                   return (
-                    <div key={a.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-xs">
+                    <div key={a.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface2/40 px-3.5 py-2.5 text-sm">
                       <span className="font-medium text-ink">{a.examTitle}</span>
                       <span className="flex shrink-0 items-center gap-2">
                         <span className="tabular-nums text-muted">{a.score}/{a.totalMarks}</span>

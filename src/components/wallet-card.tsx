@@ -20,29 +20,29 @@ export function WalletCard({
   transactions?: WalletTxnView[];
 }) {
   return (
-    <Card className="space-y-4 p-5">
+    <Card className="type-corner-mark space-y-4 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center gap-2 text-base font-extrabold">
+        <h2 className="type-card-heading">
           <Wallet size={16} className="text-brand" /> محفظتي
         </h2>
-        <span className="rounded-full bg-neon-lime-soft px-2.5 py-1 font-mono text-[10px] font-bold text-brand">
+        <span className="rounded-full bg-neon-lime-soft px-3 py-1 font-mono text-xs font-bold text-brand">
           WALLET
         </span>
       </div>
 
       <div>
-        <p className="text-[11px] font-bold text-muted">الرصيد المتاح</p>
-        <p className="mt-0.5 font-mono text-3xl font-extrabold">{formatEGP(balanceCents)}</p>
+        <p className="text-xs font-bold text-muted">الرصيد المتاح</p>
+        <p className="mt-0.5 type-stat-display">{formatEGP(balanceCents)}</p>
       </div>
 
       {transactions.length > 0 ? (
         <ul className="space-y-1 border-t border-line pt-3">
           {transactions.slice(0, 3).map((t) => (
-            <li key={t.id} className="flex items-center justify-between gap-2 text-[11px]">
+            <li key={t.id} className="flex items-center justify-between gap-2 text-xs">
               <span className="min-w-0 truncate text-muted">
                 {TXN_KIND_LABELS[t.kind] ?? t.kind} · {timeAgo(t.createdAt)}
               </span>
-              <span className={`shrink-0 font-mono font-bold ${t.amountCents >= 0 ? "text-success" : "text-danger"}`}>
+              <span className={`shrink-0 font-mono text-sm font-bold ${t.amountCents >= 0 ? "text-success" : "text-danger"}`}>
                 {t.amountCents >= 0 ? "+" : "−"}
                 {formatEGP(Math.abs(t.amountCents))}
               </span>
@@ -53,7 +53,7 @@ export function WalletCard({
 
       <Link
         href="/dashboard/wallet"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-brand hover:underline"
       >
         شحن الرصيد وإدارة المحفظة
         <ArrowLeft size={13} />

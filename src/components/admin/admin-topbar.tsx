@@ -29,7 +29,7 @@ export function AdminTopbar({ onToggleMobileMenu }: AdminTopbarProps) {
       </button>
 
       {/* Breadcrumb */}
-      <nav aria-label="مسار التنقل" className="flex min-w-0 items-center gap-1.5 text-xs font-semibold">
+      <nav aria-label="مسار التنقل" className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
         <button
           type="button"
           onClick={() => setCategory("overview")}
@@ -48,7 +48,7 @@ export function AdminTopbar({ onToggleMobileMenu }: AdminTopbarProps) {
           {cat?.label ?? ""}
         </button>
         <ChevronLeft size={13} className="text-muted" aria-hidden />
-        <span className="truncate rounded-lg px-2 py-1.5 text-brand">{sub?.sub.label ?? ""}</span>
+        <span className="truncate rounded-lg px-2 py-1.5 type-subhead-roman text-brand">{sub?.sub.label ?? ""}</span>
       </nav>
 
       <div className="ms-auto flex items-center gap-2">

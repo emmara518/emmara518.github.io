@@ -73,10 +73,11 @@ export function AcademicMapRoadmap() {
     <section className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-white tracking-tight">خريطة التعلم والمسارات الدراسية</h2>
-          <p className="text-xs font-semibold text-[#A9B3B0]">اختر مرحلتك الدراسية للوصول المباشر لكورساتك المنظمة</p>
+          <h2 className="type-headline-display text-white">خريطة التعلم والمسارات الدراسية</h2>
+          <div className="type-flourish mt-3" aria-hidden />
+          <p className="text-sm font-semibold text-[#A9B3B0] mt-2">اختر مرحلتك الدراسية للوصول المباشر لكورساتك المنظمة</p>
         </div>
-        <Link href="/courses" className="text-xs font-bold text-[#FFC400] hover:underline">
+        <Link href="/courses" className="text-sm font-bold text-[#FFC400] hover:underline">
           عرض جميع المراحل ←
         </Link>
       </div>
@@ -86,10 +87,10 @@ export function AcademicMapRoadmap() {
           <Link
             key={s.num}
             href={`/courses?stage=${encodeURIComponent(s.name)}`}
-            className="group relative flex flex-col items-center rounded-2xl border border-[#2D3A38] bg-[#1A2422] p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#FFC400] hover:shadow-lg"
+            className="group relative flex flex-col items-center rounded-2xl border border-[#2D3A38] bg-[#1A2422] p-5 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#FFC400] hover:shadow-lg type-corner-mark"
           >
             {/* Stage Number Badge */}
-            <span className="font-mono text-xs font-bold text-[#A9B3B0] tracking-widest mb-3">
+            <span className="type-subhead-roman mb-3">
               {s.num}
             </span>
 
@@ -99,10 +100,10 @@ export function AcademicMapRoadmap() {
             </div>
 
             {/* Stage Title & English subtitle */}
-            <h3 className="text-sm font-bold text-white group-hover:text-[#FFC400] transition-colors">
+            <h3 className="type-card-heading text-white group-hover:text-[#FFC400] transition-colors">
               {s.name}
             </h3>
-            <span className="font-mono text-[10px] font-semibold text-[#A9B3B0] uppercase tracking-wider mt-0.5">
+            <span className="font-mono text-xs font-semibold text-[#A9B3B0] uppercase tracking-wider mt-0.5">
               {s.english}
             </span>
           </Link>

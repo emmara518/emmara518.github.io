@@ -31,6 +31,7 @@ export default async function ParentHomePage() {
       <PageHeader
         title="متابعة الأبناء"
         subtitle="نتائج الاختبارات وتقدّم الكورسات لكل ابن مشترك في المنصة — محدّثة لحظة بلحظة."
+        overline="بوابة ولي الأمر"
         backHref=""
         backLabel=""
       />
@@ -48,13 +49,13 @@ export default async function ParentHomePage() {
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
           {children.map((child) => (
-            <Card key={child.id} hover className="flex flex-col gap-4 p-5">
+            <Card key={child.id} hover className="type-corner-mark flex flex-col gap-4 p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Avatar name={child.name} src={child.avatarUrl} size="lg" tone="brand" className="size-11" />
                   <div className="min-w-0 space-y-0.5 leading-tight">
-                    <p className="truncate text-sm font-extrabold text-ink">{child.name}</p>
-                    <p className="truncate text-[11px] font-semibold text-muted">{child.gradeName ?? "بدون صف دراسي"}</p>
+                    <p className="truncate type-card-heading">{child.name}</p>
+                    <p className="truncate text-xs font-semibold text-muted">{child.gradeName ?? "بدون صف دراسي"}</p>
                   </div>
                 </div>
                 <Badge tone={scoreTone(child.avgPercent)}>
@@ -65,18 +66,18 @@ export default async function ParentHomePage() {
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-xl bg-surface2/60 px-2 py-3">
                   <BookOpen size={15} className="mx-auto text-brand" aria-hidden />
-                  <p className="mt-1 font-mono text-base font-extrabold text-ink">{child.activeCourses}</p>
-                  <p className="text-[10px] font-bold text-muted">كورس نشط</p>
+                  <p className="mt-1 type-stat-display text-2xl">{child.activeCourses}</p>
+                  <p className="mt-0.5 text-xs font-bold uppercase tracking-tag text-muted">كورس نشط</p>
                 </div>
                 <div className="rounded-xl bg-surface2/60 px-2 py-3">
                   <ClipboardCheck size={15} className="mx-auto text-brand" aria-hidden />
-                  <p className="mt-1 font-mono text-base font-extrabold text-ink">{child.attemptsCount}</p>
-                  <p className="text-[10px] font-bold text-muted">اختبار محلول</p>
+                  <p className="mt-1 type-stat-display text-2xl">{child.attemptsCount}</p>
+                  <p className="mt-0.5 text-xs font-bold uppercase tracking-tag text-muted">اختبار محلول</p>
                 </div>
                 <div className="rounded-xl bg-surface2/60 px-2 py-3">
                   <Award size={15} className="mx-auto text-gold" aria-hidden />
-                  <p className="mt-1 font-mono text-base font-extrabold text-ink">{child.avgPercent ?? "—"}%</p>
-                  <p className="text-[10px] font-bold text-muted">متوسط الدرجات</p>
+                  <p className="mt-1 type-stat-display text-2xl">{child.avgPercent ?? "—"}%</p>
+                  <p className="mt-0.5 text-xs font-bold uppercase tracking-tag text-muted">متوسط الدرجات</p>
                 </div>
               </div>
 

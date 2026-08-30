@@ -24,9 +24,9 @@ export function ActivityCard({
     <section className="space-y-3">
       {showHeader && (
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-black text-ink">آخر نشاط</h2>
+          <h2 className="type-section-heading">آخر نشاط</h2>
           {items.length > 0 ? (
-            <Link href="/dashboard/activity" className="text-xs font-bold text-brand hover:underline">
+            <Link href="/dashboard/activity" className="text-sm font-bold text-brand hover:underline">
               عرض الكل ←
             </Link>
           ) : null}
@@ -34,7 +34,7 @@ export function ActivityCard({
       )}
       <Card className="divide-y divide-line">
         {visible.length === 0 ? (
-          <p className="px-4 py-6 text-center text-xs font-semibold text-muted">لا يوجد نشاط بعد.</p>
+          <p className="px-4 py-6 text-center text-sm font-semibold text-muted">لا يوجد نشاط بعد.</p>
         ) : (
           visible.map((item) => {
             const Icon = ACTIVITY_ICONS[item.kind];
@@ -45,8 +45,8 @@ export function ActivityCard({
                   className={item.kind === "lesson" ? "mt-0.5 shrink-0 text-success" : "mt-0.5 shrink-0 text-muted"}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-ink">{item.title}</p>
-                  {item.meta ? <p className="truncate text-[11px] text-muted">{item.meta}</p> : null}
+                  <p className="truncate text-sm font-bold text-ink">{item.title}</p>
+                  {item.meta ? <p className="truncate text-xs text-muted">{item.meta}</p> : null}
                 </div>
               </div>
             );

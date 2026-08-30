@@ -20,6 +20,7 @@ export default async function WalletPage() {
     <div className="space-y-6 pb-12">
       <PageHeader
         title="المحفظة"
+        overline="المحفظة"
         actions={
           <span className="font-mono text-sm font-bold text-brand">{formatEGP(wallet.balanceCents)}</span>
         }

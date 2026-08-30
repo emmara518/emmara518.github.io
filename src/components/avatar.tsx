@@ -4,7 +4,7 @@ export type AvatarSize = "xs" | "sm" | "md" | "lg";
 export type AvatarTone = "muted" | "brand" | "brand-soft";
 
 const SIZE: Record<AvatarSize, string> = {
-  xs: "size-6 text-[10px]",
+  xs: "size-6 text-xs",
   sm: "size-8 text-xs",
   md: "size-9 text-xs",
   lg: "size-12 text-sm",

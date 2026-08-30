@@ -108,15 +108,19 @@ const ACTION_LABELS: Record<string, string> = {
   "courses.update": "تحديث مقرر",
   "courses.update_status": "تغيير حالة نشر مقرر",
   "courses.delete": "حذف مقرر",
+  "courses.patch": "تعديل مقرر",
   "exams.create": "إنشاء امتحان",
   "exams.update": "تحديث امتحان",
   "exams.toggle_publish": "نشر / إخفاء امتحان",
   "exams.delete": "حذف امتحان",
+  "exams.patch": "تعديل امتحان",
   "questions.create": "إضافة سؤال للبنك",
   "questions.delete": "حذف سؤال من البنك",
   "coupons.batch_create": "توليد دفعة أكواد",
+  "coupons.batch": "توليد دفعة أكواد",
   "coupons.toggle": "تفعيل / تعطيل كود",
   "coupons.delete": "حذف كود",
+  "coupons.patch": "تعديل كود",
   "billing.manual_enroll": "تفعيل اشتراك يدوي",
   "orders.create": "عملية شراء جديدة",
   "stages.create": "إضافة مرحلة دراسية",
@@ -124,10 +128,15 @@ const ACTION_LABELS: Record<string, string> = {
   "stages.delete": "حذف مرحلة دراسية",
   "communications.broadcast_notification": "إرسال تنبيه جماعي",
   "community.delete_post": "حذف منشور مجتمع",
+  "subscriptions.modify": "تعديل اشتراك",
+  "wallet.adjust": "تعديل رصيد محفظة",
 };
 
+/** Human-readable label for any audit action code. Unknown codes are
+ *  shown as a generic "إجراء إداري" instead of the raw technical key,
+ *  so the audit log stays readable when new actions are added. */
 export function actionLabel(action: string): string {
-  return ACTION_LABELS[action] ?? action;
+  return ACTION_LABELS[action] ?? "إجراء إداري";
 }
 
 /* ── KPI stat card ── */
@@ -159,12 +168,12 @@ export function KpiCard({
         <Icon size={22} />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-muted">{label}</p>
-        <p className="mt-0.5 text-2xl font-bold tabular-nums tracking-normal text-ink">{value}</p>
+        <p className="type-overline">{label}</p>
+        <p className="mt-0.5 type-stat-display tabular-nums text-ink">{value}</p>
         {hint ? (
           <span
             className={cn(
-              "mt-0.5 block text-[11px] font-medium",
+              "mt-0.5 block text-xs font-semibold",
               hintTone === "muted" && "text-muted",
               hintTone === "success" && "text-success",
               hintTone === "brand" && "text-brand",
@@ -196,7 +205,7 @@ export function SectionHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <h3 className="flex items-center gap-2 font-brand text-base font-semibold text-ink">
+        <h3 className="inline-flex items-center gap-2 type-card-heading text-ink">
           <Icon size={18} className="shrink-0 text-brand" />
           {title}
           {typeof count === "number" ? <span className="tabular-nums text-muted">({count})</span> : null}
