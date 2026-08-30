@@ -79,7 +79,7 @@ export function StudentProfileModal({
               {student.name.trim().charAt(0)}
             </span>
             <div>
-              <h3 id="student-profile-title" className="font-brand text-lg font-semibold leading-snug text-ink">
+              <h3 id="student-profile-title" className="font-brand text-xl font-black leading-snug text-ink">
                 {student.name}
               </h3>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
@@ -147,7 +147,7 @@ export function StudentProfileModal({
 
           {/* Subscriptions */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-tag text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <GraduationCap size={13} /> الاشتراكات ({mySubs.length})
             </h4>
             {mySubs.length === 0 ? (
@@ -171,7 +171,7 @@ export function StudentProfileModal({
 
           {/* Orders */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-tag text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <Receipt size={13} /> الطلبات ({myOrders.length})
             </h4>
             {myOrders.length === 0 ? (
@@ -195,7 +195,7 @@ export function StudentProfileModal({
 
           {/* Exam attempts */}
           <section className="space-y-2">
-            <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-tag text-muted">
+            <h4 className="flex items-center gap-1.5 type-overline">
               <Award size={13} /> محاولات الامتحانات ({myAttempts.length})
             </h4>
             {myAttempts.length === 0 ? (

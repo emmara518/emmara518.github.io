@@ -32,6 +32,7 @@ export default async function CommunityPage() {
       <PageHeader
         title="مجتمع الطلاب"
         subtitle="اطرح سؤالك — يجيبك فريق المساعدين بحل نصي أو صورة أو فيديو"
+        overline="مجتمع الطلاب"
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">

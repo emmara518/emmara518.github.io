@@ -22,6 +22,7 @@ export default async function StudentExamsPage() {
       <PageHeader
         title="اختباراتي"
         subtitle="الاختبارات المتاحة لكورساتك المشترك بها"
+        overline="الاختبارات"
       />
 
       {data.upcomingExams.length === 0 ? (

@@ -100,6 +100,7 @@ export function Badge({
 export const inputStyles = cn(
   "h-11 w-full rounded-xl border border-line bg-surface px-3.5 text-sm text-ink",
   "placeholder:text-muted/70 transition-colors focus:border-brand outline-none",
+  "aria-[invalid=true]:border-danger aria-[invalid=true]:focus:border-danger",
 );
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
@@ -123,17 +124,30 @@ export function Select({ className, children, ...props }: SelectHTMLAttributes<H
 export function Field({
   label,
   hint,
+  error,
   children,
 }: {
   label: string;
   hint?: string;
+  error?: string;
   children: ReactNode;
 }) {
+  /* Server-safe Field: renders label + child + hint/error text. The
+   * interactive ARIA plumbing (aria-invalid + aria-describedby) lives
+   * in the client-side Field re-export in ui-field.tsx; using this
+   * from a Server Component renders the simpler markup. The
+   * appearance is identical either way. */
   return (
     <label className="block space-y-1.5">
       <span className="text-sm font-semibold text-muted">{label}</span>
       {children}
-      {hint ? <span className="block text-xs text-muted/80">{hint}</span> : null}
+      {error ? (
+        <span className="block text-xs font-bold text-danger" role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span className="block text-xs text-muted/80">{hint}</span>
+      ) : null}
     </label>
   );
 }
@@ -170,7 +184,7 @@ export function EmptyState({
       >
         {icon}
       </div>
-      <p className={cn("font-bold text-ink", compact ? "text-base" : "text-lg")}>{title}</p>
+      <p className={cn("type-card-heading", compact ? "" : "")}>{title}</p>
       {hint ? (
         <p className={cn("max-w-md text-muted", compact ? "text-sm" : "text-base")}>{hint}</p>
       ) : null}

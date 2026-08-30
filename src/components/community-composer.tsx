@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle as Loader2, Send } from "lucide-react";
-import { Button, Card, Field, Select, Textarea } from "./ui";
+import { Button, Card, Select, Textarea } from "./ui";
+import { Field } from "./ui-field";
 
 export function CommunityComposer({
   courses,

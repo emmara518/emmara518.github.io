@@ -24,10 +24,7 @@ export function ActivityCard({
     <section className="space-y-3">
       {showHeader && (
         <div className="flex items-center justify-between">
-          <h2 className="inline-flex items-center text-base font-black text-ink">
-            <span className="type-rule" aria-hidden />
-            آخر نشاط
-          </h2>
+          <h2 className="type-section-heading">آخر نشاط</h2>
           {items.length > 0 ? (
             <Link href="/dashboard/activity" className="text-sm font-bold text-brand hover:underline">
               عرض الكل ←

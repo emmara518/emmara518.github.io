@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Pencil, Save, X } from "lucide-react";
 import { Avatar } from "@/components/avatar";
-import { Badge, buttonStyles, Card, Field, Input } from "@/components/ui";
+import { Badge, buttonStyles, Card, Input } from "@/components/ui";
+import { Field } from "@/components/ui-field";
 import { formatDate } from "@/lib/format";
 
 export type ProfileShape = {

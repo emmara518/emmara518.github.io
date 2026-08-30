@@ -20,7 +20,7 @@ export default async function MyCoursesPage() {
 
   return (
     <div className="space-y-5 pb-12">
-      <PageHeader title="كورساتي" subtitle={`${enrollments.length} كورس نشط`} />
+      <PageHeader title="كورساتي" subtitle={`${enrollments.length} كورس نشط`} overline="كورساتي" />
 
       {enrollments.length === 0 ? (
         <EmptyState

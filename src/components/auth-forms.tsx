@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { LoaderCircle as Loader2, LogIn, UserPlus } from "lucide-react";
-import { Button, Field, Input } from "./ui";
+import { Button, Input } from "./ui";
+import { Field, PasswordInput } from "./ui-field";
 import { isAdminRole, type Role } from "@/lib/rbac";
 import { safeNext } from "@/lib/safe-next";
 
@@ -23,10 +24,14 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   async function performLogin(targetEmail: string, targetPass: string, redirectPath?: string) {
     setLoading(true);
     setError(null);
+    setEmailError(null);
+    setPasswordError(null);
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
@@ -35,7 +40,18 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
       });
       const json = await res.json();
       if (!json.ok) {
-        setError(json.error?.message ?? "تعذر تسجيل الدخول");
+        const code = json.error?.code as string | undefined;
+        const msg = json.error?.message ?? "تعذر تسجيل الدخول";
+        // Map known server codes to the most useful field. Unknown
+        // codes still surface in the form-level note.
+        if (code === "BAD_CREDENTIALS") {
+          setEmailError("بيانات الدخول غير صحيحة");
+          setPasswordError("بيانات الدخول غير صحيحة");
+        } else if (code === "EMAIL_TAKEN" /* not for login, but kept for future */) {
+          setEmailError(msg);
+        } else {
+          setError(msg);
+        }
         return;
       }
       const role = json.data.user.role as Role;
@@ -76,7 +92,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         </div>
       )}
 
-      <Field label="البريد الإلكتروني / رقم موبايل ولي الأمر">
+      <Field label="البريد الإلكتروني / رقم موبايل ولي الأمر" error={emailError ?? undefined}>
         <Input
           dir="ltr"
           required
@@ -86,9 +102,8 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
           autoComplete="username"
         />
       </Field>
-      <Field label="كلمة المرور">
-        <Input
-          type="password"
+      <Field label="كلمة المرور" error={passwordError ?? undefined}>
+        <PasswordInput
           dir="ltr"
           required
           value={password}
@@ -216,8 +231,7 @@ export function RegisterForm() {
         />
       </Field>
       <Field label="كلمة المرور" hint="8 أحرف على الأقل">
-        <Input
-          type="password"
+        <PasswordInput
           dir="ltr"
           required
           minLength={8}
@@ -296,8 +310,7 @@ export function ParentRegisterForm() {
         />
       </Field>
       <Field label="كلمة المرور" hint="8 أحرف على الأقل — ستدخل بها لاحقًا برقم موبايلك">
-        <Input
-          type="password"
+        <PasswordInput
           dir="ltr"
           required
           minLength={8}

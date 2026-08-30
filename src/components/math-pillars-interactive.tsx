@@ -215,7 +215,7 @@ export function MathPillarsInteractive() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-bold text-neon-lime">3D MATHEMATICAL PILLARS</span>
+            <span className="type-eyebrow-display">3D MATHEMATICAL PILLARS</span>
             <span className="inline-flex items-center rounded-full bg-yellow-500/15 border border-yellow-400/40 px-2.5 py-0.5 text-xs font-black text-neon-lime">
               تفاعلي 3D حر
             </span>

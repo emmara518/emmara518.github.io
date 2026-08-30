@@ -148,7 +148,8 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
             <Badge tone="gold">{room.course.gradeName}</Badge>
             {!room.enrolled ? <Badge tone="success">وضع المعاينة المجانية</Badge> : null}
           </div>
-          <h1 className="type-display text-3xl font-black">{room.course.title}</h1>
+          <h1 className="type-headline-display">{room.course.title}</h1>
+          <div className="type-flourish" aria-hidden />
         </div>
         <Link href="/dashboard" className={buttonStyles("outline", "sm")}>
           ← عودة للوحة
@@ -156,7 +157,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
       </div>
 
       {/* progress strip */}
-      <Card className="flex flex-wrap items-center gap-4 p-4">
+      <Card className="type-corner-mark flex flex-wrap items-center gap-4 p-4">
         <span className="font-mono text-base font-bold text-brand">{pct}%</span>
         <Progress value={pct} className="min-w-40 flex-1" />
         <span className="font-mono text-sm text-muted">
@@ -165,8 +166,9 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
       </Card>
 
       {flat.length === 0 || unlockedFlat.length === 0 ? (
-        <Card className="grid place-items-center gap-4 p-14 text-center">
+        <Card className="type-corner-mark grid place-items-center gap-4 p-14 text-center">
           <Lock size={26} className="text-muted" />
+          <div className="type-flourish" aria-hidden />
           <p className="font-bold">هذا الكورس مقفل</p>
           <p className="max-w-md text-base leading-7 text-muted">اشترك في الكورس للوصول إلى جميع الدروس والفيديوهات والاختبارات.</p>
           <Link href={`/courses/${room.course.slug}`} className={buttonStyles("primary", "md")}>
@@ -249,7 +251,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
             {/* exams + files */}
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="space-y-3 p-5">
-                <h3 className="inline-flex items-center gap-2 text-base font-black">
+                <h3 className="type-card-heading">
                   <ClipboardList size={16} className="text-gold" /> اختبارات الكورس
                 </h3>
                 <ul className="space-y-2 text-base">
@@ -268,7 +270,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                 </ul>
               </Card>
               <Card className="space-y-3 p-5">
-                <h3 className="inline-flex items-center gap-2 text-base font-black">
+                <h3 className="type-card-heading">
                   <FileText size={16} className="text-brand" /> الملفات والمذكرات
                 </h3>
                 <ul className="space-y-2 text-base">
@@ -289,7 +291,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
           <div ref={playlistRef} className="scroll-mt-20 lg:sticky lg:top-24">
           <Card className="h-fit max-h-[72vh] overflow-y-auto">
             <div className="border-b border-line p-4">
-              <p className="font-mono text-xs font-bold tracking-[0.24em] text-muted">PLAYLIST · {room.course.teacherName}</p>
+              <p className="type-subhead-roman">PLAYLIST · {room.course.teacherName}</p>
             </div>
             <div className="divide-y divide-line">
               {room.lessons.map((lesson, li) => {
@@ -303,7 +305,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                       className="flex w-full items-center gap-2 bg-surface2/50 px-4 py-3 text-start hover:bg-surface2"
                     >
                       <span className="font-mono text-xs font-bold text-muted">{String(li + 1).padStart(2, "0")}</span>
-                      <p className="flex-1 text-sm font-bold">{lesson.title}</p>
+                      <p className="flex-1 text-base font-extrabold">{lesson.title}</p>
                       {lesson.isFreePreview && !room.enrolled ? <Badge tone="success">مجاني</Badge> : null}
                       {!lesson.unlocked ? <Lock size={12} className="text-muted" /> : null}
                       <ChevronDown
@@ -337,7 +339,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                               ) : (
                                 <Lock size={13} className="shrink-0 text-muted" />
                               )}
-                              <span className={cn("flex-1 text-sm leading-6", isCurrent && "font-bold text-brand")}>
+                              <span className={cn("flex-1 text-base leading-6", isCurrent && "font-bold text-brand")}>
                                 {v.title}
                                 {!playable && (
                                   <span className="mt-0.5 block text-xs font-medium normal-case text-muted">

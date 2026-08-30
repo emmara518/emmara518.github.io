@@ -159,7 +159,7 @@ export function DataTable<T extends { id: string }>({
         <div className="grid size-12 place-items-center rounded-2xl bg-surface2 text-muted">
           <Inbox size={22} />
         </div>
-        <p className="font-brand font-semibold text-ink">{emptyTitle}</p>
+        <p className="type-card-heading">{emptyTitle}</p>
         {emptyHint ? <p className="max-w-sm text-sm leading-relaxed text-muted">{emptyHint}</p> : null}
         {emptyAction}
       </div>

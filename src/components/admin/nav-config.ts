@@ -34,6 +34,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Permission } from "@/lib/rbac";
 
 /* ── Primary Functional Hubs (shared by console, sidebar, topbar & palette) ── */
 export type CategoryId =
@@ -57,6 +58,9 @@ export interface CategoryDef {
   description: string;
   icon: LucideIcon;
   subFeatures: SubFeatureDef[];
+  /** Optional RBAC gate. A category is visible if `requires` is empty
+   *  or the actor's role grants at least one of these permissions. */
+  requires?: Permission[];
 }
 
 export const CATEGORIES: CategoryDef[] = [
@@ -76,6 +80,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "المناهج والمقررات",
     icon: BookOpen,
     description: "الكورسات، الفيديوهات، المذكرات، والمراحل الدراسية",
+    requires: ["admin:write"],
     subFeatures: [
       { id: "courses_table", label: "جدول الكورسات", icon: ListVideo },
       { id: "courses_manage", label: "إضافة مقرر جديد", icon: FilePlus2 },
@@ -89,6 +94,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "الامتحانات وبنك الأسئلة",
     icon: GraduationCap,
     description: "إنشاء الاختبارات، بنوك الأسئلة، واستيراد وتصحيح النتائج",
+    requires: ["admin:write"],
     subFeatures: [
       { id: "exams_table", label: "جدول الامتحانات", icon: ClipboardList },
       { id: "exam_groups_table", label: "مجموعات الامتحانات", icon: Layers },
@@ -104,6 +110,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "الأكواد والشحن والمالية",
     icon: KeyRound,
     description: "توليد أكواد التفعيل، الدفع اليدوي، الفواتير، والاشتراكات",
+    requires: ["admin:write"],
     subFeatures: [
       { id: "create_codes", label: "إنشاء وتوليد أكواد", icon: Sparkles },
       { id: "codes_table", label: "جدول الأكواد النشطة", icon: KeyRound },
@@ -120,6 +127,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "المستخدمون والطلاب",
     icon: Users,
     description: "إدارة الطلاب، تعيين المسؤولين، وتعديل المحافظ",
+    requires: ["admin:read"],
     subFeatures: [
       { id: "users_table", label: "جدول المستخدمين", icon: Users },
       { id: "add_student", label: "إضافة طالب جديد", icon: UserPlus },
@@ -133,6 +141,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "التنبيهات والمجتمع",
     icon: MessageSquare,
     description: "تنبيهات جماعية للطلاب، وإشراف ومتابعة منشورات المجتمع",
+    requires: ["admin:write"],
     subFeatures: [
       { id: "sms_messages", label: "إرسال تنبيه جماعي", icon: Send },
       { id: "community_groups", label: "مجموعات المجتمع", icon: Users },
@@ -145,6 +154,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "البحث المتقدم والفلاتر",
     icon: SlidersHorizontal,
     description: "بحث دقيق في الطلاب والمشتركين حسب الكورس والحالة وتاريخ التسجيل وأكثر",
+    requires: ["admin:read"],
     subFeatures: [
       { id: "users_advanced", label: "بحث الطلاب المتقدم", icon: UserSearch },
     ],
@@ -153,6 +163,19 @@ export const CATEGORIES: CategoryDef[] = [
 
 export function findCategory(id: string): CategoryDef | undefined {
   return CATEGORIES.find((c) => c.id === id);
+}
+
+/** Returns the categories an actor is allowed to see based on RBAC.
+ *  If the actor has no permissions (e.g. dev preview fallback) the
+ *  full set is returned so the dev path keeps working. */
+export function visibleCategories(
+  actorPermissions: readonly string[] | undefined
+): CategoryDef[] {
+  if (!actorPermissions || actorPermissions.length === 0) return CATEGORIES;
+  return CATEGORIES.filter((cat) => {
+    if (!cat.requires || cat.requires.length === 0) return true;
+    return cat.requires.some((p) => actorPermissions.includes(p));
+  });
 }
 
 /** Locates a sub-feature anywhere in the tree, returning its owning category. */

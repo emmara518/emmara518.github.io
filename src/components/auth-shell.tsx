@@ -29,13 +29,14 @@ export function AuthShell({
             <LogoMark size={44} />
           </Link>
           <div className="space-y-4">
-            <p className="font-mono text-xs tracking-[0.3em] text-gold">EQUALS·2026</p>
-            <p className="type-display text-3xl font-black leading-relaxed">
+            <div className="type-eyebrow-display">EQUALS · 2026</div>
+            <p className="type-headline-display text-ink leading-relaxed">
               «المسألة الصعبة ما هي إلا <span className="text-gradient font-extrabold">خطوات صغيرة</span> مرتبة صح.»
             </p>
+            <div className="type-flourish" aria-hidden />
             <p className="text-base text-muted">— فلسفة دروس ماث في التعليم</p>
           </div>
-          <div className="flex gap-6 font-mono text-xs font-bold text-muted">
+          <div className="flex gap-6 font-mono text-sm font-bold text-muted">
             <span>∫ تعلم</span>
             <span>Σ تدريب</span>
             <span>π إتقان</span>
@@ -46,7 +47,7 @@ export function AuthShell({
       {/* form side */}
       <Card className="p-7 sm:p-9">
         <div className="mb-7 space-y-2">
-          <h1 className="type-display text-3xl font-black">{title}</h1>
+          <h1 className="type-headline-display">{title}</h1>
           <p className="text-base leading-7 text-muted">{sub}</p>
         </div>
         {children}

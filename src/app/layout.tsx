@@ -97,13 +97,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-bg text-ink`}>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[100] focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-extrabold focus:text-white focus:shadow-lift"
+        >
+          تخطّي إلى المحتوى الرئيسي
+        </a>
         <DashboardChromeGate>
           <CosmicFluidBackground />
         </DashboardChromeGate>
         <DashboardChromeGate>
           <SiteHeader user={headerUser} />
         </DashboardChromeGate>
-        <div className="relative z-10 min-h-screen">{children}</div>
+        <div id="main" className="relative z-10 min-h-screen">{children}</div>
         <DashboardChromeGate>
           <SiteFooter />
         </DashboardChromeGate>

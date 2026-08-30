@@ -137,8 +137,7 @@ export function DrosUniverseShowcase() {
     { title: "Calculus — التفاضل والتكامل الكامل لـ Sec 3", type: "كورس دراسي", href: "/courses" },
     { title: "Algebra & Solid Geometry — الجبر والهندسة الفراغية", type: "كورس دراسي", href: "/courses" },
     { title: "Applied Mathematics — الاستاتيكا والديناميكا", type: "كورس دراسي", href: "/courses" },
-    { title: "بنك الأسئلة والاختبارات القياسية", type: "اختبارات", href: "/dashboard/arena" },
-    { title: "دليل القوانين الرياضية الشامل", type: "ملخصات", href: "/dashboard/formulas" },
+    { title: "بنك الأسئلة والاختبارات القياسية", type: "اختبارات", href: "/dashboard/exams" },
   ].filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
@@ -168,7 +167,11 @@ export function DrosUniverseShowcase() {
             <Link href="/courses" className="hover:text-ink transition-colors">
               المناهج والكورسات
             </Link>
-            <Link href="/dashboard/exams" className="hover:text-ink transition-colors">
+            <Link
+              href="/dashboard/exams"
+              className="hover:text-ink transition-colors"
+              title="يتطلب تسجيل الدخول"
+            >
               بنك الاختبارات
             </Link>
           </nav>
@@ -230,7 +233,7 @@ export function DrosUniverseShowcase() {
             {/* Platform Identifier Badge */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-surface border border-line shadow-sm">
               <span className="size-1.5 rounded-full bg-neon-lime" />
-              <span className="type-eyebrow font-bold text-ink">DROS MATH</span>
+              <span className="type-eyebrow-display font-bold">DROS MATH</span>
               <span className="text-line-strong">/</span>
               <span className="type-eyebrow text-muted">ENGLISH MATH PLATFORM</span>
             </div>
@@ -242,6 +245,7 @@ export function DrosUniverseShowcase() {
                 <span className="block text-ink">بعمق.</span>
                 <span className="block text-neon-lime mt-1.5">وتعلمه بذكاء.</span>
               </h1>
+              <div className="type-flourish mt-4" aria-hidden />
               
               <div className="relative p-5 sm:p-6 rounded-2xl bg-surface border-r-2 border-r-neon-lime border-y border-l border-line shadow-card max-w-xl">
                 <p className="type-body font-ui text-ink-secondary font-normal">
@@ -264,15 +268,15 @@ export function DrosUniverseShowcase() {
             {/* Precision Mathematical Domains Pipeline */}
             <div className="pt-7 border-t border-line grid grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <span className="num-anchor type-eyebrow text-neon-lime">01 / ANALYSIS</span>
+                <span className="type-subhead-roman">01 / ANALYSIS</span>
                 <p className="text-xs leading-relaxed text-muted font-ui font-normal">Calculus & Functions</p>
               </div>
               <div className="space-y-1.5">
-                <span className="num-anchor type-eyebrow text-neon-lime">02 / STRUCTURE</span>
+                <span className="type-subhead-roman">02 / STRUCTURE</span>
                 <p className="text-xs leading-relaxed text-muted font-ui font-normal">Algebra & Matrices</p>
               </div>
               <div className="space-y-1.5">
-                <span className="num-anchor type-eyebrow text-neon-lime">03 / SPATIAL</span>
+                <span className="type-subhead-roman">03 / SPATIAL</span>
                 <p className="text-xs leading-relaxed text-muted font-ui font-normal">Solid & Dynamics</p>
               </div>
             </div>
@@ -934,7 +938,12 @@ export function DrosUniverseShowcase() {
           5. SEARCH MODAL
          ───────────────────────────────────────────────────────────── */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/90 backdrop-blur-md flex items-start justify-center pt-20 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="بحث في المنصة"
+          className="fixed inset-0 z-50 bg-black/60 dark:bg-black/90 backdrop-blur-md flex items-start justify-center pt-20 p-4"
+        >
           <div className="relative w-full max-w-xl rounded-2xl bg-surface border border-line p-5 shadow-2xl space-y-4">
             
             <div className="flex items-center justify-between pb-2 border-b border-line">

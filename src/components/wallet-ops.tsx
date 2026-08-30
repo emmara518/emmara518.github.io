@@ -14,7 +14,8 @@ import {
   Send,
   Ticket,
 } from "lucide-react";
-import { Button, Card, Field, Input, Select } from "./ui";
+import { Button, Card, Input, Select } from "./ui";
+import { Field } from "./ui-field";
 import { formatEGP, timeAgo, TXN_KIND_LABELS } from "@/lib/format";
 import type { WalletTxnView } from "./wallet-card";
 

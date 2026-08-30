@@ -204,7 +204,8 @@ export function CommandPalette({
               return (
                 <div key={cmd.id}>
                   {showGroup && (
-                    <p className="px-2 pb-1 pt-3 text-xs font-semibold uppercase tracking-tag text-muted">
+                    <p className="px-2 pb-1 pt-3 type-overline">
+                      <span className="overline-glyph">◆</span>
                       {cmd.group}
                     </p>
                   )}

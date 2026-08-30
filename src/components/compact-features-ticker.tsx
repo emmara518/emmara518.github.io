@@ -54,10 +54,8 @@ export function CompactFeaturesSection() {
               <Zap size={14} className="animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold tracking-tag text-neon-lime uppercase">
-                  WHY DROS MATH
-                </span>
+              <div className="type-eyebrow-display">
+                WHY DROS MATH
                 <span className="inline-block size-1 rounded-full bg-neon-lime" />
                 <span className="text-xs font-ui text-muted">المزايا المحورية</span>
               </div>
@@ -127,7 +125,7 @@ export function CompactFeaturesSection() {
 
                   {/* Body Content */}
                   <div className="space-y-1">
-                    <h3 className="type-h3 text-base font-bold text-ink group-hover:text-neon-lime transition-colors flex items-center gap-1.5">
+                    <h3 className="type-card-heading text-ink group-hover:text-neon-lime transition-colors flex items-center gap-1.5">
                       {item.title}
                     </h3>
                     <p className="text-xs font-ui leading-relaxed text-muted line-clamp-2 font-normal">

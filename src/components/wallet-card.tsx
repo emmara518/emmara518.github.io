@@ -20,9 +20,9 @@ export function WalletCard({
   transactions?: WalletTxnView[];
 }) {
   return (
-    <Card className="space-y-4 p-5">
+    <Card className="type-corner-mark space-y-4 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center gap-2 text-lg font-black text-ink">
+        <h2 className="type-card-heading">
           <Wallet size={16} className="text-brand" /> محفظتي
         </h2>
         <span className="rounded-full bg-neon-lime-soft px-3 py-1 font-mono text-xs font-bold text-brand">
@@ -32,7 +32,7 @@ export function WalletCard({
 
       <div>
         <p className="text-xs font-bold text-muted">الرصيد المتاح</p>
-        <p className="mt-0.5 font-mono text-4xl font-black">{formatEGP(balanceCents)}</p>
+        <p className="mt-0.5 type-stat-display">{formatEGP(balanceCents)}</p>
       </div>
 
       {transactions.length > 0 ? (

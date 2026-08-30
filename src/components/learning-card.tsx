@@ -17,7 +17,7 @@ export function LearningCard({ e }: { e: LearningCardEnrollment }) {
     <Card hover className="flex flex-col gap-3 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-base font-extrabold text-ink">{e.title}</p>
+          <p className="truncate type-card-heading">{e.title}</p>
           <div className="mt-1.5 flex gap-1.5">
             <Badge tone="brand">{e.subjectName}</Badge>
             <Badge tone="muted">{e.gradeName}</Badge>

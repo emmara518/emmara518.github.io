@@ -45,6 +45,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
         subtitle={
           data.child.gradeName ? `${data.child.gradeName} · نتائج الاختبارات وتقدّم الكورسات` : "نتائج الاختبارات وتقدّم الكورسات"
         }
+        overline="ملف الطالب"
         actions={
           <>
             <Link
@@ -65,8 +66,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
       {/* Enrolled courses progress */}
       <section className="space-y-3">
-        <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
+        <h2 className="type-section-heading">
           <BookOpen size={16} className="text-brand" />
           الكورسات المشترك بها
         </h2>
@@ -95,8 +95,7 @@ export default async function ChildDetailPage({ params }: { params: Promise<{ id
 
       {/* Exam results */}
       <section className="space-y-3">
-        <h2 className="inline-flex items-center gap-2 text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
+        <h2 className="type-section-heading">
           <ClipboardList size={16} className="text-brand" />
           نتائج الاختبارات
         </h2>

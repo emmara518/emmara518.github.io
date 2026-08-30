@@ -135,11 +135,11 @@ export function ConfirmDialog({
             <AlertTriangle size={19} />
           </span>
           <div className="space-y-1 flex-1">
-            <h3 id="confirm-dialog-title" className="font-brand text-base font-bold leading-relaxed text-ink">
+            <h3 id="confirm-dialog-title" className="font-brand text-xl font-black leading-relaxed text-ink">
               {req.title}
             </h3>
             {req.description ? (
-              <p className="text-sm leading-relaxed text-muted">{req.description}</p>
+              <p className="text-base leading-relaxed text-muted">{req.description}</p>
             ) : null}
           </div>
         </div>

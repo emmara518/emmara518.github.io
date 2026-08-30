@@ -23,10 +23,10 @@ html:not(.dark) {
 
   --text-primary: #18201F;
   --text-secondary: #53605E;
-  --text-muted: #858F8D;
+  --text-muted: #5E6866;
   --ink: #18201F;
   --ink-secondary: #53605E;
-  --muted: #858F8D;
+  --muted: #5E6866;
 
   --border: #D5DDDA;
   --border-strong: #B7C4C0;
@@ -364,12 +364,258 @@ html.dark {
   opacity: 0.6;
 }
 
-/* Display heading utility — base for "h1 with editorial weight" */
+/* ─────────────────────────────────────────────────────────────
+   EDITORIAL ORNAMENT PRIMITIVES — Makeover Pass
+   Decorative typography tokens for premium page titles,
+   section heads, card titles, and stat displays.
+   No new colors — uses --brand, --gold, --ink, --line.
+   No new effects — only borders, text-shadow, ::before/::after.
+   ───────────────────────────────────────────────────────────── */
+
+/* 1.1 — Double-rule divider with diamond in the middle. Decorative. */
+.type-flourish {
+  display: block;
+  width: 100%;
+  height: 14px;
+  background-image: linear-gradient(
+    to right,
+    transparent 0,
+    var(--brand) 8%,
+    var(--brand) calc(50% - 18px),
+    transparent calc(50% - 6px)
+  );
+  position: relative;
+  margin: 0.5rem 0;
+  opacity: 0.85;
+}
+.type-flourish::after {
+  content: "◆";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  color: var(--brand);
+  font-size: 0.7rem;
+  background: var(--bg);
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+/* 1.2 — Double-rule with center glyph slot. <div><span>◆</span></div>. */
+.type-divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 14px;
+  color: var(--brand);
+  opacity: 0.7;
+}
+.type-divider-ornament::before,
+.type-divider-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(
+    to right,
+    transparent 0,
+    var(--brand) 12%,
+    var(--brand) 88%,
+    transparent 100%
+  );
+}
+.type-divider-ornament > span {
+  font-family: var(--font-math-stack);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+/* 1.3 — Premium eyebrow with leading tick and underline. Top-of-page label. */
+.type-eyebrow-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-ui-stack);
+  font-size: 0.75rem;       /* 12px */
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand);
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid var(--brand);
+}
+.type-eyebrow-display::before {
+  content: "▸";
+  font-size: 0.7em;
+  color: var(--gold);
+}
+
+/* 1.4 — Corner framing marks for premium cards. */
+.type-corner-mark {
+  position: relative;
+}
+.type-corner-mark::before,
+.type-corner-mark::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--brand);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: 1;
+}
+.type-corner-mark::before {
+  top: -1px;
+  inset-inline-start: -1px;
+  border-inline-end: 0;
+  border-bottom: 0;
+}
+.type-corner-mark::after {
+  bottom: -1px;
+  inset-inline-end: -1px;
+  border-inline-start: 0;
+  border-top: 0;
+}
+.type-corner-mark:hover::before,
+.type-corner-mark:hover::after {
+  opacity: 1;
+}
+
+/* 1.5 — Primary page title (PageHeader). 28-36px responsive. */
+.type-headline-display {
+  font-family: var(--font-ui-stack);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);  /* 28-36px */
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.type-headline-display .latin {
+  font-family: var(--font-math-stack);
+  font-size: 0.86em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* 1.6 — Section heading with brand rule + soft glow. 22px. */
+.type-section-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-ui-stack);
+  font-size: 1.375rem;       /* 22px (text-xl) */
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.type-section-heading::before {
+  content: "";
+  display: inline-block;
+  width: 2.5rem;
+  height: 3px;
+  background: var(--brand);
+  border-radius: 1.5px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+/* 1.7 — Card heading with leading arrow. 19px. */
+.type-card-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ui-stack);
+  font-size: 1.1875rem;     /* 19px (text-lg) */
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.type-card-heading::before {
+  content: "▸";
+  color: var(--brand);
+  font-size: 0.85em;
+  font-weight: 900;
+}
+
+/* 1.8 — Big stat number (KPIs, wallet balance). 36-46px brand-tinted. */
+.type-stat-display {
+  font-family: var(--font-ui-stack);
+  font-weight: 900;
+  font-size: clamp(2.25rem, 3.5vw, 2.875rem);  /* 36-46px */
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--brand);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--brand) 15%, transparent);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* 1.9 — Roman small subhead with section sign prefix. */
+.type-subhead-roman {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: var(--font-math-stack);
+  font-size: 0.6875rem;     /* 11px */
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.type-subhead-roman::before {
+  content: "§";
+  font-size: 1.1em;
+  color: var(--brand);
+}
+
+/* 1.10 — Updated .type-rule (thicker, glow) */
+.type-rule {
+  display: inline-block;
+  width: 3rem;
+  height: 3px;
+  background: var(--brand);
+  vertical-align: middle;
+  margin-inline-end: 0.75rem;
+  border-radius: 1.5px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 15%, transparent);
+}
+
+/* 1.11 — Updated .type-display (tighter, explicit line-height) */
 .type-display {
   font-family: var(--font-ui-stack);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   text-wrap: balance;
+  line-height: 1.18;
+}
+
+/* 1.12 — Updated .type-overline (glyph slot, smaller) */
+.type-overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ui-stack);
+  font-size: 0.6875rem;        /* 11px (was 12px) */
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.type-overline > .overline-glyph {
+  font-size: 1em;
+  color: var(--gold);
+}
+.type-overline::before {
+  content: "";
+  display: none;
 }
 
 /* English Uppercase Badges and Labels with Controlled Tracking */
@@ -613,6 +859,85 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 24s linear infinite !important;
+}
+
+/* ── Restored utilities (Batch 01) ── */
+
+/* Counter-rotation pairing for `animate-spin-slow`. Reuses orbit-spin-ccw
+   so the two concentric ellipses on the cosmic background rotate in
+   opposite directions without introducing a new keyframe vocabulary. */
+.animate-reverse-spin {
+  animation: orbit-spin-ccw 30s linear infinite !important;
+}
+
+/* Loading pulse used by the global loading boundary and any branded
+   waiting state. Subtle opacity-only oscillation matching the existing
+   `animate-pulse` Tailwind primitive but slower and brand-tinted. */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+/* SVG stroke draw-in used by the auth marketing panel and the catalog
+   math canvas. The path's `--dash` custom property sets the path length
+   (or a safe upper-bound) so the dasharray matches and the line draws
+   in from start to end. Consumers that don't supply --dash fall back to
+   a generous 1000-unit stroke. */
+@keyframes path-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.animate-draw {
+  stroke-dasharray: var(--dash, 1000);
+  stroke-dashoffset: var(--dash, 1000);
+  animation: path-draw 2.6s ease-out forwards;
+}
+
+/* Subtle horizontal drift for the secondary marketing curve. Slower
+   than the primary draw and slightly offset so the two animations on
+   the auth panel do not sync visually. */
+@keyframes path-drift {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-12px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.animate-drift {
+  animation: path-drift 9s ease-in-out infinite;
+}
+
+/* Large technical paper grid used as the auth marketing background.
+   Mirrors the spacing of the in-component `math-grid-pattern` but at
+   a larger cell size for the auth split-screen. */
+.grid-paper-lg {
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.18;
+}
+
+/* Soft glow discs used as ambient highlights on the auth marketing
+   panel. Color comes from the consumer's `bg-[var(--hero-glow-1|2)]`
+   so the existing tokens remain the single source of truth. */
+.orb {
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 /* ── Precise Orbit & Coordinate Rotation Keyframes ── */
@@ -942,10 +1267,17 @@ body {
   .animate-spin-slow,
   .animate-orbit-cw,
   .animate-orbit-ccw,
+  .animate-reverse-spin,
   .animate-float,
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-pulse-soft,
+  .animate-draw,
+  .animate-drift {
     animation: none !important;
     transform: none !important;
+  }
+  .animate-draw {
+    stroke-dashoffset: 0 !important;
   }
 }
 

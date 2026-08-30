@@ -27,7 +27,7 @@ export default async function InvoicesPage() {
 
   return (
     <div className="space-y-5 pb-12">
-      <PageHeader title="فواتيري" subtitle={`${invoices.length} فاتورة`} />
+      <PageHeader title="فواتيري" subtitle={`${invoices.length} فاتورة`} overline="الفواتير" />
 
       <InvoiceTable invoices={rows} />
     </div>

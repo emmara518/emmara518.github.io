@@ -78,7 +78,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
             <Zap size={13} className="text-neon-lime animate-pulse" />
             <span>3D INTERACTIVE CURRICULUM</span>
           </div>
-          <h2 className="type-h2 text-ink">الكورسات</h2>
+          <h2 className="type-section-heading text-ink">الكورسات</h2>
           <p className="type-small font-ui text-muted max-w-xl font-normal">
             ابدأ من مستواك.
           </p>
@@ -189,7 +189,7 @@ export function InteractiveCourses3DSection({ courses }: { courses: CourseCardDa
                           HERO FOCUS ★
                         </span>
                       ) : (
-                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-black/85 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-xs font-mono text-white/90">
+                        <span className="absolute end-3.5 top-3.5 z-10 rounded-full bg-black/85 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-sm font-bold font-mono text-white/90">
                           أ/ محمد سعيد
                         </span>
                       )}

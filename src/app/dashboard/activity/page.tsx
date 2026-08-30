@@ -19,7 +19,11 @@ export default async function ActivityPage() {
 
   return (
     <div className="space-y-5 pb-12">
-      <PageHeader title="النشاط" subtitle="آخر ما قمت به على المنصة" />
+      <PageHeader
+        title="النشاط"
+        subtitle="آخر ما قمت به على المنصة"
+        overline="نشاط الطالب"
+      />
 
       {items.length === 0 ? (
         <EmptyState icon={<Bell size={22} />} title="لا يوجد نشاط بعد." />

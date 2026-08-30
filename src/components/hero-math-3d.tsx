@@ -141,7 +141,9 @@ export function HeroMath3DUniverse() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-neon-lime" />
           </span>
-          <span className="font-mono text-sm font-black text-neon-lime">3D MATH ORBIT SYSTEM</span>
+          <div className="type-eyebrow-display">
+            3D MATH ORBIT SYSTEM
+          </div>
         </div>
 
         {/* Orbit Controls */}

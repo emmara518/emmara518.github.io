@@ -18,9 +18,9 @@ import { cn } from "@/lib/utils";
 
 type StepKey = "stage" | "goal" | "preview";
 const STEPS: { key: StepKey; title: string; subtitle: string }[] = [
-  { key: "stage", title: "المرحلة الدراسية", subtitle: "تأكدي إن المحتوى المظبوط ظاهر ليكي." },
+  { key: "stage", title: "المرحلة الدراسية", subtitle: "اختار المرحلة عشان نعرض لك المحتوى المناسب." },
   { key: "goal", title: "هدفك من المنصة", subtitle: "بنوصّلك بالمحتوى اللي يخدمك أسرع." },
-  { key: "preview", title: "جرّبي درسًا تجريبيًا", subtitle: "خطوة صغيرة قبل ما تبدئي رسميًا." },
+  { key: "preview", title: "جرّب درسًا تجريبيًا", subtitle: "خطوة صغيرة قبل ما تبدأ رسميًا." },
 ];
 
 const STAGES = [
@@ -44,7 +44,7 @@ const GOALS = [
   {
     value: "follow",
     title: "متابعة الشرح",
-    hint: "تكملة الكورسات اللي بدأتِها من قبل.",
+    hint: "تكملة الكورسات اللي بدأتها من قبل.",
     icon: Sparkles,
   },
 ] as const;
@@ -86,8 +86,9 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
           <PartyPopper size={14} />
           أهلاً {firstName}!
         </p>
-        <h1 className="type-display text-3xl font-black text-ink">خلّينا نعدّي دلوقتي على خطوات سريعة</h1>
-        <p className="text-sm font-semibold text-muted">ثلاث خطوات بسيطة قبل ما تبدئي.</p>
+        <h1 className="type-headline-display text-ink">خلّينا نعدّي دلوقتي على خطوات سريعة</h1>
+        <div className="type-flourish" aria-hidden />
+        <p className="text-sm font-semibold text-muted">ثلاث خطوات بسيطة قبل ما تبدأ.</p>
       </header>
 
       <div className="space-y-2">
@@ -102,8 +103,8 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
 
       <Card className="space-y-5 p-6">
         <div className="space-y-1 text-center">
-          <h2 className="text-xl font-black text-ink">{current.title}</h2>
-          <p className="text-base text-muted">{current.subtitle}</p>
+          <h2 className="type-section-heading text-ink">{current.title}</h2>
+          <p className="text-base leading-relaxed text-muted">{current.subtitle}</p>
         </div>
 
         {current.key === "stage" ? (
@@ -122,7 +123,7 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
                       : "border-line bg-surface hover:border-brand/50",
                   )}
                 >
-                  <p className="text-base font-black text-ink">{opt.label}</p>
+                  <p className="type-card-heading text-ink">{opt.label}</p>
                   <p className="mt-1 text-xs leading-5 text-muted">{opt.hint}</p>
                 </button>
               );
@@ -155,7 +156,7 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
                   >
                     <Icon size={16} />
                   </span>
-                  <p className="text-base font-black text-ink">{opt.title}</p>
+                  <p className="type-card-heading text-ink">{opt.title}</p>
                   <p className="mt-1 text-xs leading-5 text-muted">{opt.hint}</p>
                 </button>
               );
@@ -169,13 +170,13 @@ export function OnboardingStepper({ firstName }: { firstName: string }) {
               <Compass size={20} />
             </span>
             <p className="text-sm font-semibold text-muted">
-              لو حابّة تشوفي شكل الدرس قبل ما تبدئي، ادخلي على درس تجريبي مجاني —
-              أو اتخطّي وروحي للوحة التحكم على طول.
+              لو حاب تشوف شكل الدرس قبل ما تبدأ، ادخل على درس تجريبي مجاني —
+              أو اتخطّى وروح للوحة التحكم على طول.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Link href="/courses?welcome=1" className={buttonStyles("primary", "md")}>
                 <PlayCircle size={16} />
-                جربي درسًا تجريبيًا
+                جرّب درسًا تجريبيًا
               </Link>
               <Link href="/dashboard" className={buttonStyles("ghost", "md")}>
                 تخطّي

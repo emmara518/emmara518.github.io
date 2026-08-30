@@ -133,7 +133,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
       {/* Mobile Drawer Menu */}
       {open ? (
-        <div className="border-t border-line bg-bg/95 dark:bg-[#0F1413]/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2 duration-200">
+        <div className="border-t border-line bg-bg/95 dark:bg-[#0F1413]/95 px-4 pb-6 pt-3 backdrop-blur-xl md:hidden animate-in slide-in-from-top-2 duration-200 type-corner-mark">
           <nav className="grid gap-1.5" aria-label="قائمة الجوال">
             {links.map((l) => (
               <Link

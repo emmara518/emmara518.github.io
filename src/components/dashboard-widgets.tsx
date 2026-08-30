@@ -67,7 +67,7 @@ export function NextActionCard({
   progressPct?: number;
 }) {
   return (
-    <Card className="p-5 sm:p-6">
+    <Card className="type-corner-mark p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 space-y-1.5">
           <p className="font-mono text-xs font-bold uppercase tracking-wider text-muted">
@@ -75,7 +75,7 @@ export function NextActionCard({
           </p>
           {action?.kind === "lesson" ? (
             <>
-              <h2 className="type-display text-2xl font-black text-ink">كمل درسك</h2>
+              <h2 className="type-card-heading text-2xl text-ink">كمل درسك</h2>
               <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.lessonTitle}
               </p>
@@ -90,7 +90,7 @@ export function NextActionCard({
             </>
           ) : action?.kind === "exam" ? (
             <>
-              <h2 className="type-display text-2xl font-black text-ink">ابدأ الاختبار</h2>
+              <h2 className="type-card-heading text-2xl text-ink">ابدأ الاختبار</h2>
               <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.examTitle}
               </p>
@@ -100,7 +100,7 @@ export function NextActionCard({
             </>
           ) : (
             <>
-              <h2 className="type-display text-2xl font-black text-ink">ابدأ أول درس.</h2>
+              <h2 className="type-card-heading text-2xl text-ink">ابدأ أول درس.</h2>
               <p className="text-sm font-semibold text-muted">اشترك في كورس وابدأ التعلم.</p>
             </>
           )}
@@ -135,8 +135,7 @@ export function MyLearningList({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
+        <h2 className="type-section-heading">
           كورساتي{" "}
           {enrollments.length > 0 && (
             <span className="font-mono text-xs font-bold text-muted">({enrollments.length})</span>
@@ -190,10 +189,7 @@ export function ProgressStrip({ stats }: { stats: Stats }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
-          تقدمي
-        </h2>
+        <h2 className="type-section-heading">تقدمي</h2>
         <Link href="/dashboard/progress" className="text-sm font-bold text-brand hover:underline">
           التفاصيل ←
         </Link>
@@ -201,8 +197,8 @@ export function ProgressStrip({ stats }: { stats: Stats }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
         {cells.map((c) => (
           <Card key={c.label} className="px-4 py-3.5">
-            <span className="block font-mono text-2xl font-black text-ink">{c.value}</span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">{c.label}</span>
+            <span className="block type-stat-display text-2xl">{c.value}</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">{c.label}</span>
           </Card>
         ))}
       </div>
@@ -216,10 +212,7 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="inline-flex items-center text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
-          اختباراتي
-        </h2>
+        <h2 className="type-section-heading">اختباراتي</h2>
         {exams.length > 0 && (
           <Link href="/dashboard/exams" className="text-sm font-bold text-brand hover:underline">
             الكل ←

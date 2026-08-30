@@ -66,10 +66,8 @@ export function ParentReport({
       {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-4">
         <div className="space-y-1">
-          <p className="font-mono text-xs font-bold uppercase tracking-wider text-muted">
-            تقرير ولي الأمر
-          </p>
-          <h1 className="type-display text-3xl font-black text-ink">{child.name}</h1>
+          <div className="type-eyebrow-display">تقرير الأداء</div>
+          <h1 className="type-headline-display text-ink">{child.name}</h1>
           <p className="text-base font-semibold text-muted">
             {child.gradeName ?? "بدون صف دراسي"} · {formatDate(generatedAt)}
           </p>
@@ -81,28 +79,28 @@ export function ParentReport({
 
       {/* KPIs */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-base font-black text-ink">
+        <h2 className="type-section-heading">
           <TrendingUp size={16} className="text-brand" />
           ملخّص التقدّم
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
           <Card className="px-4 py-3.5 print:border-0 print:shadow-none print:bg-transparent">
-            <span className="block font-mono text-3xl font-black text-ink">{enrollments.length}</span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">عدد الكورسات</span>
+            <span className="block type-stat-display text-3xl">{enrollments.length}</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">عدد الكورسات</span>
           </Card>
           <Card className="px-4 py-3.5 print:border-0 print:shadow-none print:bg-transparent">
-            <span className="block font-mono text-3xl font-black text-ink">{avgProgress}%</span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">متوسط التقدم</span>
+            <span className="block type-stat-display text-3xl">{avgProgress}%</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">متوسط التقدم</span>
           </Card>
           <Card className="px-4 py-3.5 print:border-0 print:shadow-none print:bg-transparent">
-            <span className="block font-mono text-3xl font-black text-ink">{recentAttempts.length}</span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">عدد الاختبارات المُختبرة</span>
+            <span className="block type-stat-display text-3xl">{recentAttempts.length}</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">عدد الاختبارات المُختبرة</span>
           </Card>
           <Card className="px-4 py-3.5 print:border-0 print:shadow-none print:bg-transparent">
             <span className="block font-mono text-base font-extrabold text-ink">
               {lastActivity ? formatDate(lastActivity) : "—"}
             </span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">آخر نشاط</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">آخر نشاط</span>
           </Card>
         </div>
         {avgPercent !== null ? (
@@ -115,7 +113,7 @@ export function ParentReport({
 
       {/* Per-course completion */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-base font-black text-ink">
+        <h2 className="type-section-heading">
           <BookOpen size={16} className="text-brand" />
           تقدّم الكورسات
         </h2>
@@ -161,7 +159,7 @@ export function ParentReport({
 
       {/* Recent exam attempts */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-base font-black text-ink">
+        <h2 className="type-section-heading">
           <ClipboardList size={16} className="text-brand" />
           آخر محاولات الاختبارات
         </h2>
@@ -213,7 +211,7 @@ export function ParentReport({
       {/* Weak topics — placeholder slot. v1 data doesn't include per-topic analytics
           yet; we surface a friendly empty state so the section reads honestly. */}
       <section className="space-y-3">
-        <h2 className="flex items-center gap-2 text-base font-black text-ink">
+        <h2 className="type-section-heading">
           <Target size={16} className="text-brand" />
           نقاط الضعف
         </h2>

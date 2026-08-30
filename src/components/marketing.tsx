@@ -129,10 +129,11 @@ export function SectionHead({
 }) {
   return (
     <div className={cn("space-y-3", align === "center" ? "text-center mx-auto" : "text-start")}>
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface2 border border-line font-mono text-xs font-bold text-neon-lime">
+      <div className="type-eyebrow-display">
         <span>{kicker}</span>
       </div>
-      <h2 className="text-2xl font-black tracking-tight text-ink sm:text-4xl">{title}</h2>
+      <h2 className="type-h2 text-ink">{title}</h2>
+      <div className="type-flourish" aria-hidden />
       {sub ? <p className="max-w-2xl text-sm leading-relaxed text-muted mx-auto">{sub}</p> : null}
     </div>
   );
@@ -218,7 +219,7 @@ export function CourseCard({ course, owned = false }: { course: CourseCardData; 
 
         <div className="space-y-3 p-5 flex-1 flex flex-col justify-between">
           <div className="space-y-2">
-            <h3 className="line-clamp-1 text-base font-bold text-ink transition-colors group-hover:text-neon-lime">
+            <h3 className="line-clamp-1 type-card-heading text-ink transition-colors group-hover:text-neon-lime">
               {course.title}
             </h3>
             <p className="line-clamp-2 min-h-10 text-xs leading-relaxed text-muted">{course.summary}</p>

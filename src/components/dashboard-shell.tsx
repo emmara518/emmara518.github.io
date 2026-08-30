@@ -64,14 +64,17 @@ export function DashboardShell({
       )}
 
       {/* Mobile drawer (opens from the right in RTL) — kept invisible while
-          closed so the translated element never extends scrollWidth. */}
+          closed so the translated element never extends scrollWidth. The
+          `inert` attribute blocks focus and pointer interaction when the
+          drawer is closed (a11y). */}
       {!focus && (
         <div
           id="mobile-nav-drawer"
           aria-hidden={!mobileMenuOpen}
+          inert={!mobileMenuOpen}
           className={`fixed inset-y-0 right-0 z-50 w-72 bg-surface shadow-2xl transition-[transform,visibility] duration-300 ease-in-out lg:hidden ${
             mobileMenuOpen ? "visible translate-x-0" : "invisible translate-x-full"
-          }`}
+          } type-corner-mark`}
         >
           <div className="relative h-full">
             <button

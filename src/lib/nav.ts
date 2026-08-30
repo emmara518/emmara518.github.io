@@ -27,7 +27,7 @@ export const STUDENT_NAV: NavItem[] = [
   { href: "/dashboard/activity", label: "نشاطي", icon: Activity },
   { href: "/dashboard/community", label: "مجتمع الطلاب", icon: MessagesSquare },
   { href: "/dashboard/wallet", label: "المحفظة", icon: Wallet },
-  { href: "/dashboard/account", label: "حسابي", icon: UserRound },
+  { href: "/dashboard/account", label: "الإعدادات", icon: UserRound },
   { href: "/courses", label: "استكشاف الكورسات", icon: BookOpen },
   { href: "/notifications", label: "الإشعارات", icon: Bell },
 ];

@@ -30,7 +30,7 @@ export default async function ProgressPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <PageHeader title="تقدمي" subtitle="ملخص تقدمك الحقيقي عبر كورساتك واختباراتك" />
+      <PageHeader title="تقدمي" subtitle="ملخص تقدمك الحقيقي عبر كورساتك واختباراتك" overline="تقدمي" />
 
       {/* stat strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>*]:min-w-0">
@@ -46,18 +46,15 @@ export default async function ProgressPage() {
             : []),
         ].map((c) => (
           <Card key={c.label} className="px-4 py-3.5">
-            <span className="block font-mono text-xl font-black text-ink">{c.value}</span>
-            <span className="mt-0.5 block text-xs font-bold text-muted">{c.label}</span>
+            <span className="block type-stat-display">{c.value}</span>
+            <span className="mt-0.5 block text-xs font-bold uppercase tracking-tag text-muted">{c.label}</span>
           </Card>
         ))}
       </div>
 
       {/* per-course progress */}
       <section className="space-y-3">
-        <h2 className="inline-flex items-center text-base font-black text-ink">
-          <span className="type-rule" aria-hidden />
-          تقدم الكورسات
-        </h2>
+        <h2 className="type-section-heading">تقدم الكورسات</h2>
         {enrollments.length === 0 ? (
           <EmptyState
             icon={<GraduationCap size={22} />}
@@ -98,10 +95,7 @@ export default async function ProgressPage() {
       {/* exam results */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="inline-flex items-center text-base font-black text-ink">
-            <span className="type-rule" aria-hidden />
-            نتائج الاختبارات
-          </h2>
+          <h2 className="type-section-heading">نتائج الاختبارات</h2>
           <Link href="/dashboard/exams" className="text-sm font-bold text-brand hover:underline">
             اختباراتي ←
           </Link>

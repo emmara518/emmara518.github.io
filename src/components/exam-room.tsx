@@ -132,10 +132,10 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
                 className="transition-all duration-1000"
               />
             </svg>
-            <span className="font-mono text-4xl font-black">{pct}%</span>
+            <span className="type-stat-display text-3xl">{pct}%</span>
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold">
+            <h1 className="type-headline-display">
               {pct >= 85 ? "ممتاز — أداء يليق بمتفوق" : pct >= 60 ? "جيد — وراجع أخطاءك بالأسفل" : "لا بأس — المحاولة تُبنى عليها"}
             </h1>
             <p className="mt-2 text-muted">
@@ -163,7 +163,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
         </Card>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-extrabold">مراجعة الإجابات</h2>
+          <h2 className="type-section-heading">مراجعة الإجابات</h2>
           {result.results.map((r, i) => (
             <Card key={r.questionId} className="space-y-4 p-6">
               <div className="flex items-start gap-3">
@@ -206,7 +206,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
     <div className="space-y-6">
       <Card className="sticky top-20 z-20 flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="space-y-0.5">
-          <h1 className="font-extrabold">{room.exam.title}</h1>
+          <h1 className="type-headline-display">{room.exam.title}</h1>
           <p className="font-mono text-xs text-muted">
             {room.exam.courseTitle} · {room.questions.length} سؤال · {room.exam.totalMarks} درجة
           </p>

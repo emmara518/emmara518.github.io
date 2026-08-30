@@ -182,8 +182,11 @@ export function ThemeToggle({
             />
           </span>
         </div>
-        <span className="font-ui text-xs text-muted group-hover:text-ink pointer-events-none transition-colors duration-200">
-          {isDark ? "الوضع الفاتح" : "الوضع الداكن"}
+        <span className="type-overline pointer-events-none transition-colors duration-200">
+          <span className="overline-glyph">▸</span>
+          <span className="font-ui text-xs text-muted group-hover:text-ink">
+            {isDark ? "الوضع الفاتح" : "الوضع الداكن"}
+          </span>
         </span>
       </button>
     );

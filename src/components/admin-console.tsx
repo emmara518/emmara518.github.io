@@ -57,7 +57,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { Badge, Button, Card, Field, Input, Select, Textarea } from "./ui";
+import { Badge, Button, Card, Input, Select, Textarea } from "./ui";
+import { Field } from "./ui-field";
 import { CATEGORIES, findSubFeature, type CategoryId } from "./admin/nav-config";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -328,6 +329,7 @@ export function AdminConsole({
   invoices,
   communityPosts,
   stages,
+  fetchErrors = [],
 }: {
   actor: { name: string; role: Role };
   canManageUsers: boolean;
@@ -348,6 +350,10 @@ export function AdminConsole({
   invoices: InvoiceRow[];
   communityPosts: PostRow[];
   stages: StageRow[];
+  /** Optional list of sections whose server fetch failed. The
+   *  console surfaces them in a single inline banner so the operator
+   *  is never silently looking at empty tables. */
+  fetchErrors?: { section: string; message: string }[];
 }) {
   const router = useRouter();
   const { toasts, push: pushToast, dismiss: dismissToast } = useToasts();
@@ -2858,6 +2864,31 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       value={{ density, pageSize, onPageSizeChange: changePageSize }}
     >
     <div ref={viewRef} className="view-enter space-y-6">
+      {/* ── Server fetch error banner ── */}
+      {fetchErrors.length > 0 ? (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm font-bold text-danger"
+        >
+          <span aria-hidden className="mt-0.5">⚠</span>
+          <div className="space-y-1">
+            <p className="font-extrabold">
+              تعذّر تحميل بعض الأقسام ({fetchErrors.length})
+            </p>
+            <ul className="list-inside list-disc text-xs font-semibold text-danger/90">
+              {fetchErrors.map((e) => (
+                <li key={e.section}>
+                  {e.section}: {e.message}
+                </li>
+              ))}
+            </ul>
+            <p className="text-[11px] font-medium text-muted">
+              هذه الأقسام قد تبدو فارغة لكنها لم تُحمَّل. أعد تحديث الصفحة أو تحقّق من السجل.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {/* ── TOP HEADER ── */}
       <div className="flex flex-col gap-4 border-b border-line pb-5 md:flex-row md:items-center md:justify-between">
         <div>
@@ -2868,10 +2899,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             </span>
             <span className="text-xs font-medium text-muted">· مرحبًا، {actor.name}</span>
           </div>
-          <h1 className="type-display font-brand text-2xl font-bold text-ink sm:text-3xl">لوحة الإدارة الأكاديمية</h1>
-          <p className="mt-0.5 text-base leading-relaxed text-muted">
+          <h1 className="type-headline-display">لوحة الإدارة الأكاديمية</h1>
+          <p className="mt-1 text-base leading-relaxed text-muted">
             إدارة متكاملة لجميع محتويات المنصة، الطلاب، المقررات، الامتحانات، والعمليات المالية.
           </p>
+          <div className="type-flourish mt-3" aria-hidden />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -3147,7 +3179,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-brand text-base font-bold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Receipt size={16} className="text-brand" /> أحدث عمليات الشراء والاشتراك
                 </h3>
                 <span className="text-xs tabular-nums text-muted">{overview.recentOrders.length} عمليات</span>
@@ -3176,7 +3208,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-brand text-base font-bold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Clock size={16} className="text-gold" /> سجل تدقيق العمليات الأخير
                 </h3>
                 <Button onClick={() => selectSubFeature("overview", "updates")} variant="ghost" size="sm" className="h-8 text-xs">
@@ -5172,7 +5204,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                 {/* dialog header */}
                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-4">
                   <div className="min-w-0">
-                    <h3 id="content-manager-title" className="truncate font-brand text-base font-bold text-ink">
+                    <h3 id="content-manager-title" className="truncate type-card-heading">
                       {course.title}
                     </h3>
                     <p className="text-xs text-muted">
@@ -5554,7 +5586,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 id="cover-modal-title" className="flex items-center gap-2 font-brand text-base font-bold text-ink">
+              <h3 id="cover-modal-title" className="flex items-center gap-2 type-card-heading">
                 <ImagePlus size={18} className="text-brand" /> صورة غلاف الكورس
               </h3>
               <button
@@ -5612,7 +5644,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             className="w-full max-w-md space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift animate-in fade-in zoom-in-95"
           >
             <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 id="wallet-modal-title" className="flex items-center gap-2 font-brand text-base font-bold text-ink">
+              <h3 id="wallet-modal-title" className="flex items-center gap-2 type-card-heading">
                 <Wallet size={18} className="text-brand" /> تعديل رصيد محفظة الطالب
               </h3>
               <button
@@ -5684,7 +5716,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           <div className="my-8 flex max-h-[90vh] w-full max-w-4xl flex-col space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-lift">
             <div className="no-print flex items-center justify-between border-b border-line pb-3">
               <div>
-                <h3 className="flex items-center gap-2 font-brand text-base font-bold text-ink">
+                <h3 className="flex items-center gap-2 type-card-heading">
                   <Printer size={18} className="text-brand" /> بطاقات كروت السنتر الجاهزة للطباعة والقص
                 </h3>
                 <p className="text-xs text-muted">ستُطبع البطاقات فقط دون باقي عناصر الصفحة</p>
