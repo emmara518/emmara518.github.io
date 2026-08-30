@@ -85,37 +85,19 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
             <div className="type-flourish mt-2" aria-hidden />
           ) : null}
         </div>
-        {/* Mentor identity + collapse toggle (desktop) */}
-        {!isRail ? (
-          <div className="mt-3 flex w-full items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <Avatar name="محمد سعيد" src="/images/assets/teacher.webp" size="xs" />
-              <span className="truncate type-overline">
-                <span className="overline-glyph">▸</span>
-                مع مستر محمد سعيد
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={toggleCollapse}
-              aria-label="تصغير القائمة الجانبية"
-              title="تصغير القائمة"
-              className="hidden size-7 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-surface2 hover:text-ink lg:grid"
-            >
-              <PanelLeftClose size={14} />
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={toggleCollapse}
-            aria-label="توسيع القائمة الجانبية"
-            title="توسيع القائمة"
-            className="hidden size-7 place-items-center rounded-lg text-muted transition-colors hover:bg-surface2 hover:text-ink lg:grid"
-          >
-            <PanelLeftOpen size={14} />
-          </button>
-        )}
+        {/* Collapse toggle (desktop) — keeps a clean row below the wordmark
+            in expanded mode and centers in collapsed mode. The mentor
+            identity row that used to sit here was removed because it
+            overlapped the wordmark + flourish when the sidebar folded. */}
+        <button
+          type="button"
+          onClick={toggleCollapse}
+          aria-label={isRail ? "توسيع القائمة الجانبية" : "تصغير القائمة الجانبية"}
+          title={isRail ? "توسيع القائمة" : "تصغير القائمة"}
+          className="hidden size-7 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-surface2 hover:text-ink lg:grid"
+        >
+          {isRail ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+        </button>
       </div>
 
       {/* Navigation — existing routes only */}
