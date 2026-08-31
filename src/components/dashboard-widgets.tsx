@@ -32,10 +32,10 @@ export function NextBestActionChip({ action }: { action: NextAction | null }) {
     return (
       <Link
         href="/courses"
-        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
+        className="inline-flex max-w-full min-w-0 items-center gap-1.5 truncate rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
       >
-        <Sparkles size={12} />
-        تصفّح الكورسات
+        <Sparkles size={12} className="shrink-0" />
+        <span className="truncate">تصفّح الكورسات</span>
       </Link>
     );
   }
@@ -46,10 +46,14 @@ export function NextBestActionChip({ action }: { action: NextAction | null }) {
   return (
     <Link
       href={action.href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
+      className="inline-flex max-w-full min-w-0 items-center gap-1.5 truncate rounded-full border border-line bg-surface px-3 py-1 text-xs font-extrabold text-ink hover:border-brand hover:text-brand"
     >
-      {action.kind === "lesson" ? <Play size={12} fill="currentColor" /> : <Sparkles size={12} />}
-      {label}
+      {action.kind === "lesson" ? (
+        <Play size={12} fill="currentColor" className="shrink-0" />
+      ) : (
+        <Sparkles size={12} className="shrink-0" />
+      )}
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
@@ -134,7 +138,7 @@ export function MyLearningList({
 }) {
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="type-section-heading">
           كورساتي{" "}
           {enrollments.length > 0 && (
@@ -188,7 +192,7 @@ export function ProgressStrip({ stats }: { stats: Stats }) {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="type-section-heading">تقدمي</h2>
         <Link href="/dashboard/progress" className="text-sm font-bold text-brand hover:underline">
           التفاصيل ←
@@ -211,7 +215,7 @@ export function ProgressStrip({ stats }: { stats: Stats }) {
 export function ExamsCard({ exams }: { exams: ExamItem[] }) {
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="type-section-heading">اختباراتي</h2>
         {exams.length > 0 && (
           <Link href="/dashboard/exams" className="text-sm font-bold text-brand hover:underline">

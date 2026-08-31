@@ -104,8 +104,8 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
       <Link href={identityHref} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar name={user.name} src={user.avatarUrl} size="sm" />
         <div className="min-w-0 leading-tight">
-          <p className="truncate text-base font-extrabold text-ink">{user.name}</p>
-          <p className="text-xs font-semibold uppercase tracking-tag text-muted">{roleLabel}</p>
+          <p className="truncate text-sm font-extrabold text-ink sm:text-base">{user.name}</p>
+          <p className="hidden text-xs font-semibold uppercase tracking-tag text-muted sm:block">{roleLabel}</p>
         </div>
       </Link>
 

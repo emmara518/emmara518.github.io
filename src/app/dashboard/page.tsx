@@ -63,7 +63,7 @@ export default async function StudentDashboardPage({
   }));
 
   return (
-    <div className="space-y-7 pb-12">
+    <div className="space-y-5 pb-10 sm:space-y-7 sm:pb-12">
       {/* Greeting — student is the center */}
       <PageHeader
         title={`أهلاً، ${firstName}`}
@@ -72,7 +72,9 @@ export default async function StudentDashboardPage({
         actions={
           <>
             <NextBestActionChip action={data.nextAction} />
-            <LogoMark size={28} />
+            <span className="hidden sm:inline-flex">
+              <LogoMark size={28} />
+            </span>
           </>
         }
       />
@@ -80,7 +82,7 @@ export default async function StudentDashboardPage({
       {/* 1. NEXT ACTION */}
       <NextActionCard action={data.nextAction} progressPct={nextActionPct} />
 
-      <div className="type-divider-ornament" aria-hidden>
+      <div className="type-divider-ornament hidden sm:flex" aria-hidden>
         <span>◆</span>
       </div>
 
@@ -96,7 +98,7 @@ export default async function StudentDashboardPage({
         <ActivityCard items={data.recentActivity} />
       </div>
 
-      <div className="type-divider-ornament" aria-hidden>
+      <div className="type-divider-ornament hidden sm:flex" aria-hidden>
         <span>◆</span>
       </div>
 

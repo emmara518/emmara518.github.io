@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+/** Consistent sub-page header — title, one-line subtitle, optional back navigation.
+ *  Mobile-first: overline + flourish hide on small viewports to keep the
+ *  page header compact and let content breathe above the fold. */
 export function PageHeader({
   title,
   subtitle,
@@ -21,20 +24,20 @@ export function PageHeader({
   flourish?: boolean;
 }) {
   return (
-    <header className="space-y-3 border-b border-line pb-5">
+    <header className="space-y-3 border-b border-line pb-4 sm:pb-5">
       {overline ? (
-        <div className="type-eyebrow-display">{overline}</div>
+        <div className="type-eyebrow-display hidden sm:inline-flex">{overline}</div>
       ) : null}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-2 min-w-0">
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0 flex-1 space-y-1.5 sm:space-y-2">
           <h1 className="type-headline-display text-ink">{title}</h1>
           {subtitle ? (
-            <p className="text-base font-semibold text-muted leading-relaxed max-w-2xl">
+            <p className="text-sm font-semibold text-muted leading-relaxed max-w-2xl sm:text-base">
               {subtitle}
             </p>
           ) : null}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap sm:gap-3">
           {actions}
           {backHref ? (
             <Link href={backHref} className="text-sm font-bold text-brand hover:underline">
@@ -43,7 +46,9 @@ export function PageHeader({
           ) : null}
         </div>
       </div>
-      {flourish ? <div className="type-flourish" aria-hidden /> : null}
+      {flourish ? (
+        <div className="type-flourish hidden sm:block" aria-hidden />
+      ) : null}
     </header>
   );
 }
