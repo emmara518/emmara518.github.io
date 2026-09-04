@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F1413" />
+      <stop offset="100%" stop-color="#1A2422" />
+    </linearGradient>
+    <linearGradient id="teal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3FA4A7" />
+      <stop offset="100%" stop-color="#287F83" />
+    </linearGradient>
+    <linearGradient id="chrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E6ECEA" />
+      <stop offset="100%" stop-color="#A9B3B0" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD64D" />
+      <stop offset="100%" stop-color="#FFC400" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background (for PWA maskable icon, safe zone ~40%) -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg)" />
+
+  <!-- Inner content (centered, inside the safe zone) -->
+  <g transform="translate(64 64) scale(8.73)">
+    <!-- Outer Isometric Hexagonal Prism -->
+    <polygon
+      points="22,3 40,13 40,33 22,43 4,33 4,13"
+      stroke="#3FA4A7"
+      stroke-width="1.8"
+      stroke-linejoin="round"
+      fill="none"
+    />
+    <!-- Top face -->
+    <polygon points="22,3 40,13 22,23 4,13" fill="url(#teal)" fill-opacity="0.22" stroke="#3FA4A7" stroke-width="0.8" />
+    <!-- Left face -->
+    <polygon points="4,13 22,23 22,43 4,33" fill="url(#chrome)" fill-opacity="0.1" stroke="#A9B3B0" stroke-width="0.8" />
+    <!-- Right face -->
+    <polygon points="22,23 40,13 40,33 22,43" fill="url(#gold)" fill-opacity="0.18" stroke="#FFC400" stroke-width="0.8" />
+    <!-- Internal axes -->
+    <line x1="22" y1="23" x2="22" y2="43" stroke="#3FA4A7" stroke-width="1.4" />
+    <line x1="22" y1="23" x2="4" y2="13" stroke="#3FA4A7" stroke-width="1.4" />
+    <line x1="22" y1="23" x2="40" y2="13" stroke="#3FA4A7" stroke-width="1.4" />
+    <!-- Vertices -->
+    <circle cx="22" cy="3" r="1.5" fill="#3FA4A7" />
+    <circle cx="40" cy="13" r="1.5" fill="#3FA4A7" />
+    <circle cx="4" cy="13" r="1.5" fill="#3FA4A7" />
+    <circle cx="22" cy="23" r="2" fill="#FFFFFF" />
+    <circle cx="22" cy="43" r="1.5" fill="#3FA4A7" />
+  </g>
+</svg>

@@ -24,7 +24,7 @@ export default async function CoursesPage({
     <main className="relative">
       <div className="relative overflow-hidden border-b border-line">
         <MathCanvas className="opacity-60" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16">
           <div className="type-eyebrow-display">CATALOG</div>
           <h1 className="mt-3 type-headline-display">كورسات دروس ماث</h1>
           <div className="type-flourish mt-3" aria-hidden />
@@ -34,7 +34,7 @@ export default async function CoursesPage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
         <CatalogBrowser
           initialCourses={courses}
           grades={grades.map((g) => ({ id: g.id, name: g.name, slug: g.slug }))}

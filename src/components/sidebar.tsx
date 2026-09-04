@@ -61,14 +61,14 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
       data-collapsed={isRail ? "true" : "false"}
       className={cn(
         "flex h-full flex-col border-e border-line bg-surface p-4 select-none transition-[width] duration-300 ease-in-out",
-        isRail ? "w-[72px]" : "w-72",
+        isRail ? "w-[64px]" : "w-64",
         className,
       )}
     >
       {/* Brand */}
       <div
         className={cn(
-          "flex items-center gap-2.5 border-b border-line pb-4 pt-1 type-corner-mark",
+          "flex shrink-0 items-center gap-2.5 border-b border-line pb-4 pt-1 type-corner-mark",
           isRail ? "flex-col px-0" : "px-2",
         )}
       >
@@ -100,8 +100,13 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
         </button>
       </div>
 
-      {/* Navigation — existing routes only */}
-      <nav className="mt-4 space-y-1" aria-label="تنقل مساحة الطالب">
+      {/* Navigation — existing routes only. Overflows internally when the
+          drawer is shorter than the nav list (small phones, landscape
+          orientation, accessibility text-zoom). */}
+      <nav
+        className="mt-4 min-h-0 flex-1 space-y-1 overflow-y-auto"
+        aria-label="تنقل مساحة الطالب"
+      >
         {STUDENT_NAV.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -113,10 +118,10 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
               aria-current={isActive ? "page" : undefined}
               title={isRail ? item.label : undefined}
               className={cn(
-                "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors",
+                "relative flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold transition-colors",
                 isActive
                   ? "bg-neon-lime-soft text-brand"
-                  : "text-muted hover:bg-surface2 hover:text-ink",
+                  : "text-muted hover:bg-surface2 hover:text-ink active:bg-surface2/80",
                 isRail && "justify-center",
               )}
             >
@@ -131,7 +136,7 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
       </nav>
 
       {/* Student identity + logout */}
-      <div className="mt-auto space-y-2 border-t border-line pt-4">
+      <div className="mt-auto shrink-0 space-y-2 border-t border-line pt-4">
         {user ? (
           <div
             className={cn(
@@ -152,7 +157,7 @@ export function SidebarNav({ user, className, onCloseMobile }: SidebarProps) {
           onClick={logout}
           aria-label="تسجيل الخروج"
           className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm font-extrabold text-muted transition-colors hover:border-danger hover:text-danger",
+            "flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm font-extrabold text-muted transition-colors hover:border-danger hover:text-danger",
           )}
         >
           <LogOut size={14} className="-scale-x-100" />

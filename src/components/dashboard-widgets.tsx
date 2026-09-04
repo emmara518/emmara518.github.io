@@ -79,11 +79,11 @@ export function NextActionCard({
           </p>
           {action?.kind === "lesson" ? (
             <>
-              <h2 className="type-card-heading text-2xl text-ink">كمل درسك</h2>
+              <h2 className="type-card-heading text-xl text-ink sm:text-2xl">كمل درسك</h2>
               <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.lessonTitle}
               </p>
-              <div className="flex items-center gap-2 pt-1.5">
+              <div className="flex flex-wrap items-center gap-2 pt-1.5">
                 {action.videoTitle && action.videoTitle !== action.lessonTitle ? (
                   <Badge tone="muted">{action.videoTitle}</Badge>
                 ) : null}
@@ -94,7 +94,7 @@ export function NextActionCard({
             </>
           ) : action?.kind === "exam" ? (
             <>
-              <h2 className="type-card-heading text-2xl text-ink">ابدأ الاختبار</h2>
+              <h2 className="type-card-heading text-xl text-ink sm:text-2xl">ابدأ الاختبار</h2>
               <p className="truncate text-sm font-semibold text-muted">
                 {action.courseTitle} — {action.examTitle}
               </p>
@@ -104,7 +104,7 @@ export function NextActionCard({
             </>
           ) : (
             <>
-              <h2 className="type-card-heading text-2xl text-ink">ابدأ أول درس.</h2>
+              <h2 className="type-card-heading text-xl text-ink sm:text-2xl">ابدأ أول درس.</h2>
               <p className="text-sm font-semibold text-muted">اشترك في كورس وابدأ التعلم.</p>
             </>
           )}
@@ -231,7 +231,10 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
           exams.slice(0, 3).map((exam) => {
             const attempted = exam.status !== null;
             return (
-              <div key={exam.id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div
+                key={exam.id}
+                className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-extrabold text-ink">{exam.title}</p>
                   <p className="mt-0.5 truncate text-xs font-semibold text-muted">
@@ -240,7 +243,7 @@ export function ExamsCard({ exams }: { exams: ExamItem[] }) {
                     <Clock size={10} className="inline align-[-1px]" /> {exam.durationMin} د
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2.5">
+                <div className="flex shrink-0 items-center gap-2.5 self-start sm:self-auto">
                   {attempted ? (
                     <span className="font-mono text-xs font-bold text-success">
                       {exam.status!.bestScore}/{exam.status!.bestTotal}

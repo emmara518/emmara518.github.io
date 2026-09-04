@@ -25,8 +25,11 @@ export type SubscriptionRow = {
   courseSlug: string;
 };
 
-export const TABS = ["profile", "security", "subscriptions", "notifications", "appearance"] as const;
-export type TabKey = (typeof TABS)[number];
+import { TABS, isTabKey, type TabKey } from "@/lib/settings-tabs";
+
+// Re-exported so existing deep imports keep working.
+export { TABS, isTabKey };
+export type { TabKey };
 
 const TAB_META: Record<TabKey, { label: string; icon: typeof UserRound }> = {
   profile: { label: "الملف الشخصي", icon: UserRound },
@@ -42,9 +45,7 @@ const SUB_STATUS_LABEL: Record<string, { label: string; tone: "success" | "dange
   cancelled: { label: "ملغي", tone: "danger" },
 };
 
-function isTab(v: string | null | undefined): v is TabKey {
-  return !!v && (TABS as readonly string[]).includes(v);
-}
+const isTab = isTabKey;
 
 /**
  * Settings tabs — controlled by the `?tab=` query param so the URL is the

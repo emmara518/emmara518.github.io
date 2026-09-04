@@ -271,10 +271,10 @@ export function AdminSidebar({
                               onCloseMobile?.();
                             }}
                             className={cn(
-                              "relative flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors",
+                              "relative flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors",
                               isActiveSub
                                 ? "bg-neon-lime-soft text-brand"
-                                : "text-muted hover:bg-surface2 hover:text-ink"
+                                : "text-muted hover:bg-surface2 hover:text-ink active:bg-surface2/80"
                             )}
                           >
                             {isActiveSub && (
@@ -361,7 +361,7 @@ export function AdminSidebar({
                 onClick={logout}
                 title="تسجيل الخروج"
                 aria-label="تسجيل الخروج"
-                className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-muted transition-colors hover:bg-danger/10 hover:text-danger"
               >
                 <LogOut size={14} className="-scale-x-100" />
               </button>

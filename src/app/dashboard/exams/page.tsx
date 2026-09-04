@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -43,7 +45,7 @@ export default async function StudentExamsPage() {
           }
         />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {data.upcomingExams.map((exam) => {
             const attempted = exam.status !== null;
             return (
@@ -89,3 +91,4 @@ export default async function StudentExamsPage() {
     </div>
   );
 }
+

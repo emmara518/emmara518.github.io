@@ -7,6 +7,13 @@
    Brand Display: Graphik Arabic · UI/Body: Cairo · Technical: IBM Plex Mono
    Palette: Teal #287F83 + Yellow #FFC400 + Soft Light #F4F5F2 + Deep Teal Dark #0F1413
    Fonts are loaded via next/font/local in layout.tsx (variable --font-graphik-arabic).
+
+   ── Yellow usage policy (Batch 04 — Quiet Pass):
+      - Reserved for: marketing hero primary CTA, the "ابدأ رحلتك" button on /.
+      - Permitted as a brand badge tone (e.g. "Gold" button variant in ui.tsx).
+      - NOT used in: cards, borders, headings, eyebrows, statistics, public nav.
+      - Per-component migrations to remove decorative gold usage are tracked as
+        page-level PRs (out of scope for this batch).
    ───────────────────────────────────────────────────────────── */
 
 :root,
@@ -65,8 +72,8 @@ html:not(.dark) {
   --glass-border: #D5DDDA;
   --glass-shadow: 0 8px 30px rgba(24, 32, 31, 0.06);
 
-  --shadow-card: 0 1px 3px rgba(24, 32, 31, 0.04), 0 8px 24px -4px rgba(24, 32, 31, 0.06);
-  --shadow-lift: 0 10px 30px -5px rgba(24, 32, 31, 0.08), 0 20px 40px -10px rgba(24, 32, 31, 0.05);
+  --shadow-card: 0 1px 2px rgba(24, 32, 31, 0.04);       /* was 0 1px 3px ..., 0 8px 24px -4px ... */
+  --shadow-lift: 0 2px 6px -1px rgba(24, 32, 31, 0.06), 0 6px 14px -4px rgba(24, 32, 31, 0.04);
 
   --hero-glow-1: rgba(40, 127, 131, 0.18);    /* teal glow */
   --hero-glow-2: rgba(255, 196, 0, 0.14);     /* yellow glow */
@@ -133,8 +140,8 @@ html.dark {
   --glass-border: #2D3A38;
   --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.85);
 
-  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25), 0 15px 30px -10px rgba(0, 0, 0, 0.5);
-  --shadow-lift: 0 10px 30px -5px rgba(40, 127, 131, 0.18), 0 20px 45px -10px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.18);              /* was 0 2px 10px ..., 0 15px 30px -10px ... */
+  --shadow-lift: 0 2px 6px -1px rgba(0, 0, 0, 0.25), 0 6px 14px -4px rgba(0, 0, 0, 0.18);
 
   --hero-glow-1: rgba(40, 127, 131, 0.30);
   --hero-glow-2: rgba(255, 196, 0, 0.18);
@@ -160,26 +167,29 @@ html.dark {
   --color-danger: var(--danger);
   --color-warning: var(--warning);
 
-  /* ── Bumped typography scale (1px larger at each step than Tailwind defaults) ── */
-  --text-xs: 0.8125rem;       /* 13px (was 12px) */
+  /* ── Bumped typography scale (1px larger at each step than Tailwind defaults).
+     Batch 04a — Quiet Pass: each step reduced by 1px (single-step) for a
+     calmer, less heavy reading rhythm. Color contrast is preserved because
+     the underlying ink/muted tokens are unchanged. */
+  --text-xs: 0.75rem;          /* 12px (was 13px) */
   --text-xs--line-height: 1.45rem;
-  --text-sm: 0.9375rem;       /* 15px (was 14px) */
-  --text-sm--line-height: 1.6rem;
-  --text-base: 1.0625rem;     /* 17px (was 16px) */
-  --text-base--line-height: 1.8rem;
-  --text-lg: 1.1875rem;       /* 19px (was 18px) */
-  --text-lg--line-height: 1.9rem;
-  --text-xl: 1.375rem;        /* 22px (was 20px) */
+  --text-sm: 0.875rem;         /* 14px (was 15px) */
+  --text-sm--line-height: 1.55rem;
+  --text-base: 1rem;           /* 16px (was 17px) */
+  --text-base--line-height: 1.75rem;
+  --text-lg: 1.0625rem;       /* 17px (was 19px) */
+  --text-lg--line-height: 1.85rem;
+  --text-xl: 1.25rem;          /* 20px (was 22px) */
   --text-xl--line-height: 1.95rem;
-  --text-2xl: 1.625rem;       /* 26px (was 24px) */
-  --text-2xl--line-height: 2.15rem;
-  --text-3xl: 1.9375rem;      /* 31px (was 30px) */
-  --text-3xl--line-height: 2.4rem;
-  --text-4xl: 2.5rem;         /* 40px (was 36px) */
-  --text-4xl--line-height: 2.6rem;
-  --text-5xl: 3.25rem;        /* 52px (was 48px) */
+  --text-2xl: 1.5rem;          /* 24px (was 26px) */
+  --text-2xl--line-height: 2.1rem;
+  --text-3xl: 1.75rem;         /* 28px (was 31px) */
+  --text-3xl--line-height: 2.35rem;
+  --text-4xl: 2.25rem;         /* 36px (was 40px) */
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 3rem;            /* 48px (was 52px, hero only) */
   --text-5xl--line-height: 1.1;
-  --text-6xl: 4rem;           /* 64px (was 60px) */
+  --text-6xl: 3.75rem;         /* 60px (was 64px, hero only) */
   --text-6xl--line-height: 1.05;
 
   /* ── Display / brand font: now Cairo so 800 weight renders correctly. ──
@@ -284,30 +294,30 @@ html.dark {
 
 .type-body {
   font-family: var(--font-ui-stack);
-  font-size: 1.0625rem;            /* 17px */
-  line-height: 1.85;
+  font-size: 1rem;                   /* 16px (was 17px) */
+  line-height: 1.75;
   font-weight: 400;
   letter-spacing: normal;
-  word-spacing: 0.035em;
+  word-spacing: 0.025em;
   text-wrap: pretty;
 }
 
 .type-small {
   font-family: var(--font-ui-stack);
-  font-size: 0.9375rem;            /* 15px */
-  line-height: 1.7;
+  font-size: 0.875rem;               /* 14px (was 15px) */
+  line-height: 1.65;
   font-weight: 400;
-  word-spacing: 0.03em;
+  word-spacing: 0.02em;
   text-wrap: pretty;
 }
 
 /* Mono editorial eyebrow — Latin labels only */
 .type-eyebrow {
   font-family: var(--font-math-stack);
-  font-size: 0.75rem;               /* 12px (was 11px) */
+  font-size: 0.75rem;               /* 12px */
   font-weight: 600;
   line-height: 1;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.10em;          /* was 0.14em — looser letter-spacing per quiet pass */
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
@@ -316,8 +326,8 @@ html.dark {
 .num-anchor {
   font-family: var(--font-math-stack);
   font-variant-numeric: tabular-nums lining-nums;
-  font-weight: 700;        /* was 600 — now matches the heavier scale */
-  letter-spacing: 0.01em;
+  font-weight: 600;                /* was 700 — lighter per quiet pass */
+  letter-spacing: 0;                /* was 0.01em */
 }
 
 /* Editorial gradient text — used for the auth marketing tagline only.
@@ -372,86 +382,43 @@ html.dark {
    No new effects — only borders, text-shadow, ::before/::after.
    ───────────────────────────────────────────────────────────── */
 
-/* 1.1 — Double-rule divider with diamond in the middle. Decorative. */
+/* 1.1 — Thin rule divider. Decorative. Quiet-pass: removed diamond glyph,
+   reduced opacity, single hairline. */
 .type-flourish {
   display: block;
   width: 100%;
-  height: 14px;
-  background-image: linear-gradient(
-    to right,
-    transparent 0,
-    var(--brand) 8%,
-    var(--brand) calc(50% - 18px),
-    transparent calc(50% - 6px)
-  );
+  height: 1px;
+  background: var(--line);
   position: relative;
   margin: 0.5rem 0;
-  opacity: 0.85;
-}
-.type-flourish::after {
-  content: "◆";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -55%);
-  color: var(--brand);
-  font-size: 0.7rem;
-  background: var(--bg);
-  padding: 0 0.5rem;
-  line-height: 1;
+  opacity: 0.6;
 }
 
-/* 1.2 — Double-rule with center glyph slot. <div><span>◆</span></div>. */
+/* 1.2 — Single hairline divider. */
 .type-divider-ornament {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
   width: 100%;
-  height: 14px;
-  color: var(--brand);
-  opacity: 0.7;
-}
-.type-divider-ornament::before,
-.type-divider-ornament::after {
-  content: "";
-  flex: 1;
-  height: 1.5px;
-  background: linear-gradient(
-    to right,
-    transparent 0,
-    var(--brand) 12%,
-    var(--brand) 88%,
-    transparent 100%
-  );
-}
-.type-divider-ornament > span {
-  font-family: var(--font-math-stack);
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  height: 1px;
+  background: var(--line);
+  opacity: 0.5;
 }
 
-/* 1.3 — Premium eyebrow with leading tick and underline. Top-of-page label. */
+/* 1.3 — Quiet eyebrow. Quiet-pass: no bottom border, no gold tick,
+   lighter weight. */
 .type-eyebrow-display {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.5rem;
   font-family: var(--font-ui-stack);
   font-size: 0.75rem;       /* 12px */
-  font-weight: 800;
+  font-weight: 700;          /* was 800 */
   line-height: 1;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;    /* was 0.18em */
   text-transform: uppercase;
   color: var(--brand);
-  padding-bottom: 0.5rem;
-  border-bottom: 1.5px solid var(--brand);
-}
-.type-eyebrow-display::before {
-  content: "▸";
-  font-size: 0.7em;
-  color: var(--gold);
 }
 
-/* 1.4 — Corner framing marks for premium cards. */
+/* 1.4 — Subtle corner framing marks. Quiet-pass: smaller, more transparent. */
 .type-corner-mark {
   position: relative;
 }
@@ -459,10 +426,10 @@ html.dark {
 .type-corner-mark::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 10px;                /* was 14px */
+  height: 10px;               /* was 14px */
   border: 1.5px solid var(--brand);
-  opacity: 0.55;
+  opacity: 0.3;               /* was 0.55 */
   pointer-events: none;
   transition: opacity 200ms ease;
   z-index: 1;
@@ -481,16 +448,17 @@ html.dark {
 }
 .type-corner-mark:hover::before,
 .type-corner-mark:hover::after {
-  opacity: 1;
+  opacity: 0.7;               /* was 1.0 */
 }
 
-/* 1.5 — Primary page title (PageHeader). Mobile-first: 22-36px responsive. */
+/* 1.5 — Primary page title (PageHeader). Mobile-first. Quiet-pass: 20-32px,
+   weight 700, looser tracking. */
 .type-headline-display {
   font-family: var(--font-ui-stack);
-  font-weight: 800;
-  font-size: clamp(1.375rem, 1.5vw + 0.875rem, 2.25rem);  /* 22-36px responsive */
-  line-height: 1.2;
-  letter-spacing: -0.022em;
+  font-weight: 700;                                       /* was 800 */
+  font-size: clamp(1.25rem, 1.5vw + 0.75rem, 2rem);     /* 20-32px (was 22-36px) */
+  line-height: 1.25;
+  letter-spacing: -0.015em;                               /* was -0.022em */
   text-wrap: balance;
   color: var(--ink);
 }
@@ -501,39 +469,39 @@ html.dark {
   letter-spacing: 0;
 }
 
-/* 1.6 — Section heading with brand rule + soft glow. 22px. */
+/* 1.6 — Section heading. Quiet-pass: 19px, weight 700, thinner rule,
+   removed glow. */
 .type-section-heading {
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
   font-family: var(--font-ui-stack);
-  font-size: 1.375rem;       /* 22px (text-xl) */
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.012em;
+  font-size: 1.1875rem;     /* 19px (text-lg) */
+  font-weight: 700;          /* was 800 */
+  line-height: 1.3;
+  letter-spacing: -0.008em;  /* was -0.012em */
   color: var(--ink);
   text-wrap: balance;
 }
 .type-section-heading::before {
   content: "";
   display: inline-block;
-  width: 2.5rem;
-  height: 3px;
+  width: 1.5rem;             /* was 2.5rem */
+  height: 2px;               /* was 3px */
   background: var(--brand);
-  border-radius: 1.5px;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 12%, transparent);
+  border-radius: 1px;        /* was 1.5px */
 }
 
-/* 1.7 — Card heading with leading arrow. 19px. */
+/* 1.7 — Card heading. Quiet-pass: 17px, weight 700. */
 .type-card-heading {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-ui-stack);
-  font-size: 1.1875rem;     /* 19px (text-lg) */
-  font-weight: 800;
+  font-size: 1.0625rem;     /* 17px (was 19px) */
+  font-weight: 700;          /* was 800 */
   line-height: 1.3;
-  letter-spacing: -0.008em;
+  letter-spacing: -0.006em;  /* was -0.008em */
   color: var(--ink);
   text-wrap: balance;
 }
@@ -544,19 +512,19 @@ html.dark {
   font-weight: 900;
 }
 
-/* 1.8 — Big stat number (KPIs, wallet balance). 28-46px responsive. */
+/* 1.8 — Big stat number (KPIs, wallet balance). Quiet-pass: 24-36px,
+   weight 800, no text-shadow. */
 .type-stat-display {
   font-family: var(--font-ui-stack);
-  font-weight: 900;
-  font-size: clamp(1.75rem, 2vw + 1.125rem, 2.875rem);  /* 28-46px responsive */
-  line-height: 1;
-  letter-spacing: -0.025em;
+  font-weight: 800;          /* was 900 */
+  font-size: clamp(1.5rem, 2vw + 0.875rem, 2.25rem);    /* 24-36px (was 28-46px) */
+  line-height: 1.05;
+  letter-spacing: -0.02em;    /* was -0.025em */
   color: var(--brand);
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--brand) 15%, transparent);
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* 1.9 — Roman small subhead with section sign prefix. */
+/* 1.9 — Roman small subhead. Quiet-pass: brand color (was gold). */
 .type-subhead-roman {
   display: inline-flex;
   align-items: baseline;
@@ -567,7 +535,7 @@ html.dark {
   line-height: 1;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--brand);       /* was gold */
 }
 .type-subhead-roman::before {
   content: "§";
@@ -575,35 +543,34 @@ html.dark {
   color: var(--brand);
 }
 
-/* 1.10 — Updated .type-rule (thicker, glow) */
+/* 1.10 — Thin brand rule. Quiet-pass: shorter, no glow halo. */
 .type-rule {
   display: inline-block;
-  width: 3rem;
-  height: 3px;
+  width: 2rem;                /* was 3rem */
+  height: 1.5px;              /* was 3px */
   background: var(--brand);
   vertical-align: middle;
-  margin-inline-end: 0.75rem;
-  border-radius: 1.5px;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 15%, transparent);
+  margin-inline-end: 0.625rem;
+  border-radius: 1px;
 }
 
-/* 1.11 — Updated .type-display (tighter, explicit line-height) */
+/* 1.11 — Display utility. Quiet-pass: weight 700, looser tracking. */
 .type-display {
   font-family: var(--font-ui-stack);
-  font-weight: 800;
-  letter-spacing: -0.025em;
+  font-weight: 700;          /* was 800 */
+  letter-spacing: -0.015em;   /* was -0.025em */
   text-wrap: balance;
-  line-height: 1.18;
+  line-height: 1.22;          /* was 1.18 */
 }
 
-/* 1.12 — Updated .type-overline (glyph slot, smaller) */
+/* 1.12 — Editorial overline. Quiet-pass: weight 700, brand glyph (was gold). */
 .type-overline {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-ui-stack);
-  font-size: 0.6875rem;        /* 11px (was 12px) */
-  font-weight: 800;
+  font-size: 0.6875rem;        /* 11px */
+  font-weight: 700;             /* was 800 */
   line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -620,7 +587,7 @@ html.dark {
 
 /* English Uppercase Badges and Labels with Controlled Tracking */
 .tracking-tag {
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;        /* was 0.12em — looser per quiet pass */
   text-transform: uppercase;
 }
 
@@ -703,7 +670,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui-stack);
-  transition: background 0.4s ease, color 0.4s ease;
+  transition: background 0.25s ease, color 0.25s ease;       /* was 0.4s */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -717,8 +684,8 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
+  outline: 1.5px solid var(--brand);                          /* was 2px */
+  outline-offset: 1.5px;                                    /* was 2px */
   border-radius: 6px;
 }
 
@@ -1330,6 +1297,28 @@ body {
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ── Thin scrollbar for the mobile sidebar drawer ──
+   Renders a 4px hairline thumb on webkit browsers and the
+   standard `thin` value on Firefox. Track is fully transparent
+   so the scrollbar visually disappears until the user scrolls. */
+.mobile-drawer-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.mobile-drawer-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.mobile-drawer-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mobile-drawer-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--line);
+  border-radius: 999px;
+}
+.mobile-drawer-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--line-strong);
 }
 
 /* ── Isolated printing (center voucher cards) ──

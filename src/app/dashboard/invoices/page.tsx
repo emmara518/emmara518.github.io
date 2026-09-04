@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
@@ -33,3 +35,4 @@ export default async function InvoicesPage() {
     </div>
   );
 }
+

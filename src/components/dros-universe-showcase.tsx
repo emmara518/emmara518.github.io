@@ -258,7 +258,7 @@ export function DrosUniverseShowcase() {
             <div className="flex flex-wrap items-center gap-3.5 pt-1 font-ui">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2.5 rounded-xl bg-neon-lime px-7 py-3.5 text-sm font-bold text-black hover:bg-yellow-300 transition-all cursor-pointer shadow-[0_4px_20px_rgba(255,196,0,0.3)] active:scale-[0.98]"
+                className="inline-flex items-center gap-2.5 rounded-xl bg-brand px-7 py-3.5 text-sm font-bold text-white hover:bg-brand-strong transition-all cursor-pointer shadow-[0_4px_12px_-4px_var(--brand)]"
               >
                 <span>ابدأ رحلتك</span>
                 <ArrowLeft size={16} />
@@ -283,7 +283,7 @@ export function DrosUniverseShowcase() {
           </div>
 
           {/* ── Right Hero Stage: Real Layered Architecture (6 Cols) ── */}
-          <div className="lg:col-span-6 relative flex items-center justify-center order-1 lg:order-2 min-h-[420px] sm:min-h-[500px] lg:min-h-[560px] [perspective:1200px] [transform-style:preserve-3d]">
+          <div className="lg:col-span-6 relative flex items-center justify-center order-1 lg:order-2 min-h-[360px] sm:min-h-[500px] lg:min-h-[560px] [perspective:1200px] [transform-style:preserve-3d]">
             
             {/* ── BACKGROUND LAYER: Technical Coordinate System & Dynamic Orbit Trajectories ── */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-45">

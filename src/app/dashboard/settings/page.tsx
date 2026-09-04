@@ -5,11 +5,8 @@ import { getSessionUser, SESSION_COOKIE } from "@/lib/auth";
 import { getAccountOverview } from "@/lib/services/account.service";
 import { listInvoices } from "@/lib/services/billing.service";
 import { getPreferences, DEFAULT_PREFERENCES } from "@/lib/services/preferences.service";
-import {
-  SettingsTabs,
-  TABS,
-  type TabKey,
-} from "@/components/settings-tabs";
+import { SettingsTabs } from "@/components/settings-tabs";
+import { TABS, type TabKey } from "@/lib/settings-tabs";
 import type { InvoiceRow } from "@/components/invoice-table";
 
 export const dynamic = "force-dynamic";

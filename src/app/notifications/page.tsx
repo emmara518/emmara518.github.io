@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { getSessionUser } from "@/lib/auth";
 import { getUserNotifications } from "@/lib/services/dashboard.service";
@@ -28,3 +30,4 @@ export default async function NotificationsPage() {
     </div>
   );
 }
+

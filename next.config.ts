@@ -9,6 +9,8 @@ const cspHeader = `
   frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com;
   connect-src 'self' https://api.stripe.com https://api.paymob.com;
   media-src 'self' https://www.youtube-nocookie.com;
+  worker-src 'self' blob:;
+  manifest-src 'self';
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -46,6 +48,24 @@ const nextConfig: NextConfig = {
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PATCH, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
           { key: "Access-Control-Max-Age", value: "86400" },
+        ],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/javascript; charset=utf-8",
+          },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
+        source: "/manifest.webmanifest",
+        headers: [
+          { key: "Content-Type", value: "application/manifest+json; charset=utf-8" },
+          { key: "Cache-Control", value: "public, max-age=3600" },
         ],
       },
     ];

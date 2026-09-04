@@ -1,0 +1,57 @@
+{
+  "name": "DROS MATH",
+  "short_name": "DROS MATH",
+  "description": "منصة دروس ماث للرياضيات — كورسات منظمة بالفيديو عبر YouTube، اختبارات بتصحيح فوري، محفظة وكوبونات، ومتابعة دقيقة للتقدم. للمرحلتين الإعدادية والثانوية.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0F1413",
+  "theme_color": "#287F83",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-source.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "كورساتي",
+      "short_name": "كورساتي",
+      "description": "الكورسات المشترك بها",
+      "url": "/dashboard/courses",
+      "icons": [{ "src": "/icon-source.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "الاختبارات",
+      "short_name": "اختباراتي",
+      "description": "الاختبارات المتاحة",
+      "url": "/dashboard/exams",
+      "icons": [{ "src": "/icon-source.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "تقدمي",
+      "short_name": "تقدمي",
+      "description": "ملخص التقدم",
+      "url": "/dashboard/progress",
+      "icons": [{ "src": "/icon-source.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

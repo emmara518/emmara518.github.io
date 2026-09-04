@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { ParentRegisterForm } from "@/components/auth-forms";
 import { AuthShell } from "@/components/auth-shell";
@@ -14,3 +16,4 @@ export default function ParentRegisterPage() {
     </AuthShell>
   );
 }
+

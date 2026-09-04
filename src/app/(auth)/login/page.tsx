@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth-forms";
@@ -17,3 +19,4 @@ export default function LoginPage() {
     </AuthShell>
   );
 }
+

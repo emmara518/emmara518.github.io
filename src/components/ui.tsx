@@ -19,11 +19,11 @@ type ButtonSize = "sm" | "md" | "lg";
 export function buttonStyles(variant: ButtonVariant = "primary", size: ButtonSize = "md") {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 select-none",
-    "disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]",
+    "disabled:opacity-50 disabled:pointer-events-none",
     variant === "primary" &&
-      "bg-brand text-white hover:bg-brand-strong shadow-[0_10px_28px_-10px_var(--brand)]",
+      "bg-brand text-white hover:bg-brand-strong shadow-[0_4px_12px_-4px_var(--brand)]",
     variant === "gold" &&
-      "bg-gold text-[#1a1405] hover:brightness-110 shadow-[0_10px_28px_-10px_var(--gold)]",
+      "bg-gold text-[#1a1405] hover:brightness-110 shadow-[0_4px_12px_-4px_var(--gold)]",
     variant === "outline" &&
       "border border-line bg-transparent text-ink hover:border-brand hover:text-brand",
     variant === "ghost" && "bg-transparent text-ink hover:bg-surface2",
@@ -57,8 +57,8 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-line bg-surface shadow-card",
-        hover && "transition-all duration-300 hover:-translate-y-1 hover:shadow-lift hover:border-brand/40",
+        "rounded-xl border border-line bg-surface shadow-card",
+        hover && "transition-all duration-200 hover:shadow-lift hover:border-brand/40",
         className,
       )}
     >
@@ -81,7 +81,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold leading-normal",
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium leading-normal",
         tone === "brand" && "bg-[var(--brand-soft)] text-brand",
         tone === "gold" && "bg-[var(--gold-soft)] text-gold",
         tone === "success" && "bg-success/10 text-success",
@@ -98,7 +98,7 @@ export function Badge({
 
 /* ── form controls ── */
 export const inputStyles = cn(
-  "h-11 w-full rounded-xl border border-line bg-surface px-3.5 text-sm text-ink",
+  "h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink",
   "placeholder:text-muted/70 transition-colors focus:border-brand outline-none",
   "aria-[invalid=true]:border-danger aria-[invalid=true]:focus:border-danger",
 );
@@ -172,13 +172,13 @@ export function EmptyState({
     <Card
       className={cn(
         "flex flex-col items-center gap-3 border-dashed text-center",
-        compact ? "px-4 py-8" : "px-6 py-14",
+        compact ? "px-4 py-6" : "px-6 py-10",
       )}
     >
       <div
         className={cn(
           "grid place-items-center rounded-2xl",
-          compact ? "size-12" : "size-14",
+          compact ? "size-10" : "size-12",
           tone === "brand" ? "bg-[var(--brand-soft)] text-brand" : "bg-surface2 text-muted",
         )}
       >
@@ -207,7 +207,7 @@ export function Progress({
   className?: string;
 }) {
   return (
-    <div className={cn("h-2 w-full overflow-hidden rounded-full bg-surface2", className)}>
+    <div className={cn("h-1.5 w-full overflow-hidden rounded-full bg-surface2", className)}>
       <div
         className={cn(
           "h-full rounded-full transition-all duration-700",

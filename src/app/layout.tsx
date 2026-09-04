@@ -8,6 +8,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { CosmicFluidBackground } from "@/components/cosmic-fluid-background";
 import { DashboardChromeGate } from "@/components/chrome-gate";
+import { PwaRegister } from "@/components/pwa-register";
+import { PwaChrome } from "@/components/pwa-chrome";
 
 const graphikArabic = localFont({
   src: [
@@ -57,6 +59,24 @@ export const metadata: Metadata = {
   },
   description:
     "منصة دروس ماث للرياضيات — كورسات منظمة بالفيديو عبر YouTube، اختبارات بتصحيح فوري، محفظة وكوبونات، ومتابعة دقيقة للتقدم. للمرحلتين الإعدادية والثانوية.",
+  applicationName: "DROS MATH",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "DROS MATH",
+    statusBarStyle: "default",
+    startupImage: "/icon-512.png",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -64,6 +84,11 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#06080f" },
     { media: "(prefers-color-scheme: light)", color: "#f6f5f0" },
   ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 /** Runs before paint: prevents theme flash. Default = blackboard dark. */
@@ -103,6 +128,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         >
           تخطّي إلى المحتوى الرئيسي
         </a>
+        <PwaRegister />
+        <PwaChrome />
         <DashboardChromeGate>
           <CosmicFluidBackground />
         </DashboardChromeGate>

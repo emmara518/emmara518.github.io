@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { getSessionUser } from "@/lib/auth";
 import { OnboardingStepper } from "@/components/onboarding-stepper";
@@ -10,3 +12,4 @@ export default async function WelcomePage() {
 
   return <OnboardingStepper firstName={firstName} />;
 }
+

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Bell } from "lucide-react";
@@ -33,3 +35,4 @@ export default async function ActivityPage() {
     </div>
   );
 }
+

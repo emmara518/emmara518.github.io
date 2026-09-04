@@ -37,30 +37,37 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/85 dark:bg-[#0F1413]/90 backdrop-blur-xl transition-colors duration-300">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link href="/" className="shrink-0" aria-label="دروس ماث — الرئيسية">
           <LogoWordmark />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="التنقل الرئيسي">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={cn(
-                "rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
-                pathname === l.href ? "text-neon-lime font-bold" : "text-muted hover:text-ink",
-              )}
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => {
+            const isActive = pathname === l.href;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={cn(
+                  "relative rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
+                  isActive
+                    ? "text-ink font-bold after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand"
+                    : "text-muted hover:text-ink",
+                )}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
           {user ? (
             <Link
               href={dashboardHref}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
-                pathname.startsWith(dashboardHref) ? "text-neon-lime font-bold" : "text-muted hover:text-ink",
+                "relative inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors font-ui",
+                pathname.startsWith(dashboardHref)
+                  ? "text-ink font-bold after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-brand"
+                  : "text-muted hover:text-ink",
               )}
             >
               {isAdminRole(user.role) ? <ShieldCheck size={15} /> : <LayoutDashboard size={15} />}
@@ -81,9 +88,9 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
             <>
               <Link
                 href={dashboardHref}
-                className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex text-ink shadow-sm hover:border-brand/50 transition-colors"
+                className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex text-ink hover:border-brand/50 transition-colors"
               >
-                <span className="grid size-6 place-items-center rounded-lg bg-neon-lime text-xs font-black text-black">
+                <span className="grid size-6 place-items-center rounded-lg bg-brand-soft text-xs font-bold text-brand">
                   {user.name.trim().charAt(0)}
                 </span>
                 <span className="max-w-28 truncate">{user.name}</span>
@@ -92,7 +99,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 onClick={logout}
                 aria-label="تسجيل الخروج"
                 title="تسجيل الخروج"
-                className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50 cursor-pointer shadow-sm"
+                className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50 cursor-pointer"
               >
                 <LogOut size={16} />
               </button>
@@ -112,7 +119,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 href="/register"
                 className={cn(
                   buttonStyles("primary", "sm"),
-                  "rounded-xl bg-neon-lime text-black hover:bg-yellow-300 font-bold shadow-sm"
+                  "rounded-xl font-bold"
                 )}
               >
                 إنشاء حساب
@@ -124,7 +131,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label="القائمة"
-            className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden cursor-pointer shadow-sm"
+            className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden cursor-pointer"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -149,7 +156,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               <Link
                 href={dashboardHref}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-semibold text-neon-lime hover:bg-surface2 transition-colors font-ui"
+                className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2 transition-colors font-ui"
               >
                 {isAdminRole(user.role) ? "لوحة الإدارة" : "لوحة الطالب"}
               </Link>
@@ -165,7 +172,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 <Link
                   href="/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl bg-neon-lime px-4 py-3 text-center text-sm font-bold text-black shadow-sm"
+                  className="rounded-xl bg-brand px-4 py-3 text-center text-sm font-bold text-white"
                 >
                   إنشاء حساب جديد
                 </Link>
