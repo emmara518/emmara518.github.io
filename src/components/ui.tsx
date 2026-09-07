@@ -83,7 +83,7 @@ export function Badge({
       className={cn(
         "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium leading-normal",
         tone === "brand" && "bg-[var(--brand-soft)] text-brand",
-        tone === "gold" && "bg-[var(--gold-soft)] text-gold",
+        tone === "gold" && "bg-[var(--gold-soft)] text-[var(--gold-ink)]",
         tone === "success" && "bg-success/10 text-success",
         tone === "danger" && "bg-danger/10 text-danger",
         tone === "muted" && "bg-surface2 text-muted",

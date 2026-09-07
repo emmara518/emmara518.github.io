@@ -139,7 +139,7 @@ className={`max-w-52 cursor-pointer truncate rounded-full px-4 py-2 text-sm font
               {p.courseTitle ? <Badge tone="brand">{p.courseTitle}</Badge> : null}
                       {p.groupName ? <Badge tone="gold">مجموعة: {p.groupName}</Badge> : null}
               {p.status === "pending" ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold">
+                <span className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-[var(--gold-ink)]">
                   <Hourglass size={11} /> قيد مراجعة المشرفين
                 </span>
               ) : null}

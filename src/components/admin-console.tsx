@@ -2239,7 +2239,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       sortValue: (o) => o.discountCents,
       render: (o) =>
         o.discountCents > 0 ? (
-          <span className="tabular-nums text-gold">{formatEGP(o.discountCents)}</span>
+          <span className="tabular-nums text-[var(--gold-ink)]">{formatEGP(o.discountCents)}</span>
         ) : (
           <span className="text-muted">—</span>
         ),
@@ -2531,7 +2531,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         }
         if (c.usedCount > 0) {
           return (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-bold text-gold">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1 text-xs font-bold text-[var(--gold-ink)]">
               <Hourglass size={11} />
               {c.usedCount} / {c.maxUses} (جزئي)
             </span>
@@ -2833,7 +2833,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       key: "balance",
       header: "المحفظة",
       sortValue: (u) => u.balanceCents,
-      render: (u) => <span className="tabular-nums font-semibold text-gold">{formatEGP(u.balanceCents)}</span>,
+      render: (u) => <span className="tabular-nums font-semibold text-[var(--gold-ink)]">{formatEGP(u.balanceCents)}</span>,
     },
     {
       key: "joined",
@@ -3154,7 +3154,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             </Card>
             <Card className="space-y-3 p-5">
               <div className="flex items-center gap-2 text-base font-semibold text-ink">
-                <GraduationCap size={18} className="text-gold" /> بنك الأسئلة والامتحانات
+                <GraduationCap size={18} className="text-[var(--gold-ink)]" /> بنك الأسئلة والامتحانات
               </div>
               <p className="text-xs leading-relaxed text-muted">
                 يحتوي بنك الأسئلة حالياً على <strong className="tabular-nums">{questions.length}</strong> سؤالاً رياضياً مع الإجابات النموذجية.
@@ -3209,7 +3209,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             <Card className="space-y-4 p-5">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 type-card-heading">
-                  <Clock size={16} className="text-gold" /> سجل تدقيق العمليات الأخير
+                  <Clock size={16} className="text-[var(--gold-ink)]" /> سجل تدقيق العمليات الأخير
                 </h3>
                 <Button onClick={() => selectSubFeature("overview", "updates")} variant="ghost" size="sm" className="h-8 text-xs">
                   عرض السجل كامل
@@ -4141,7 +4141,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
                     <button
                       type="button"
                       onClick={() => setPrintVouchersModal(generatedCodes)}
-                      className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-gold hover:underline"
+                      className="flex cursor-pointer items-center gap-1 text-xs font-semibold text-[var(--gold-ink)] hover:underline"
                     >
                       <Printer size={13} /> بطاقات السنتر
                     </button>
@@ -4722,7 +4722,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               renderItem={(g, handleProps) => {
                 const scopeLabels: Record<string, { label: string; cls: string }> = {
                   public: { label: "عام", cls: "bg-brand/10 text-brand" },
-                  course: { label: "كورس", cls: "bg-gold/10 text-gold" },
+                  course: { label: "كورس", cls: "bg-gold/10 text-[var(--gold-ink)]" },
                   stage: { label: "مرحلة", cls: "bg-success/10 text-success" },
                   custom: { label: "مخصص", cls: "bg-surface2 text-muted" },
                 };

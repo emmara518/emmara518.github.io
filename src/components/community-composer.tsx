@@ -94,7 +94,7 @@ export function CommunityComposer({
           />
         </Field>
         {done && !busy && (
-          <p className="rounded-xl border border-gold/30 bg-gold/10 px-3 py-2 text-xs font-bold text-gold">
+          <p className="rounded-xl border border-gold/30 bg-gold/10 px-3 py-2 text-xs font-bold text-[var(--gold-ink)]">
             تم إرسال سؤالك — سيظهر هنا للجميع بعد مراجعة المشرفين.
           </p>
         )}

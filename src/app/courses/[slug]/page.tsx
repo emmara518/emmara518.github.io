@@ -195,7 +195,7 @@ export default async function CourseDetailPage({
           <section className="grid gap-5 md:grid-cols-2">
             <Card className="space-y-4 p-6">
               <h2 className="inline-flex items-center gap-2 type-section-heading">
-                <ClipboardList size={18} className="text-gold" /> الاختبارات الإلكترونية
+                <ClipboardList size={18} className="text-[var(--gold-ink)]" /> الاختبارات الإلكترونية
               </h2>
               <ul className="space-y-2.5 text-sm">
                 {curriculum.exams.length === 0 ? (

@@ -90,7 +90,7 @@ export function LogoWordmark({
             <span className="inline-block border-b-2 border-brand pb-0.5 text-2xl font-black tracking-tight text-ink font-mono">
               DROS
             </span>
-            <span className="inline-block border-b-2 border-gold pb-0.5 text-2xl font-black tracking-tight text-gold font-mono">
+            <span className="inline-block border-b-2 border-gold pb-0.5 text-2xl font-black tracking-tight text-[var(--gold-ink)] font-mono">
               MATH
             </span>
           </div>

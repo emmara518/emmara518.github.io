@@ -146,7 +146,7 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
           أنشئ حسابك مجانًا
         </Link>
         <span className="mx-1.5 text-line">|</span>
-        <Link href="/register-parent" className="font-bold text-gold hover:underline">
+        <Link href="/register-parent" className="font-bold text-[var(--gold-ink)] hover:underline">
           ولي أمر؟ سجّل برقم موبايلك
         </Link>
       </p>
@@ -290,7 +290,7 @@ export function ParentRegisterForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-sm font-bold leading-relaxed text-gold">
+      <div className="rounded-xl bg-[var(--gold-soft)] px-4 py-3 text-sm font-bold leading-relaxed text-[var(--gold-ink)]">
         أدخل رقم الموبايل الذي أدخله ابنك في خانة «رقم موبايل ولي الأمر» وقت إنشاء حسابه — سنربط حسابك بكل أبنائه المشتركين تلقائيًا.
       </div>
       <Field label="اسم ولي الأمر">

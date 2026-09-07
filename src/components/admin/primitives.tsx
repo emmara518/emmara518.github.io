@@ -48,7 +48,7 @@ export function ExpiryBadge({ state, dateLabel }: { state: ExpiryState; dateLabe
   }
   if (state === "expiring") {
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-semibold text-gold">
+      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--gold-ink)]">
         <AlarmClock size={12} /> ينتهي قريباً {dateLabel ? <span dir="ltr" className="tabular-nums">({dateLabel})</span> : null}
       </span>
     );
@@ -161,7 +161,7 @@ export function KpiCard({
         className={cn(
           "grid size-12 shrink-0 place-items-center rounded-2xl",
           iconTone === "brand" && "bg-brand/10 text-brand",
-          iconTone === "gold" && "bg-gold/10 text-gold",
+          iconTone === "gold" && "bg-gold/10 text-[var(--gold-ink)]",
           iconTone === "success" && "bg-success/10 text-success"
         )}
       >
@@ -177,7 +177,7 @@ export function KpiCard({
               hintTone === "muted" && "text-muted",
               hintTone === "success" && "text-success",
               hintTone === "brand" && "text-brand",
-              hintTone === "gold" && "text-gold"
+              hintTone === "gold" && "text-[var(--gold-ink)]"
             )}
           >
             {hint}

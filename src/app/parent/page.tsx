@@ -77,7 +77,7 @@ export default async function ParentHomePage() {
                   <p className="mt-0.5 text-xs font-bold uppercase tracking-tag text-muted">اختبار محلول</p>
                 </div>
                 <div className="rounded-xl bg-surface2/60 px-2 py-3">
-                  <Award size={15} className="mx-auto text-gold" aria-hidden />
+                  <Award size={15} className="mx-auto text-[var(--gold-ink)]" aria-hidden />
                   <p className="mt-1 type-stat-display text-2xl">{child.avgPercent ?? "—"}%</p>
                   <p className="mt-0.5 text-xs font-bold uppercase tracking-tag text-muted">متوسط الدرجات</p>
                 </div>

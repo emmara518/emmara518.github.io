@@ -252,7 +252,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="space-y-3 p-5">
                 <h3 className="type-card-heading">
-                  <ClipboardList size={16} className="text-gold" /> اختبارات الكورس
+                  <ClipboardList size={16} className="text-[var(--gold-ink)]" /> اختبارات الكورس
                 </h3>
                 <ul className="space-y-2 text-base">
                   {room.exams.map((e) => (

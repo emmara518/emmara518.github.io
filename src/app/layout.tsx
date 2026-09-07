@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
-import { Cairo, IBM_Plex_Mono } from "next/font/google";
+import { Baloo_Bhaijaan_2, Cairo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
@@ -36,12 +36,21 @@ const graphikArabic = localFont({
   ],
   variable: "--font-graphik-arabic",
   display: "swap",
+  preload: true,
+  fallback: ["Segoe UI", "Tahoma", "sans-serif"],
 });
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-cairo",
+  display: "swap",
+});
+
+const baloo = Baloo_Bhaijaan_2({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-baloo",
   display: "swap",
 });
 
@@ -121,7 +130,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${graphikArabic.variable} ${cairo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-bg text-ink`}>
+      <body className={`${graphikArabic.variable} ${cairo.variable} ${baloo.variable} ${plexMono.variable} min-h-screen font-sans antialiased bg-bg text-ink`}>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:start-3 focus:top-3 focus:z-[100] focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-extrabold focus:text-white focus:shadow-lift"

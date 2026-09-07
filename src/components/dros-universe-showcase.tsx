@@ -148,16 +148,26 @@ export function DrosUniverseShowcase() {
       {/* ─────────────────────────────────────────────────────────────
           1. EDITORIAL TOP NAVIGATION
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-bg/90 dark:bg-[#0F1413]/95 backdrop-blur-md border-b border-line px-4 sm:px-8 py-3.5 transition-colors">
-        <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-50 bg-bg/90 dark:bg-[#0F1413]/95 backdrop-blur-md border-b border-line px-3 sm:px-8 py-3.5 transition-colors">
+        <div className="mx-auto max-w-7xl flex min-w-0 items-center justify-between gap-2 sm:gap-4">
           
-          {/* Brand Identity */}
-          <Link href="/" className="shrink-0" aria-label="Dros Math — الصفحة الرئيسية">
-            <LogoWordmark />
+          {/* Brand Identity — compact mark below sm so brand + search +
+              theme + login fit a 375px viewport; full wordmark at sm+. */}
+          <Link href="/" className="min-w-0 shrink-0" aria-label="Dros Math — الصفحة الرئيسية">
+            <span className="sm:hidden">
+              <LogoWordmark compact />
+            </span>
+            <span className="hidden sm:block">
+              <LogoWordmark />
+            </span>
           </Link>
 
-          {/* Core Navigation Modules */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-muted font-ui">
+          {/* Core Navigation Modules — lg+ only: at md widths the full
+              wordmark + 4 links + 3 actions exceed 768px and push the login
+              control outside the viewport. Below lg the page's own CTAs and
+              stage cards carry navigation (same as the existing mobile
+              pattern); 1024px+ rendering is unchanged. */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-muted font-ui">
             <Link href="/" className="text-neon-lime font-semibold transition-colors">
               الرئيسية
             </Link>
@@ -177,22 +187,22 @@ export function DrosUniverseShowcase() {
           </nav>
 
           {/* Utility Actions */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="size-9 rounded-xl bg-surface border border-line text-muted hover:text-neon-lime hover:border-neon-lime/40 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              className="size-9 shrink-0 rounded-xl bg-surface border border-line text-muted hover:text-neon-lime hover:border-neon-lime/40 flex items-center justify-center transition-all cursor-pointer shadow-sm"
               title="بحث في المنصة"
               aria-label="بحث في المنصة"
             >
               <Search size={15} />
             </button>
 
-            <ThemeToggle className="size-9 rounded-xl border border-line bg-surface shadow-sm" />
+            <ThemeToggle className="size-9 shrink-0 rounded-xl border border-line bg-surface shadow-sm" />
 
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-xs font-semibold font-ui text-ink hover:border-neon-lime hover:text-neon-lime transition-all shadow-sm"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold font-ui text-ink hover:border-neon-lime hover:text-neon-lime transition-all shadow-sm sm:px-4"
             >
               <User size={13} />
               <span>دخول الطالب</span>

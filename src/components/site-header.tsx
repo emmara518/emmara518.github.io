@@ -37,9 +37,17 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line/80 bg-bg/85 dark:bg-[#0F1413]/90 backdrop-blur-xl transition-colors duration-300">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="shrink-0" aria-label="دروس ماث — الرئيسية">
-          <LogoWordmark />
+      <div className="mx-auto flex h-14 min-w-0 max-w-7xl items-center justify-between gap-2 px-3 sm:gap-4 sm:px-6">
+        {/* Brand — compact mark below sm so the full wordmark + actions
+            fit a 375px viewport; full wordmark restored at sm+ (desktop
+            pixel-identical). */}
+        <Link href="/" className="min-w-0 shrink-0" aria-label="دروس ماث — الرئيسية">
+          <span className="sm:hidden">
+            <LogoWordmark compact />
+          </span>
+          <span className="hidden sm:block">
+            <LogoWordmark />
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="التنقل الرئيسي">
@@ -77,10 +85,10 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
         </nav>
 
         {/* Action Controls & High-Fidelity Theme Switcher */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
           {/* High-Fidelity Document Root Theme Toggle */}
           <ThemeToggle
-            className="shadow-sm"
+            className="shrink-0 shadow-sm"
             showLabel
           />
 
@@ -99,19 +107,20 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 onClick={logout}
                 aria-label="تسجيل الخروج"
                 title="تسجيل الخروج"
-                className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50 cursor-pointer"
+                className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface text-muted transition-colors hover:text-danger hover:border-danger/50 cursor-pointer sm:size-10"
               >
                 <LogOut size={16} />
               </button>
             </>
           ) : (
             <>
+              {/* NOTE: ghost styling is inlined (not buttonStyles) because cn()
+                  is clsx-only (no tailwind-merge): buttonStyles' base
+                  `inline-flex` would survive alongside `hidden` and beat it
+                  in CSS source order, leaking this link onto mobile. */}
               <Link
                 href="/login"
-                className={cn(
-                  buttonStyles("ghost", "sm"),
-                  "hidden sm:inline-flex rounded-xl font-semibold text-ink hover:text-brand"
-                )}
+                className="hidden h-9 shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-transparent px-3.5 text-sm font-semibold text-ink transition-all duration-200 hover:bg-surface2 hover:text-brand sm:inline-flex"
               >
                 دخول
               </Link>
@@ -119,7 +128,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 href="/register"
                 className={cn(
                   buttonStyles("primary", "sm"),
-                  "rounded-xl font-bold"
+                  "shrink-0 whitespace-nowrap rounded-xl font-bold"
                 )}
               >
                 إنشاء حساب
@@ -131,7 +140,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           <button
             onClick={() => setOpen((v) => !v)}
             aria-label="القائمة"
-            className="grid size-9 sm:size-10 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden cursor-pointer"
+            className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface text-ink md:hidden sm:size-10 cursor-pointer"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>

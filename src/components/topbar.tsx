@@ -61,11 +61,23 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setBellOpen(false);
     }
+    // Close on scroll/resize so the dropdown never floats detached
+    // from the bell on mobile.
+    function onScroll() {
+      setBellOpen(false);
+    }
+    function onResize() {
+      setBellOpen(false);
+    }
     document.addEventListener("mousedown", onClick);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, [bellOpen]);
 
@@ -92,14 +104,14 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
   const showViewAll = notifications.length > 0;
 
   return (
-    <header className="sticky top-0 z-40 flex h-13 items-center justify-between gap-3 border-b border-line bg-surface px-3 sm:px-4">
+    <header className="sticky top-0 z-40 flex h-13 min-w-0 items-center justify-between gap-2 border-b border-line bg-surface px-2.5 sm:gap-3 sm:px-4">
       {/* Mobile menu — always present when not in focus mode, but visually
           becomes the X toggle when the drawer is open. */}
       {!hideMobileMenu && (
         <button
           ref={hamburgerRef}
           onClick={onToggleMobileMenu}
-          className="grid size-11 shrink-0 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink lg:hidden"
+          className="grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-surface2 text-muted hover:text-ink sm:size-11 lg:hidden"
           aria-label={mobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-nav-drawer"
@@ -139,7 +151,7 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
         <div className="relative" ref={bellRef}>
           <button
             onClick={() => setBellOpen((v) => !v)}
-            className="relative grid size-11 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-brand hover:text-ink"
+            className="relative grid size-10 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-brand hover:text-ink sm:size-11"
             aria-label={`الإشعارات${unread > 0 ? ` (${unread} غير مقروءة)` : ""}`}
             aria-expanded={bellOpen}
             aria-haspopup="dialog"
@@ -153,11 +165,24 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
           </button>
 
           {bellOpen && (
-            <div
-              role="dialog"
-              aria-label="قائمة الإشعارات"
-              className="absolute end-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-lift type-corner-mark"
-            >
+            <>
+              {/* Mobile scrim — guarantees a reliable tap-outside target
+                  on touch devices and dims the page behind the dialog. */}
+              <button
+                type="button"
+                aria-label="إغلاق قائمة الإشعارات"
+                onClick={() => setBellOpen(false)}
+                className="fixed inset-0 z-40 cursor-default bg-black/40 backdrop-blur-[1px] sm:hidden"
+              />
+              {/* Bell dialog — anchored to the inline-end side so it opens
+                  toward the viewport center in RTL. Below sm it becomes a
+                  fixed sheet under the header: a 320px dropdown cannot fit
+                  beside its trigger on a 375px viewport. sm+ unchanged. */}
+              <div
+                role="dialog"
+                aria-label="قائمة الإشعارات"
+                className="absolute end-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line bg-surface shadow-lift type-corner-mark max-sm:fixed max-sm:inset-x-4 max-sm:top-16 max-sm:mt-0 max-sm:w-auto"
+              >
               <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
                 <span className="type-card-heading">الإشعارات</span>
                 {unread > 0 && (
@@ -201,15 +226,16 @@ export const Topbar = forwardRef<HTMLButtonElement, TopbarProps>(function Topbar
                   </Link>
                 </div>
               ) : null}
-            </div>
+              </div>
+            </>
           )}
         </div>
 
-        <ThemeToggle className="size-11 rounded-xl" />
+        <ThemeToggle className="size-10 rounded-xl sm:size-11" />
 
         <button
           onClick={logout}
-          className="grid size-11 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-danger hover:text-danger"
+          className="grid size-10 place-items-center rounded-xl border border-line bg-surface2 text-muted transition-colors hover:border-danger hover:text-danger sm:size-11"
           aria-label="تسجيل الخروج"
           title="تسجيل الخروج"
         >

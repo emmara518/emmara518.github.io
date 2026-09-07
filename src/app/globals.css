@@ -19,61 +19,63 @@
 :root,
 [data-theme="light"],
 html:not(.dark) {
-  /* ─── LIGHT MODE DESIGN TOKENS (Default / Technical Paper) ─── */
-  --bg: #F4F5F2;
-  --background: #F4F5F2;
+  /* ─── LIGHT MODE DESIGN TOKENS (Academic Premium — warm paper, deep teal) ─── */
+  --bg: #FAF9F6;
+  --background: #FAF9F6;
   --surface: #FFFFFF;
   --surface-elevated: #FFFFFF;
-  --surface-secondary: #E9F1EF;
-  --surface-2: #E9F1EF;
-  --surface-3: #F0FFF6;
+  --surface-secondary: #EEF3F1;
+  --surface-2: #EEF3F1;
+  --surface-3: #EDF3F0;
 
-  --text-primary: #18201F;
-  --text-secondary: #53605E;
-  --text-muted: #5E6866;
-  --ink: #18201F;
-  --ink-secondary: #53605E;
-  --muted: #5E6866;
+  --text-primary: #0B1F22;
+  --text-secondary: #3D4D4A;
+  --text-muted: #556061;
+  --ink: #0B1F22;
+  --ink-secondary: #3D4D4A;
+  --muted: #556061;
 
-  --border: #D5DDDA;
-  --border-strong: #B7C4C0;
-  --line: #D5DDDA;
-  --line-strong: #B7C4C0;
-  --line-soft: rgba(24, 32, 31, 0.06);
+  --border: #DFE2DC;
+  --border-strong: #C9CFC8;
+  --line: #DFE2DC;
+  --line-strong: #C9CFC8;
+  --line-soft: rgba(11, 31, 34, 0.06);
 
   /* Brand = TEAL (primary brand, structural highlights, links, nav, secondary buttons) */
-  --accent: #287F83;
-  --accent-strong: #1F6266;
-  --accent-soft: #E6F2F2;
+  --accent: #0F8378;
+  --accent-strong: #0C5B56;
+  --accent-soft: #E0F0EE;
 
-  /* Yellow token family = CTA / emphasis / highlights / important numbers */
+  /* Yellow token family = CTA fills / emphasis backgrounds only.
+     Never use --gold/--neon-lime as text: use --gold-ink instead. */
   --neon-lime: #FFC400;
   --neon-lime-bright: #FFD64D;
   --neon-lime-glow: rgba(255, 196, 0, 0.28);
-  --neon-lime-soft: #FFE7A3;
+  --neon-lime-soft: #FCEFC7;
 
-  --brand: #287F83;
-  --brand-strong: #1F6266;
-  --brand-soft: #E6F2F2;
+  --brand: #0F8378;
+  --brand-strong: #0C5B56;
+  --brand-soft: #E0F0EE;
   --gold: #FFC400;
-  --gold-soft: #FFE7A3;
+  --gold-soft: #FCEFC7;
+  --gold-ink: #92600A;
 
-  --chrome: #18201F;
-  --gunmetal: #53605E;
+  --chrome: #0B1F22;
+  --gunmetal: #3D4D4A;
   --graphite: #858F8D;
 
-  --success: #2E9E7E;
+  --success: #1E7F5C;
   --danger: #E74C3C;
-  --warning: #F5A623;
+  --warning: #C2410C;
   --info: #2A7CC7;
 
-  --grid-line: rgba(40, 127, 131, 0.06);
+  --grid-line: rgba(15, 131, 120, 0.07);
   --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: #D5DDDA;
-  --glass-shadow: 0 8px 30px rgba(24, 32, 31, 0.06);
+  --glass-border: #DFE2DC;
+  --glass-shadow: 0 8px 30px rgba(11, 31, 34, 0.06);
 
-  --shadow-card: 0 1px 2px rgba(24, 32, 31, 0.04);       /* was 0 1px 3px ..., 0 8px 24px -4px ... */
-  --shadow-lift: 0 2px 6px -1px rgba(24, 32, 31, 0.06), 0 6px 14px -4px rgba(24, 32, 31, 0.04);
+  --shadow-card: 0 1px 2px rgba(11, 31, 34, 0.05), 0 4px 12px -4px rgba(11, 31, 34, 0.06);
+  --shadow-lift: 0 2px 4px rgba(11, 31, 34, 0.06), 0 12px 24px -8px rgba(11, 31, 34, 0.10);
 
   --hero-glow-1: rgba(40, 127, 131, 0.18);    /* teal glow */
   --hero-glow-2: rgba(255, 196, 0, 0.14);     /* yellow glow */
@@ -81,6 +83,7 @@ html:not(.dark) {
   /* Typography Font Stacks (Graphik Arabic is registered by next/font — real weights: 400/500/600) */
   --font-brand-stack: var(--font-graphik-arabic), "Graphik Arabic", "Segoe UI", sans-serif;
   --font-ui-stack: var(--font-cairo), "Cairo", "Segoe UI", Tahoma, sans-serif;
+  --font-display-stack: var(--font-baloo), "Baloo Bhaijaan 2", var(--font-cairo), "Cairo", "Segoe UI", sans-serif;
   --font-math-stack: var(--font-plex-mono), "IBM Plex Mono", "Courier New", monospace;
 }
 
@@ -125,6 +128,7 @@ html.dark {
   --brand-soft: rgba(63, 164, 167, 0.18);
   --gold: #FFC400;
   --gold-soft: rgba(255, 231, 163, 0.14);
+  --gold-ink: #FFC400;
 
   --chrome: #E6ECEA;
   --gunmetal: #A9B3B0;
@@ -243,6 +247,14 @@ html.dark {
 .font-mono {
   font-family: var(--font-math-stack) !important;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Tabular numbers in UI font (prices, stats, timers) — keeps digits
+   aligned without switching to mono. Safe for Arabic: digits only. */
+.tnum {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Responsive Typographic Scale — premium Arabic editorial rhythm */
@@ -418,8 +430,12 @@ html.dark {
   color: var(--brand);
 }
 
-/* 1.4 — Subtle corner framing marks. Quiet-pass: smaller, more transparent. */
-.type-corner-mark {
+/* 1.4 — Subtle corner framing marks. Quiet-pass: smaller, more transparent.
+   NOTE: position:relative is scoped away from explicit positioning utilities.
+   Unlayered author CSS beats Tailwind's layered utilities in the cascade, so
+   a bare `.type-corner-mark{position:relative}` silently cancels `absolute`
+   (e.g. the dashboard bell dialog) and breaks dropdown anchoring. */
+.type-corner-mark:not(.absolute):not(.fixed):not(.sticky) {
   position: relative;
 }
 .type-corner-mark::before,
@@ -674,8 +690,15 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
   /* Brand discipline: never synthesize bold/oblique — snap to the closest real weight */
   font-synthesis: none;
+}
+
+/* Any bare heading balances its lines (typed classes already do this;
+   this is a safety net for one-off headings). */
+h1, h2, h3 {
+  text-wrap: balance;
 }
 
 ::selection {
@@ -684,8 +707,8 @@ body {
 }
 
 :focus-visible {
-  outline: 1.5px solid var(--brand);                          /* was 2px */
-  outline-offset: 1.5px;                                    /* was 2px */
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
   border-radius: 6px;
 }
 
