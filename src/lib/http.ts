@@ -32,6 +32,10 @@ export const RATE_LIMITS = {
     max: Number(process.env.RATE_LIMIT_ENROLL_MAX ?? "10"),
     windowMs: Number(process.env.RATE_LIMIT_ENROLL_WINDOW_MS ?? "3600000"),
   },
+  redeem: {
+    max: Number(process.env.RATE_LIMIT_REDEEM_MAX ?? "10"),
+    windowMs: Number(process.env.RATE_LIMIT_REDEEM_WINDOW_MS ?? "3600000"),
+  },
 } as const;
 
 /** Apply rate limit and return 429 response if exceeded, or null if allowed. */

@@ -13,11 +13,29 @@ import { cn } from "@/lib/utils";
  *
  * Both are progressive enhancement: if the browser doesn't fire the
  * respective events, the component simply renders nothing.
+ *
+ * The install CTA floats above page content, so dismissal is persisted in
+ * localStorage: once the user closes it, it never re-appears on this device
+ * (previously React-only state made it re-block bottom content on every
+ * navigation). The floating wrapper uses pointer-events-none and only the
+ * banner card itself re-enables pointer events, so page content outside the
+ * card remains fully interactive.
  */
+
+const DISMISS_KEY = "dros-pwa-install-dismissed";
+
 export function PwaChrome() {
   const [offline, setOffline] = useState(false);
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  // Read the persisted dismissal lazily so no setState runs inside an effect.
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(DISMISS_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
@@ -41,7 +59,14 @@ export function PwaChrome() {
       e.preventDefault();
       setInstallEvent(e as BeforeInstallPromptEvent);
     };
-    const onInstalled = () => setInstalled(true);
+    const onInstalled = () => {
+      setInstalled(true);
+      try {
+        window.localStorage.setItem(DISMISS_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+    };
     window.addEventListener("beforeinstallprompt", onBeforeInstall as EventListener);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
@@ -59,6 +84,15 @@ export function PwaChrome() {
       /* user dismissed or browser rejected */
     }
     setInstallEvent(null);
+  }
+
+  function dismissInstall() {
+    setDismissed(true);
+    try {
+      window.localStorage.setItem(DISMISS_KEY, "1");
+    } catch {
+      /* ignore */
+    }
   }
 
   if (typeof window === "undefined") return null;
@@ -113,7 +147,7 @@ export function PwaChrome() {
           </button>
           <button
             type="button"
-            onClick={() => setDismissed(true)}
+            onClick={dismissInstall}
             aria-label="إغلاق"
             className="grid size-7 place-items-center rounded-lg text-muted hover:bg-surface2 hover:text-ink"
           >

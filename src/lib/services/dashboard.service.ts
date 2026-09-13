@@ -416,10 +416,16 @@ export async function getStudentDashboard(user: SessionUser) {
 
 export async function getLearningRoom(user: SessionUser, slug: string) {
   const course = await getCourseBySlug(slug);
-  if (!course || course.status !== "published") {
+  if (!course) {
     throw new ServiceError(404, "COURSE_NOT_FOUND", "الكورس غير موجود");
   }
   const enrolled = await hasActiveSubscription(user.id, course.id);
+  // Publication status gates discovery and new purchases; a student with an
+  // active paid subscription keeps access even if the course is later
+  // unpublished — revocation happens through subscription cancellation.
+  if (course.status !== "published" && !enrolled) {
+    throw new ServiceError(404, "COURSE_NOT_FOUND", "الكورس غير موجود");
+  }
   const curriculum = await getCourseCurriculum(course.id);
 
   const progressRows = await db

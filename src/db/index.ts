@@ -53,8 +53,25 @@ if (globalForDb.__drosMathDbInstance) {
         try {
           if (pool) {
             await pool.query(SCHEMA_SQL);
-            await seedDatabase(dbInstance);
-            console.log("[db] External PostgreSQL initialized & seeded successfully");
+            if (process.env.NODE_ENV === "production") {
+              // Production safety: NEVER silently seed demo data. An empty
+              // production database must be initialized explicitly by the
+              // operator (npx tsx src/db/seed.ts), never fabricated at boot.
+              const { rows } = await pool.query(
+                "SELECT (SELECT count(*)::int FROM users) AS users, (SELECT count(*)::int FROM courses) AS courses",
+              );
+              if ((rows[0]?.users ?? 0) === 0) {
+                console.error(
+                  "[db] PRODUCTION DATABASE IS EMPTY — demo seeding is disabled in production. " +
+                    "Initialize explicitly (npx tsx src/db/seed.ts) and create the admin account manually.",
+                );
+              } else {
+                console.log("[db] External PostgreSQL initialized (production mode — no auto-seed)");
+              }
+            } else {
+              await seedDatabase(dbInstance);
+              console.log("[db] External PostgreSQL initialized & seeded successfully");
+            }
           }
         } catch (err: any) {
           console.warn("[db] External database migration/seed check:", err?.message || err);

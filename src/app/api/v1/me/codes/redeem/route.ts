@@ -1,12 +1,15 @@
 import { requireApiUser } from "@/lib/auth";
 import { can } from "@/lib/rbac";
-import { err, ok, parseJson } from "@/lib/http";
+import { err, ok, parseJson, applyRateLimit } from "@/lib/http";
 import { redeemCodeSchema } from "@/lib/contracts";
 import { redeemCode } from "@/lib/services/billing.service";
 import { toEnvelope } from "@/lib/errors";
 
 /** Student code redemption — balance codes charge the wallet, access codes unlock a course. */
 export async function POST(request: Request) {
+  const rateLimitResponse = await applyRateLimit(request, "redeem");
+  if (rateLimitResponse) return rateLimitResponse;
+
   const auth = await requireApiUser();
   if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "سجل الدخول مطلوب");
   if (!can(auth.user.role, "wallet:use")) return err(403, "FORBIDDEN", "غير مسموح لك بشحن الأكواد");
