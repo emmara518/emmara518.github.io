@@ -2,20 +2,16 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { isAppShellRoute } from "@/lib/chrome-routes";
 
 /**
- * Hides shared public-site chrome (header / footer / background) inside the
- * student dashboard, the admin console, and the parent portal, which each
- * render their own workspace shell. Without the parent path, the public
- * fixed header (z-50) renders on top of the parent shell header (z-40).
+ * Hides shared public-site chrome (header / footer / background) on every
+ * route that renders its own shell. The route list is centralised in
+ * `@/lib/chrome-routes` so this gate and the public header can never drift
+ * apart again.
  */
 export function DashboardChromeGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  if (
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/parent")
-  )
-    return null;
+  if (isAppShellRoute(pathname)) return null;
   return <>{children}</>;
 }

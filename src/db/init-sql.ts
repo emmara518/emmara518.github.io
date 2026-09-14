@@ -398,11 +398,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS "parent_child_unique" ON "parent_links" ("pare
 CREATE UNIQUE INDEX IF NOT EXISTS "progress_user_video_unique" ON "student_progress" ("user_id","video_id");
 
 /* -- v4 community groups -- */
-DO $ BEGIN
+DO $$ BEGIN
 	CREATE TYPE "public"."community_group_scope" AS ENUM('public', 'course', 'stage', 'custom');
 EXCEPTION
 	WHEN duplicate_object THEN null;
-END $;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "community_groups" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -432,11 +432,11 @@ CREATE TABLE IF NOT EXISTS "community_group_members" (
 CREATE UNIQUE INDEX IF NOT EXISTS "cg_member_unique" ON "community_group_members" ("group_id","user_id");
 
 ALTER TABLE "community_posts" ADD COLUMN IF NOT EXISTS "group_id" uuid;
-DO $ BEGIN
+DO $$ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'community_posts_group_id_fkey') THEN
 		ALTER TABLE "community_posts" ADD CONSTRAINT "community_posts_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "community_groups"("id") ON DELETE set null;
 	END IF;
-END $;
+END $$;
 CREATE INDEX IF NOT EXISTS "posts_group_idx" ON "community_posts" ("group_id");
 
 /* -- v3 exams/question bank advanced -- */
@@ -466,4 +466,25 @@ CREATE TABLE IF NOT EXISTS "exam_groups" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 CREATE INDEX IF NOT EXISTS "exam_groups_course_idx" ON "exam_groups" ("course_id");
+
+/* -- v5 payment channels (admin-configurable payment destinations) -- */
+DO $$ BEGIN
+	CREATE TYPE "public"."payment_channel_type" AS ENUM('instapay', 'vodafone_cash', 'etisalat_cash', 'orange_cash', 'bank_transfer', 'other');
+EXCEPTION
+	WHEN duplicate_object THEN null;
+END $$;
+
+CREATE TABLE IF NOT EXISTS "payment_channels" (
+	"id" text PRIMARY KEY,
+	"type" "public"."payment_channel_type" NOT NULL,
+	"label" text NOT NULL,
+	"account" text NOT NULL,
+	"owner" text NOT NULL,
+	"hint" text,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "payment_channels_type_idx" ON "payment_channels" ("type");
 `;

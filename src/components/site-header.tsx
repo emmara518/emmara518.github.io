@@ -9,6 +9,7 @@ import { ThemeToggle } from "./theme";
 import { buttonStyles } from "./ui";
 import { cn } from "@/lib/utils";
 import { isAdminRole, type Role } from "@/lib/rbac";
+import { isAuthRoute } from "@/lib/chrome-routes";
 
 type HeaderUser = { name: string; role: Role } | null;
 
@@ -16,6 +17,11 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  // On auth routes the shared header must never expose authenticated identity
+  // (user chip / dashboard link / logout) — even when a valid session cookie
+  // exists, e.g. after a redirected visit to /login. Render it anonymously.
+  const viewer = isAuthRoute(pathname) ? null : user;
 
   const links = [
     { href: "/", label: "الرئيسية" },
@@ -28,7 +34,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
     router.refresh();
   }
 
-  const dashboardHref = user && isAdminRole(user.role) ? "/admin" : "/dashboard";
+  const dashboardHref = viewer && isAdminRole(viewer.role) ? "/admin" : "/dashboard";
 
   // When on homepage, DrosUniverseShowcase provides the master interactive cyber navigation
   if (pathname === "/") {
@@ -68,7 +74,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               </Link>
             );
           })}
-          {user ? (
+          {viewer ? (
             <Link
               href={dashboardHref}
               className={cn(
@@ -78,8 +84,8 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                   : "text-muted hover:text-ink",
               )}
             >
-              {isAdminRole(user.role) ? <ShieldCheck size={15} /> : <LayoutDashboard size={15} />}
-              {isAdminRole(user.role) ? "لوحة الإدارة" : "لوحة الطالب"}
+              {isAdminRole(viewer.role) ? <ShieldCheck size={15} /> : <LayoutDashboard size={15} />}
+              {isAdminRole(viewer.role) ? "لوحة الإدارة" : "لوحة الطالب"}
             </Link>
           ) : null}
         </nav>
@@ -92,16 +98,16 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
             showLabel
           />
 
-          {user ? (
+          {viewer ? (
             <>
               <Link
                 href={dashboardHref}
                 className="hidden items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-sm font-bold sm:inline-flex text-ink hover:border-brand/50 transition-colors"
               >
                 <span className="grid size-6 place-items-center rounded-lg bg-brand-soft text-xs font-bold text-brand">
-                  {user.name.trim().charAt(0)}
+                  {viewer.name.trim().charAt(0)}
                 </span>
-                <span className="max-w-28 truncate">{user.name}</span>
+                <span className="max-w-28 truncate">{viewer.name}</span>
               </Link>
               <button
                 onClick={logout}
@@ -161,13 +167,13 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 {l.label}
               </Link>
             ))}
-            {user ? (
+            {viewer ? (
               <Link
                 href={dashboardHref}
                 onClick={() => setOpen(false)}
                 className="rounded-xl px-4 py-3 text-sm font-semibold text-ink hover:bg-surface2 transition-colors font-ui"
               >
-                {isAdminRole(user.role) ? "لوحة الإدارة" : "لوحة الطالب"}
+                {isAdminRole(viewer.role) ? "لوحة الإدارة" : "لوحة الطالب"}
               </Link>
             ) : (
               <div className="pt-2 border-t border-line flex flex-col gap-2">

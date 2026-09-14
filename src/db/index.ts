@@ -39,9 +39,20 @@ if (globalForDb.__drosMathDbInstance) {
 } else if (databaseUrl && !isPlaceholderUrl(databaseUrl)) {
   try {
     const isLocal = databaseUrl.includes("localhost") || databaseUrl.includes("127.0.0.1");
+    // Serverless (Vercel) runs many short-lived instances. The node-postgres
+    // default pool (max=10, 10s idle) lets a handful of instances hold more
+    // clients than the database/serverless pooler allows — Supabase rejects
+    // the 16th client with `EMAXCONNSESSION: max clients reached in session
+    // mode ... pool_size: 15`, which surfaced as the Settings crash and as
+    // spurious logouts. One client per instance + fast idle release keeps the
+    // total comfortably under the cap.
+    const isServerless = Boolean(process.env.VERCEL);
     pool = new Pool({
       connectionString: databaseUrl,
-      connectionTimeoutMillis: 5000,
+      max: isServerless ? 1 : 10,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 15_000,
+      allowExitOnIdle: true,
       ssl: isLocal ? undefined : { rejectUnauthorized: false },
     });
     dbInstance = drizzleNodePg(pool, { schema });

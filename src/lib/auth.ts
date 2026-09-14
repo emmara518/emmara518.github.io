@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { and, eq, gt } from "drizzle-orm";
@@ -65,7 +66,17 @@ export async function destroySession(): Promise<void> {
   }
 }
 
-export async function getSessionUser(): Promise<SessionUser | null> {
+/**
+ * Resolve the session user for the current request.
+ *
+ * Wrapped in React `cache()` so the many call sites that run during a single
+ * render — the root layout, `dashboard/layout.tsx`, the `(main)`/`(focus)`
+ * shells, the page itself and `requireApiUser` — share ONE database lookup
+ * instead of issuing one query each. That both guarantees a single auth
+ * decision per request and removes the connection churn that helped exhaust
+ * the database pool.
+ */
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   try {
     const store = await cookies();
     const token = store.get(SESSION_COOKIE)?.value;
@@ -87,7 +98,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     console.warn("[auth] getSessionUser error:", err);
     return null;
   }
-}
+});
 
 /** For API handlers: user or null. Handlers emit 401/403 via http.ts helpers. */
 export async function requireApiUser(roles?: readonly Role[]): Promise<
