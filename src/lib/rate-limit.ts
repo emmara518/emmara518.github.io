@@ -18,6 +18,30 @@ function getRedisClient() {
   return client;
 }
 
+/**
+ * Parse a positive integer environment value safely.
+ * Invalid input (missing, empty, NaN, <= 0, out of range) returns the
+ * secure fallback so rate limiting can NEVER be silently disabled by a
+ * misconfigured environment variable (e.g. an empty string would otherwise
+ * become 0 and turn the sliding window off).
+ */
+export function parsePositiveInt(
+  raw: string | undefined,
+  fallback: number,
+  opts?: { min?: number; max?: number },
+): number {
+  const min = opts?.min ?? 1;
+  const max = opts?.max ?? Number.MAX_SAFE_INTEGER;
+  if (raw === undefined || raw === null) return fallback;
+  const trimmed = String(raw).trim();
+  if (trimmed === "") return fallback;
+  const n = Number(trimmed);
+  if (!Number.isFinite(n)) return fallback;
+  const value = Math.floor(n);
+  if (value < min || value > max) return fallback;
+  return value;
+}
+
 /* ── Postgres fallback backend ──────────────────────────────────────────────
  * When REDIS_URL is absent the limiter must still protect production.
  * Uses the application's existing Postgres pool: a sliding window of hit

@@ -42,7 +42,7 @@ export const MATH_SYMBOLS_3D: MathSymbolData[] = [
     branch: "التفاضل والدوال",
     formula: "lim [f(x) - f(a)] / (x - a)",
     desc: "دراسة سلوك المنحنيات والاطراد ونهايات الدوال",
-    imageSrc: "/images/assets/fx.png",
+    imageSrc: "/images/assets/delta.png",
     glyph: "f(x)",
   },
   {

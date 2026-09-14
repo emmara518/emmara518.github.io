@@ -433,7 +433,7 @@ export function DrosUniverseShowcase() {
                 <div className="math-3d-floor-depth" />
                 <div className="math-3d-orbit-ring" />
                 <Image
-                  src="/images/assets/fx.png"
+                  src="/images/assets/delta.png"
                   alt="f(x) Symbol 3D"
                   width={96}
                   height={96}

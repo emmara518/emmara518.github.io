@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { ZodType } from "zod";
-import { rateLimit, getClientIp } from "./rate-limit";
+import { parsePositiveInt, rateLimit, getClientIp } from "./rate-limit";
 
 /**
  * Uniform API envelope — the single API contract for every /api/v1 route.
@@ -18,23 +18,27 @@ export function err(status: number, code: string, message: string) {
   return NextResponse.json({ ok: false, error: { code, message } } satisfies ApiErr, { status });
 }
 
-/** Rate limit configs per endpoint category */
+/** Rate limit configs per endpoint category.
+ *  Environment overrides are parsed defensively: missing, empty, non-numeric,
+ *  or out-of-range values fall back to the secure defaults so a bad variable
+ *  can never silently turn protection off. Intended behavior:
+ *  AUTH = 5 attempts / 15 min · ENROLL = 10 / hour · REDEEM = 10 / hour. */
 export const RATE_LIMITS = {
   auth: {
-    max: Number(process.env.RATE_LIMIT_AUTH_MAX ?? "5"),
-    windowMs: Number(process.env.RATE_LIMIT_AUTH_WINDOW_MS ?? "900000"),
+    max: parsePositiveInt(process.env.RATE_LIMIT_AUTH_MAX, 5, { min: 1, max: 1000 }),
+    windowMs: parsePositiveInt(process.env.RATE_LIMIT_AUTH_WINDOW_MS, 900000, { min: 1000, max: 86_400_000 }),
   },
   api: {
-    max: Number(process.env.RATE_LIMIT_API_MAX ?? "100"),
-    windowMs: Number(process.env.RATE_LIMIT_API_WINDOW_MS ?? "60000"),
+    max: parsePositiveInt(process.env.RATE_LIMIT_API_MAX, 100, { min: 1, max: 100_000 }),
+    windowMs: parsePositiveInt(process.env.RATE_LIMIT_API_WINDOW_MS, 60000, { min: 1000, max: 86_400_000 }),
   },
   enroll: {
-    max: Number(process.env.RATE_LIMIT_ENROLL_MAX ?? "10"),
-    windowMs: Number(process.env.RATE_LIMIT_ENROLL_WINDOW_MS ?? "3600000"),
+    max: parsePositiveInt(process.env.RATE_LIMIT_ENROLL_MAX, 10, { min: 1, max: 1000 }),
+    windowMs: parsePositiveInt(process.env.RATE_LIMIT_ENROLL_WINDOW_MS, 3600000, { min: 1000, max: 86_400_000 }),
   },
   redeem: {
-    max: Number(process.env.RATE_LIMIT_REDEEM_MAX ?? "10"),
-    windowMs: Number(process.env.RATE_LIMIT_REDEEM_WINDOW_MS ?? "3600000"),
+    max: parsePositiveInt(process.env.RATE_LIMIT_REDEEM_MAX, 10, { min: 1, max: 1000 }),
+    windowMs: parsePositiveInt(process.env.RATE_LIMIT_REDEEM_WINDOW_MS, 3600000, { min: 1000, max: 86_400_000 }),
   },
 } as const;
 
