@@ -1,6 +1,5 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
+import { requirePermission } from "@/lib/permission-guard";
 import { z } from "zod";
 import { db } from "@/db";
 import { coupons, auditLogs } from "@/db/schema";
@@ -20,9 +19,9 @@ const batchCouponSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية توليد الأكواد");
+  const gate = await requirePermission("activation.create");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, batchCouponSchema);
   if ("response" in parsed) return parsed.response;

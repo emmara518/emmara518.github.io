@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -28,16 +27,16 @@ const createExamSchema = z.object({
 });
 
 export async function GET() {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
+  const gate = await requirePermission("exams.view");
+  if ("response" in gate) return gate.response;
   const examsList = await listExamsAdmin();
   return ok({ exams: examsList });
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الإنشاء");
+  const gate = await requirePermission("exams.create");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, createExamSchema);
   if ("response" in parsed) return parsed.response;

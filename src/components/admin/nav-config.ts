@@ -44,7 +44,8 @@ export type CategoryId =
   | "users"
   | "billing_codes"
   | "communications"
-  | "advanced_search";
+  | "advanced_search"
+  | "assistants";
 
 export interface SubFeatureDef {
   id: string;
@@ -61,6 +62,8 @@ export interface CategoryDef {
   /** Optional RBAC gate. A category is visible if `requires` is empty
    *  or the actor's role grants at least one of these permissions. */
   requires?: Permission[];
+  /** When true, only the Super Admin (role === "admin") sees the category. */
+  superAdminOnly?: boolean;
 }
 
 export const CATEGORIES: CategoryDef[] = [
@@ -159,6 +162,17 @@ export const CATEGORIES: CategoryDef[] = [
       { id: "users_advanced", label: "بحث الطلاب المتقدم", icon: UserSearch },
     ],
   },
+  {
+    id: "assistants",
+    label: "المساعدون والصلاحيات",
+    icon: ShieldCheck,
+    description: "إنشاء حسابات المساعدين وتحديد صلاحياتهم بدقة (للمدير العام فقط).",
+    requires: ["admin:read"],
+    superAdminOnly: true,
+    subFeatures: [
+      { id: "assistants_manage", label: "إدارة المساعدين والصلاحيات", icon: UserPlus },
+    ],
+  },
 ];
 
 export function findCategory(id: string): CategoryDef | undefined {
@@ -169,13 +183,17 @@ export function findCategory(id: string): CategoryDef | undefined {
  *  If the actor has no permissions (e.g. dev preview fallback) the
  *  full set is returned so the dev path keeps working. */
 export function visibleCategories(
-  actorPermissions: readonly string[] | undefined
+  actorPermissions: readonly string[] | undefined,
+  actorRole?: string,
 ): CategoryDef[] {
-  if (!actorPermissions || actorPermissions.length === 0) return CATEGORIES;
-  return CATEGORIES.filter((cat) => {
-    if (!cat.requires || cat.requires.length === 0) return true;
-    return cat.requires.some((p) => actorPermissions.includes(p));
-  });
+  const base =
+    !actorPermissions || actorPermissions.length === 0
+      ? CATEGORIES
+      : CATEGORIES.filter((cat) => {
+          if (!cat.requires || cat.requires.length === 0) return true;
+          return cat.requires.some((p) => actorPermissions.includes(p));
+        });
+  return base.filter((cat) => !cat.superAdminOnly || actorRole === "admin");
 }
 
 /** Locates a sub-feature anywhere in the tree, returning its owning category. */

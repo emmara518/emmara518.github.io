@@ -60,6 +60,7 @@ import {
 import { Badge, Button, Card, Input, Select, Textarea } from "./ui";
 import { Field } from "./ui-field";
 import { CATEGORIES, findSubFeature, type CategoryId } from "./admin/nav-config";
+import { AssistantsPanel } from "./admin/assistants-panel";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { formatDate, formatEGP } from "@/lib/format";
@@ -1897,7 +1898,9 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
   /* ── Feature: command palette (Ctrl+K / "/"/ "?") ── */
   const paletteCommands = useMemo<PaletteCommand[]>(() => {
-    const navCommands: PaletteCommand[] = CATEGORIES.flatMap((cat) =>
+    const navCommands: PaletteCommand[] = CATEGORIES.filter(
+      (cat) => !cat.superAdminOnly || actor.role === "admin",
+    ).flatMap((cat) =>
       cat.subFeatures.map((sub) => ({
         id: `nav-${cat.id}-${sub.id}`,
         label: sub.label,
@@ -3129,6 +3132,9 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           )}
         </div>
       </div>
+
+      {/* ═══ ASSISTANTS & PERMISSIONS (Super Admin only) ═══ */}
+      {activeCategory === "assistants" && actor.role === "admin" && <AssistantsPanel />}
 
       {/* ═══ 1. OVERVIEW & REPORTS ═══ */}
       {activeCategory === "overview" && activeSubFeature === "home" && (

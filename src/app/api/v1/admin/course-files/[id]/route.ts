@@ -1,6 +1,5 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok } from "@/lib/http";
+import { requirePermission } from "@/lib/permission-guard";
 import { db } from "@/db";
 import { courseFiles, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -9,9 +8,9 @@ import { promises as fsp } from "node:fs";
 import { toEnvelope } from "@/lib/errors";
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الحذف");
+  const gate = await requirePermission("content.delete");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const { id } = await params;
   try {

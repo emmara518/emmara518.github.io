@@ -19,7 +19,7 @@ import {
  * ─────────────────────────────────────────────────────────────────
  */
 
-export const userRoleEnum = pgEnum("user_role", ["student", "parent", "center", "teacher", "admin"]);
+export const userRoleEnum = pgEnum("user_role", ["student", "parent", "center", "teacher", "assistant", "admin"]);
 export const courseStatusEnum = pgEnum("course_status", ["draft", "published", "archived"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "expired", "cancelled"]);
 export const orderStatusEnum = pgEnum("order_status", ["pending", "paid", "failed", "refunded"]);

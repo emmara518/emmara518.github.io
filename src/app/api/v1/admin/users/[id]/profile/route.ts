@@ -1,5 +1,5 @@
-import { requireApiUser, hashPassword } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { hashPassword } from "@/lib/auth";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -15,9 +15,9 @@ const editStudentSchema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "users:manage")) return err(403, "FORBIDDEN", "لا تملك صلاحية تعديل بيانات المستخدم");
+  const gate = await requirePermission("students.edit");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, editStudentSchema);
   if ("response" in parsed) return parsed.response;

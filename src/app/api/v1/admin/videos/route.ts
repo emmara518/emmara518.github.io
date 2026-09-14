@@ -1,14 +1,13 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
+import { requirePermission } from "@/lib/permission-guard";
 import { adminVideoCreateSchema } from "@/lib/contracts";
 import { createVideo } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية إضافة فيديو");
+  const gate = await requirePermission("content.create");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, adminVideoCreateSchema);
   if ("response" in parsed) return parsed.response;

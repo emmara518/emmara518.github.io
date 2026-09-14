@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -13,9 +12,9 @@ const adjustWalletSchema = z.object({
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser();
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "users:manage")) return err(403, "FORBIDDEN", "تعديل أرصدة المحفظة للمدير فقط");
+  const gate = await requirePermission("wallet.adjust");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, adjustWalletSchema);
   if ("response" in parsed) return parsed.response;

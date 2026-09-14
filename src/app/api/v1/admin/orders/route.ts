@@ -1,11 +1,11 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES } from "@/lib/rbac";
 import { err, ok } from "@/lib/http";
+import { requirePermission } from "@/lib/permission-guard";
 import { listOrdersAdmin } from "@/lib/services/admin.service";
 
 export async function GET() {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
+  const gate = await requirePermission("orders.view");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const orders = await listOrdersAdmin();
   return ok({ orders });
 }

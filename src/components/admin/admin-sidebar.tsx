@@ -105,7 +105,7 @@ export function AdminSidebar({
   const roleLabel = ROLE_LABELS[actorRole as Role] ?? actorRole;
   const initials = actorName.trim().charAt(0) || "م";
   const actorPerms = permissionsFor((actorRole as Role) || "student");
-  const cats = visibleCategories(actorPerms);
+  const cats = visibleCategories(actorPerms, actorRole);
 
   return (
     <aside

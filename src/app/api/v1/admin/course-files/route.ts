@@ -1,13 +1,12 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok } from "@/lib/http";
+import { requirePermission } from "@/lib/permission-guard";
 import { uploadCourseFile } from "@/lib/services/files.service";
 import { toEnvelope } from "@/lib/errors";
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الرفع");
+  const gate = await requirePermission("content.create");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   let form: FormData;
   try {

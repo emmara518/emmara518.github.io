@@ -1,18 +1,22 @@
-import { requireApiUser } from "@/lib/auth";
-import { can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { adminUserPatchSchema } from "@/lib/contracts";
 import { setUserActive, setUserRole } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser();
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "users:manage")) return err(403, "FORBIDDEN", "إدارة المستخدمين للمدير فقط");
+  const gate = await requirePermission("students.edit");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, adminUserPatchSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
+
+  // Role changes are a privilege-escalation vector — Super Admin only.
+  if (parsed.data.role !== undefined && auth.user.role !== "admin") {
+    return err(403, "FORBIDDEN", "تغيير الأدوار للمدير العام فقط");
+  }
 
   try {
     if (parsed.data.role !== undefined) {
