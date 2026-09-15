@@ -4,6 +4,7 @@
   "grades",
   "users",
   "sessions",
+  "user_preferences",
   "courses",
   "lessons",
   "videos",

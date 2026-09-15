@@ -92,6 +92,24 @@ export const sessions = pgTable(
   (t) => [index("sessions_token_idx").on(t.token)],
 );
 
+/**
+ * Per-user settings (notification toggles + appearance density), one row per
+ * user. Typed columns mirror the product's fixed preference shape — no JSON
+ * blob. Replaces the v1 filesystem store (`data/prefs/*.json`), which cannot
+ * work on serverless hosts (read-only filesystem → PUT 500 on Vercel).
+ */
+export const userPreferences = pgTable("user_preferences", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  density: text("density").notNull().default("comfortable"),
+  notifCommunity: boolean("notif_community").notNull().default(true),
+  notifExamResults: boolean("notif_exam_results").notNull().default(true),
+  notifWallet: boolean("notif_wallet").notNull().default(true),
+  notifMarketing: boolean("notif_marketing").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /* ── courses & content ── */
 export const courses = pgTable(
   "courses",

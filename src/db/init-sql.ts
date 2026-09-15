@@ -108,6 +108,18 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 	CONSTRAINT "sessions_token_unique" UNIQUE("token")
 );
 
+/* -- v6 user_preferences: DB-backed settings replacing the old file store.
+   Additive and idempotent. -- */
+CREATE TABLE IF NOT EXISTS "user_preferences" (
+	"user_id" uuid PRIMARY KEY REFERENCES "users"("id") ON DELETE cascade,
+	"density" text DEFAULT 'comfortable' NOT NULL,
+	"notif_community" boolean DEFAULT true NOT NULL,
+	"notif_exam_results" boolean DEFAULT true NOT NULL,
+	"notif_wallet" boolean DEFAULT true NOT NULL,
+	"notif_marketing" boolean DEFAULT false NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "courses" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slug" text NOT NULL,

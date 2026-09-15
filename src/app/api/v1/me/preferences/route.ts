@@ -37,6 +37,12 @@ export async function PUT(request: Request) {
   const parsed = await parseJson(request, patchSchema);
   if ("response" in parsed) return parsed.response;
 
-  const preferences: UserPreferences = await setPreferences(auth.user.id, parsed.data);
-  return ok({ preferences });
+  try {
+    const preferences: UserPreferences = await setPreferences(auth.user.id, parsed.data);
+    return ok({ preferences });
+  } catch {
+    // DB-backed store: a write failure must be a clear JSON error the UI can
+    // show + retry — never an empty-body 500 (the old filesystem failure mode).
+    return err(503, "PREFS_UNAVAILABLE", "تعذّر حفظ الإعدادات — حاول مرة أخرى");
+  }
 }
