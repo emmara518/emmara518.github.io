@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { academicStages } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 const patchSchema = z.object({
   name: z.string().trim().min(2, "الاسم قصير جداً").max(80).optional(),
@@ -19,6 +20,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية التعديل");
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   const parsed = await parseJson(request, patchSchema);
   if ("response" in parsed) return parsed.response;
 
@@ -45,6 +47,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!["admin"].includes(auth.user.role)) return err(403, "FORBIDDEN", "لا تملك صلاحية الحذف");
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     await db.delete(academicStages).where(eq(academicStages.id, id));
     return ok({ deleted: true });

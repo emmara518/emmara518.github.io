@@ -1,7 +1,7 @@
 import { requireApiUser } from "@/lib/auth";
 import { ADMIN_ROLES, can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
-import { adminPostStatusSchema } from "@/lib/contracts";
+import { uuid, adminPostStatusSchema } from "@/lib/contracts";
 import { setPostStatus } from "@/lib/services/admin.service";
 import { db } from "@/db";
 import { communityPosts, auditLogs } from "@/db/schema";
@@ -17,6 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const parsed = await parseJson(request, adminPostStatusSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   try {
     const result = await setPostStatus(auth.user, id, parsed.data.status);
@@ -33,6 +34,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية حذف المنشورات");
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     await db.delete(communityPosts).where(eq(communityPosts.id, id));
     await db.insert(auditLogs).values({

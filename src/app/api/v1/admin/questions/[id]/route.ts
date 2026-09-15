@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { questionBank, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiUser(ADMIN_ROLES);
@@ -12,6 +13,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية حذف الأسئلة");
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     await db.delete(questionBank).where(eq(questionBank.id, id));
 

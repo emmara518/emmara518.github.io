@@ -7,6 +7,7 @@ import { requireApiUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
 import { err } from "@/lib/http";
 import { hasActiveSubscription } from "@/lib/services/billing.service";
+import { uuid } from "@/lib/contracts";
 
 /**
  * Gated file delivery — the storage contract in action.
@@ -18,6 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const auth = await requireApiUser();
   if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   const rows = await db.select().from(courseFiles).where(eq(courseFiles.id, id)).limit(1);
   const file = rows[0];

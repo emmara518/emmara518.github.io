@@ -1,6 +1,6 @@
 import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
-import { adminCoursePatchSchema } from "@/lib/contracts";
+import { uuid, adminCoursePatchSchema } from "@/lib/contracts";
 import { db } from "@/db";
 import { courses, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -14,6 +14,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const parsed = await parseJson(request, adminCoursePatchSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   try {
     const updateData: Record<string, unknown> = {};

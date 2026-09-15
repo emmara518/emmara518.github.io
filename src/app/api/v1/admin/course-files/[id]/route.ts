@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import path from "node:path";
 import { promises as fsp } from "node:fs";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requirePermission("content.delete");
@@ -13,6 +14,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const auth = { user: gate.user };
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     const rows = await db
       .select({ id: courseFiles.id, storageKey: courseFiles.storageKey })

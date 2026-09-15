@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { coupons, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 const couponPatchSchema = z.object({
   isActive: z.boolean().optional(),
@@ -19,6 +20,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const parsed = await parseJson(request, couponPatchSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   try {
     const updateData: Record<string, unknown> = {};
@@ -47,6 +49,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية حذف الأكواد");
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     await db.delete(coupons).where(eq(coupons.id, id));
     await db.insert(auditLogs).values({

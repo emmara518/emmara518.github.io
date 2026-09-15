@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { users, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 const editStudentSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
@@ -22,6 +23,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const parsed = await parseJson(request, editStudentSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   try {
     const updateData: Record<string, unknown> = {};

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { courses, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requirePermission("courses.delete");
@@ -11,6 +12,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const auth = { user: gate.user };
 
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {
     const existing = await db.select({ title: courses.title }).from(courses).where(eq(courses.id, id)).limit(1);
     if (!existing[0]) return err(404, "NOT_FOUND", "الكورس غير موجود");

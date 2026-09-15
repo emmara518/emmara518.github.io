@@ -8,6 +8,7 @@ import { communityReplies, communityPosts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { hasActiveSubscription } from "@/lib/services/billing.service";
 import { toEnvelope } from "@/lib/errors";
+import { uuid } from "@/lib/contracts";
 
 const MIME_BY_EXT: Record<string, string> = {
   png: "image/png",
@@ -25,6 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const auth = await getSessionUser();
   if (!auth) return err(401, "UNAUTHENTICATED", "يجب تسجيل الدخول");
   const { id } = await params;
+  if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
 
   try {
     const rows = await db
