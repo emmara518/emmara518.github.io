@@ -62,6 +62,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
     () => new Set(room.lessons.flatMap((l) => l.videos.filter((v) => v.completed).map((v) => v.id))),
   );
   const [busy, setBusy] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
   const [viewNotice, setViewNotice] = useState<string | null>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
 
@@ -119,20 +120,27 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
   async function markComplete() {
     if (!current) return;
     setBusy(true);
+    setCompleteError(null);
     try {
       const res = await fetch(`/api/v1/videos/${current.id}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ videoId: current.id, watchedSeconds: current.durationSec, completed: true }),
       });
-      const json = await res.json();
-      if (json.ok) {
+      const json = await res.json().catch(() => null);
+      if (res.ok && json?.ok) {
         setCompletedIds((prev) => new Set(prev).add(current.id));
         const idx = unlockedFlat.findIndex((v) => v.id === current.id);
         const next = unlockedFlat[idx + 1];
         if (next) setCurrentId(next.id);
         router.refresh();
+      } else if (res.status === 401) {
+        setCompleteError("انتهت جلسة الدخول — سجّل الدخول مرة أخرى ثم أعد المحاولة");
+      } else {
+        setCompleteError(json?.error?.message ?? "تعذّر تسجيل الإكمال — حاول مرة أخرى");
       }
+    } catch {
+      setCompleteError("مشكلة في الاتصال بالسيرفر — تحقق من الإنترنت وحاول مرة أخرى");
     } finally {
       setBusy(false);
     }
@@ -233,6 +241,11 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
                 {viewNotice && (
                   <p className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2.5 text-xs font-bold text-danger">
                     <EyeOff size={14} /> {viewNotice}
+                  </p>
+                )}
+                {completeError && (
+                  <p role="alert" className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2.5 text-xs font-bold text-danger">
+                    <EyeOff size={14} /> {completeError}
                   </p>
                 )}
                 {current.viewsLeft != null && (

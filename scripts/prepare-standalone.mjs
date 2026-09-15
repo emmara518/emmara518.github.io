@@ -55,4 +55,17 @@ for (const envFile of [".env.local", ".env"]) {
   }
 }
 
+// 4. Native image-optimizer runtime: Next's tracing misses the libvips DLLs
+//    inside @img/sharp-<platform> (native DLL deps are not traced). Without
+//    them every /_next/image request 500s with ERR_DLOPEN_FAILED. Copy the
+//    full platform packages over whatever standalone has.
+const imgSrc = path.join(root, "node_modules", "@img");
+if (fs.existsSync(imgSrc)) {
+  const imgDest = path.join(standalone, "node_modules", "@img");
+  for (const pkg of fs.readdirSync(imgSrc)) {
+    copyRecursive(path.join(imgSrc, pkg), path.join(imgDest, pkg));
+  }
+  console.log("copied @img/* native packages (sharp runtime)");
+}
+
 console.log("standalone ready → npm start");

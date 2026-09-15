@@ -98,6 +98,13 @@ export function EnrollPanel({
       ) : null}
       <p className="text-center text-xs leading-6 text-muted">
         خصم فوري من رصيد محفظتك · فاتورة إلكترونية تلقائية · جرّب كود DROS25
+        <br />
+        معك كود تفعيل كورس من السنتر؟ هذا الحقل لكوبونات الخصم فقط — فعّل كود
+        السنتر من{" "}
+        <Link href="/dashboard/wallet" className="font-bold text-brand hover:underline">
+          صفحة المحفظة
+        </Link>
+        .
       </p>
     </div>
   );

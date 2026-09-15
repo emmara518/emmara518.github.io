@@ -21,7 +21,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite", "pg", "bcryptjs"],
   images: {
     formats: ["image/avif", "image/webp"],
-    unoptimized: process.env.NODE_ENV === "development",
+    // F-PROD-2 (CTO campaign): the standalone runtime's internal image
+    // optimizer serves empty buffers for large local JPEGs on Windows
+    // (mocked-response race) and shipped without sharp's native DLLs.
+    // Covers are static, pre-optimized files — serve them as-is so image
+    // delivery is correct on every host (standalone self-host + Vercel).
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

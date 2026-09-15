@@ -629,8 +629,11 @@ export function DrosUniverseShowcase() {
               aria-label={`عرض تفاصيل ${stage.title}`}
               className="group relative block w-full overflow-hidden rounded-2xl bg-surface2 border border-line hover:border-neon-lime/70 shadow-card hover:shadow-[0_20px_50px_rgba(255,196,0,0.16)] transition-all duration-500 ease-out hover:-translate-y-1.5 transform-gpu cursor-pointer text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-neon-lime"
             >
-              {/* Full-Bleed Stage Image */}
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
+              {/* Full-Bleed Stage Image — graceful fallback: if the owner has
+                  not dropped the stage artwork yet (designated asset slot in
+                  public/images/stages/), the broken image hides and the
+                  gradient + text stay presentable. */}
+              <div className="relative w-full aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand/25 via-surface2 to-surface">
                 <Image
                   src={stage.image}
                   alt={stage.title}
@@ -638,6 +641,9 @@ export function DrosUniverseShowcase() {
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover object-center group-hover:scale-[1.06] transition-transform duration-700 ease-out"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.opacity = "0";
+                  }}
                 />
 
                 {/* Bottom Gradient for Text Readability */}
