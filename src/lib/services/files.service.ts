@@ -1,11 +1,9 @@
 import crypto from "node:crypto";
-import path from "node:path";
-import { promises as fsp } from "node:fs";
 import { db } from "@/db";
 import { courseFiles } from "@/db/schema";
 import { ServiceError } from "../errors";
 import type { SessionUser } from "../auth";
-import { eq } from "drizzle-orm";
+import { putPrivateObject } from "../storage";
 
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -39,18 +37,18 @@ export async function uploadCourseFile(
     throw new ServiceError(422, "FILE_TOO_LARGE", "حجم الملف يجب ألا يتجاوز 50 ميجابايت");
   }
 
-  const ext = path.extname(input.file.name).toLowerCase() || guessExtFromMime(input.file.type);
+  const ext = guessExtFromMime(input.file.type);
+  if (!ext) {
+    throw new ServiceError(422, "INVALID_FILE_TYPE", "نوع الملف غير مدعوم");
+  }
   const safeTitle = input.title.replace(/[^\w\u0600-\u06FF\- ]+/g, "").slice(0, 80);
   const baseName = safeTitle.replace(/\s+/g, "-") || "file";
-  const storageKey = `/uploads/course-files/${crypto.randomUUID()}-${baseName}${ext}`;
-  const abs = path.join(process.cwd(), "public", storageKey);
-
-  try {
-    await fsp.mkdir(path.dirname(abs), { recursive: true });
-    await fsp.writeFile(abs, Buffer.from(await input.file.arrayBuffer()));
-  } catch (e) {
-    throw new ServiceError(500, "UPLOAD_FAILED", "فشل حفظ الملف على القرص");
-  }
+  const storageKey = `course-files/${crypto.randomUUID()}-${baseName}${ext}`;
+  await putPrivateObject(
+    storageKey,
+    Buffer.from(await input.file.arrayBuffer()),
+    input.file.type,
+  );
 
   const [created] = await db
     .insert(courseFiles)
@@ -63,11 +61,6 @@ export async function uploadCourseFile(
       isFreePreview: input.isFreePreview ?? false,
     })
     .returning();
-
-  await db
-    .update(courseFiles)
-    .set({}) // touch
-    .where(eq(courseFiles.id, created.id));
 
   return created;
 }

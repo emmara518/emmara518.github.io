@@ -465,7 +465,7 @@ export const paymentRequests = pgTable(
     /** instapay | vodafone_cash | etisalat_cash | orange_cash */
     method: text("method").notNull(),
     senderName: text("sender_name").notNull().default(""),
-    /** Storage key under /uploads/proofs/ — served to admins only. */
+    /** Private storage key (proofs/...) — served to admins only. */
     screenshotKey: text("screenshot_key").notNull(),
     /** pending | approved | rejected */
     status: text("status").notNull().default("pending"),
@@ -610,7 +610,7 @@ export const communityReplies = pgTable(
     body: text("body").notNull().default(""),
     /** none | image | video | file */
     mediaKind: text("media_kind").notNull().default("none"),
-    /** Storage key under /uploads/replies/ — served through the gated media route. */
+    /** Private storage key (replies/...) — served through the gated media route. */
     mediaKey: text("media_key"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

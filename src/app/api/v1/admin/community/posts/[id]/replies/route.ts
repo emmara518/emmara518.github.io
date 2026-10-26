@@ -1,8 +1,7 @@
 import { requirePermission } from "@/lib/permission-guard";
-import path from "node:path";
-import fsp from "node:fs/promises";
 import { err, ok } from "@/lib/http";
 import { createPostReplyAdmin, listPostRepliesAdmin } from "@/lib/services/admin.service";
+import { putPrivateObject } from "@/lib/storage";
 import { toEnvelope } from "@/lib/errors";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -69,10 +68,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         return err(422, "MEDIA_TOO_LARGE", `الحد الأقصى للحجم ${Math.round(limit / (1024 * 1024))} ميجابايت`);
       }
       const ext = FILE_EXT[media.type] ?? "bin";
-      mediaKey = `/uploads/replies/${crypto.randomUUID()}.${ext}`;
-      const abs = path.join(process.cwd(), "public", mediaKey);
-      await fsp.mkdir(path.dirname(abs), { recursive: true });
-      await fsp.writeFile(abs, Buffer.from(await media.arrayBuffer()));
+      mediaKey = `replies/${crypto.randomUUID()}.${ext}`;
+      await putPrivateObject(
+        mediaKey,
+        Buffer.from(await media.arrayBuffer()),
+        media.type || "application/octet-stream",
+      );
       mediaKind = kind;
     }
 

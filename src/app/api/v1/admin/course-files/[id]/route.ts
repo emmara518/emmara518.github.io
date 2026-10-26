@@ -3,8 +3,7 @@ import { requirePermission } from "@/lib/permission-guard";
 import { db } from "@/db";
 import { courseFiles, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import path from "node:path";
-import { promises as fsp } from "node:fs";
+import { deleteLegacyUpload, deletePrivateObject, isLegacyUploadKey } from "@/lib/storage";
 import { toEnvelope } from "@/lib/errors";
 import { uuid } from "@/lib/contracts";
 
@@ -24,12 +23,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     const file = rows[0];
     if (!file) return err(404, "NOT_FOUND", "الملف غير موجود");
 
-    // Delete from disk
-    const abs = path.join(process.cwd(), "public", file.storageKey);
-    try {
-      await fsp.unlink(abs);
-    } catch {
-      // ignore - file might not exist
+    if (isLegacyUploadKey(file.storageKey)) {
+      await deleteLegacyUpload(file.storageKey);
+    } else {
+      await deletePrivateObject(file.storageKey);
     }
 
     // Delete from DB

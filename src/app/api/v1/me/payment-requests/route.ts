@@ -1,11 +1,10 @@
 import crypto from "node:crypto";
-import path from "node:path";
-import { promises as fsp } from "node:fs";
 import { requireApiUser } from "@/lib/auth";
 import { can } from "@/lib/rbac";
 import { err, ok } from "@/lib/http";
 import { getValidPaymentMethodIds } from "@/lib/platform-payments";
 import { createPaymentRequest, listMyPaymentRequests } from "@/lib/services/payment-requests.service";
+import { putPrivateObject } from "@/lib/storage";
 import { toEnvelope } from "@/lib/errors";
 
 const ALLOWED_MIME = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -55,13 +54,12 @@ export async function POST(request: Request) {
   }
 
   const ext = screenshot.type === "image/png" ? "png" : screenshot.type === "image/webp" ? "webp" : "jpg";
-  const key = `/uploads/proofs/${crypto.randomUUID()}.${ext}`;
-  const abs = path.join(process.cwd(), "public", key);
+  const key = `proofs/${crypto.randomUUID()}.${ext}`;
   try {
-    await fsp.mkdir(path.dirname(abs), { recursive: true });
-    await fsp.writeFile(abs, Buffer.from(await screenshot.arrayBuffer()));
-  } catch {
-    return err(500, "UPLOAD_FAILED", "تعذر حفظ الصورة، حاول مرة أخرى");
+    await putPrivateObject(key, Buffer.from(await screenshot.arrayBuffer()), screenshot.type);
+  } catch (e) {
+    const envelope = toEnvelope(e);
+    return err(envelope.status, envelope.code, envelope.message);
   }
 
   try {
