@@ -453,6 +453,7 @@ export async function getLearningRoom(user: SessionUser, slug: string) {
     return {
       id: l.id,
       title: l.title,
+      description: l.description,
       isFreePreview: l.isFreePreview,
       unlocked,
       videos: l.videos.map((v) => {
@@ -473,6 +474,7 @@ export async function getLearningRoom(user: SessionUser, slug: string) {
           title: v.title,
           youtubeVideoId: playable ? v.youtubeVideoId : null,
           durationSec: v.durationSec,
+          sortOrder: v.sortOrder,
           completed: progress?.completedAt != null,
           watchedSeconds: progress?.watchedSeconds ?? 0,
           viewCount: progress?.viewCount ?? 0,

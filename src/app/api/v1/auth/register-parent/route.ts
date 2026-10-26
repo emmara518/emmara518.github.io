@@ -4,6 +4,7 @@ import { notifications, parentLinks, users } from "@/db/schema";
 import { parentRegisterSchema } from "@/lib/contracts";
 import { createSession, hashPassword } from "@/lib/auth";
 import { err, ok, parseJson, applyRateLimit } from "@/lib/http";
+import { isPublicRegistrationEnabled } from "@/lib/feature-flags";
 import { linkParentByGuardianPhone } from "@/lib/services/parent.service";
 
 /**
@@ -13,6 +14,10 @@ import { linkParentByGuardianPhone } from "@/lib/services/parent.service";
 export async function POST(request: Request) {
   const rateLimitResponse = await applyRateLimit(request, "auth");
   if (rateLimitResponse) return rateLimitResponse;
+
+  if (!isPublicRegistrationEnabled()) {
+    return err(403, "REGISTRATION_DISABLED", "تسجيل ولي الأمر الذاتي متوقف مؤقتاً — تواصل مع الإدارة");
+  }
 
   const parsed = await parseJson(request, parentRegisterSchema);
   if ("response" in parsed) return parsed.response;

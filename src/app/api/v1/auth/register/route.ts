@@ -4,10 +4,15 @@ import { users, walletAccounts, notifications, parentLinks } from "@/db/schema";
 import { registerSchema } from "@/lib/contracts";
 import { createSession, hashPassword } from "@/lib/auth";
 import { err, ok, parseJson, applyRateLimit } from "@/lib/http";
+import { isAutoParentLinkEnabled, isPublicRegistrationEnabled } from "@/lib/feature-flags";
 
 export async function POST(request: Request) {
   const rateLimitResponse = await applyRateLimit(request, "auth");
   if (rateLimitResponse) return rateLimitResponse;
+
+  if (!isPublicRegistrationEnabled()) {
+    return err(403, "REGISTRATION_DISABLED", "التسجيل الذاتي متوقف مؤقتاً — تواصل مع الإدارة لإنشاء الحساب");
+  }
 
   const parsed = await parseJson(request, registerSchema);
   if ("response" in parsed) return parsed.response;
@@ -38,9 +43,9 @@ export async function POST(request: Request) {
     kind: "system",
   });
 
-  // Auto-link: any parent account already registered with this guardian mobile
-  // instantly gains access to this student's results.
-  if (guardianPhone) {
+  // Auto-link is a separate, fail-closed flag. It must stay disabled until
+  // guardian verification / explicit approval exists.
+  if (guardianPhone && isAutoParentLinkEnabled()) {
     const parents = await db
       .select({ id: users.id })
       .from(users)

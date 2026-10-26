@@ -16,6 +16,7 @@ import {
   Layers,
   ListPlus,
   ListVideo,
+  Link2,
   MessageSquare,
   MessagesSquare,
   MonitorPlay,
@@ -138,6 +139,7 @@ export const CATEGORIES: CategoryDef[] = [
     requires: ["students.view"],
     subFeatures: [
       { id: "users_table", label: "جدول المستخدمين", icon: Users },
+      { id: "parent_links", label: "ربط ولي أمر بطالب", icon: Link2, superAdminOnly: true },
       { id: "add_student", label: "إضافة طالب جديد", icon: UserPlus , superAdminOnly: true },
       { id: "manage_admin", label: "إدارة المسؤولين والمشرفين", icon: ShieldCheck , superAdminOnly: true },
       { id: "users_stats", label: "إحصائيات الطلاب", icon: BarChart3 },

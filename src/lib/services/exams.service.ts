@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import { ServiceError } from "../errors";
 import { hasActiveSubscription } from "./billing.service";
+import { effectiveMaxAttempts, shouldRevealResults } from "../exam-policy";
 
 /**
  * Exams — questions NEVER include correct answers before submission.
@@ -75,8 +76,9 @@ export async function getExamRoom(examId: string, userId: string) {
     .from(examAttempts)
     .where(and(eq(examAttempts.examId, examId), eq(examAttempts.userId, userId)));
 
-  if (exam.maxAttempts != null && attempts.length >= exam.maxAttempts) {
-    throw new ServiceError(403, "ATTEMPTS_EXHAUSTED", `لقد استنفذت الحد الأقصى من المحاولات (${exam.maxAttempts})`);
+  const maxAttempts = effectiveMaxAttempts(exam.maxAttempts);
+  if (attempts.length >= maxAttempts) {
+    throw new ServiceError(403, "ATTEMPTS_EXHAUSTED", `لقد استنفذت الحد الأقصى من المحاولات (${maxAttempts})`);
   }
 
   const links = await db
@@ -118,6 +120,7 @@ export async function getExamRoom(examId: string, userId: string) {
       perQuestionSec: exam.perQuestionSec,
       passingScore: exam.passingScore,
       showResultsImmediately: exam.showResultsImmediately,
+      availableUntil: exam.availableUntil,
       courseTitle: exam.courseTitle,
       courseSlug: exam.courseSlug,
       totalMarks: questions.reduce((s, q) => s + q.marks, 0),
@@ -148,6 +151,7 @@ export async function submitAttempt(examId: string, userId: string, answers: Exa
         .where(inArray(questionBank.id, questionIds))
     : [];
 
+  const reveal = shouldRevealResults(room.exam.showResultsImmediately, room.exam.availableUntil);
   const chosenMap = new Map(answers.map((a) => [a.questionId, a.choiceIndex]));
   let score = 0;
   const results = full.map((q) => {
@@ -159,9 +163,9 @@ export async function submitAttempt(examId: string, userId: string, answers: Exa
       prompt: q.prompt,
       options: q.options,
       chosen,
-      correctIndex: q.correctIndex,
-      correct,
-      explanation: q.explanation,
+      correctIndex: reveal ? q.correctIndex : null,
+      correct: reveal ? correct : null,
+      explanation: reveal ? q.explanation : null,
       marks: q.marks,
     };
   });
@@ -190,7 +194,7 @@ export async function submitAttempt(examId: string, userId: string, answers: Exa
     kind: "exam",
   });
 
-  return { attemptId: attempt.id, score, totalMarks, results, examTitle: room.exam.title };
+  return { attemptId: attempt.id, score, totalMarks, results, revealed: reveal, examTitle: room.exam.title };
 }
 
 /** Attempt history for dashboards. */

@@ -31,14 +31,15 @@ export type ExamRoomData = {
 type ResultData = {
   score: number;
   totalMarks: number;
+  revealed: boolean;
   results: {
     questionId: string;
     prompt: string;
     options: string[];
     chosen: number | null;
-    correctIndex: number;
-    correct: boolean;
-    explanation: string;
+    correctIndex: number | null;
+    correct: boolean | null;
+    explanation: string | null;
     marks: number;
   }[];
 };
@@ -162,6 +163,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
           </div>
         </Card>
 
+        {result.revealed ? (
         <div className="space-y-4">
           <h2 className="type-section-heading">مراجعة الإجابات</h2>
           {result.results.map((r, i) => (
@@ -197,6 +199,11 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
             </Card>
           ))}
         </div>
+        ) : (
+          <Card className="p-6 text-center text-sm leading-relaxed text-muted">
+            تم تسجيل نتيجتك. ستظهر الإجابات الصحيحة والشرح بعد انتهاء نافذة الامتحان أو حسب إعدادات المعلم.
+          </Card>
+        )}
       </div>
     );
   }

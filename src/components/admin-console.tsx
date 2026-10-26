@@ -66,6 +66,7 @@ import {
   type CategoryId,
 } from "./admin/nav-config";
 import { AssistantsPanel } from "./admin/assistants-panel";
+import { ParentLinkPanel } from "./admin/parent-link-panel";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { formatDate, formatEGP } from "@/lib/format";
@@ -365,6 +366,7 @@ export function AdminConsole({
 }) {
   const router = useRouter();
   const { toasts, push: pushToast, dismiss: dismissToast } = useToasts();
+  const canViewExams = actorPermissions.includes("exams.view");
 
   /* Server data mirrored locally for optimistic updates; re-synced whenever
      the server responds with fresh props after router.refresh(). */
@@ -613,6 +615,7 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
   /* Bulk questions */
   const [bulkText, setBulkText] = useState("");
   const [bulkSubjectId, setBulkSubjectId] = useState(subjects[0]?.id || "");
+  const [bulkCourseId, setBulkCourseId] = useState(courses[0]?.id || "");
   const [bulkTopic, setBulkTopic] = useState("عام");
   const [bulkResult, setBulkResult] = useState<{ added: number; total: number; errors: string[] } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -644,9 +647,9 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
     if (activeCategory !== "communications" || activeSubFeature !== "community_groups") return;
     const cookie = (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "");
     let cancelled = false;
-    fetch("/api/v1/admin/community-groups", { headers: { cookie: "dros_session=" + cookie } })
+    fetch("/api/v1/admin/community-groups")
       .then((r) => r.json())
-      .then((j) => { if (!cancelled && j.ok) setCgList(j.data || []); })
+      .then((j) => { if (!cancelled && j.ok) setCgList(j.data?.groups ?? []); })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [activeCategory, activeSubFeature]);
@@ -727,18 +730,19 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
   // Load exam groups + available exams (for prerequisite dropdown) when the active view
   useEffect(() => {
+    if (!canViewExams) return;
     const cookie = (document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "");
     const headers = { cookie: "dros_session=" + cookie };
     let cancelled = false;
     fetch("/api/v1/admin/exam-groups", { headers })
       .then((r) => r.json())
-      .then((j) => { if (!cancelled && j.ok) setExamGroups(j.data || []); })
+      .then((j) => { if (!cancelled && j.ok) setExamGroups(j.data?.groups ?? []); })
       .catch(() => {});
     fetch("/api/v1/admin/exams", { headers })
       .then((r) => r.json())
       .then((j) => {
         if (!cancelled && j.ok) {
-          const data = j.data || j.data?.exams || [];
+          const data = j.data?.exams ?? [];
           setAvailableExams(Array.isArray(data) ? data.map((x: { id: string; title: string }) => ({ id: x.id, title: x.title })) : []);
         }
       })
@@ -746,7 +750,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
     return () => {
       cancelled = true;
     };
-  }, [examCourseId]);
+  }, [examCourseId, canViewExams]);
 
   /* New stage form */
   const [stageName, setStageName] = useState("");
@@ -1560,8 +1564,8 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
     if (examMaxAttempts && Number(examMaxAttempts) > 0) body.maxAttempts = Number(examMaxAttempts);
     if (examPerQuestionSec && Number(examPerQuestionSec) > 0) body.perQuestionSec = Number(examPerQuestionSec);
     if (examPrerequisiteId) body.prerequisiteExamId = examPrerequisiteId;
-    if (examAvailableFrom) body.availableFrom = examAvailableFrom;
-    if (examAvailableUntil) body.availableUntil = examAvailableUntil;
+    if (examAvailableFrom) body.availableFrom = new Date(examAvailableFrom).toISOString();
+    if (examAvailableUntil) body.availableUntil = new Date(examAvailableUntil).toISOString();
     const done = await api("/api/v1/admin/exams", {
       method: "POST",
       body: JSON.stringify(body),
@@ -1674,7 +1678,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           method: "POST",
           body: JSON.stringify({
             subjectId: bulkSubjectId,
-            courseId: bulkSubjectId ? "" : "", // bulk uses subject only
+            courseId: bulkCourseId,
             topic: bulkTopic || "عام",
             prompt: q.prompt,
             options: q.options,
@@ -1707,8 +1711,8 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       body: JSON.stringify({ name: stageName, slug: stageSlug || undefined, sortOrder: Number(stageOrder) || 0 }),
     });
     if (data) {
-      setLocalStages((prev) => [...prev, { id: data.id, name: data.name, slug: data.slug, sortOrder: data.sortOrder }]);
-      pushToast("ok", `تمت إضافة المرحلة «${data.name}» بنجاح.`);
+      setLocalStages((prev) => [...prev, { id: data.stage.id, name: data.stage.name, slug: data.stage.slug, sortOrder: data.stage.sortOrder }]);
+      pushToast("ok", `تمت إضافة المرحلة «${data.stage.name}» بنجاح.`);
       setStageName("");
       setStageSlug("");
       setStageOrder("0");
@@ -3843,8 +3847,8 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               <Field label="نسبة النجاح %">
                 <Input type="number" dir="ltr" min="0" max="100" value={examPassingScore} onChange={(e) => setExamPassingScore(e.target.value)} />
               </Field>
-              <Field label="أقصى محاولات (فاضي = مفتوح)">
-                <Input type="number" dir="ltr" min="1" max="20" placeholder="∞" value={examMaxAttempts} onChange={(e) => setExamMaxAttempts(e.target.value)} />
+              <Field label="أقصى محاولات (فاضي = 5)">
+                <Input type="number" dir="ltr" min="1" max="20" placeholder="5" value={examMaxAttempts} onChange={(e) => setExamMaxAttempts(e.target.value)} />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -4038,12 +4042,21 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               </Button>
             }
           />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <Field label="الفرع">
               <Select value={bulkSubjectId} onChange={(e) => setBulkSubjectId(e.target.value)}>
                 {subjects.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="الكورس">
+              <Select value={bulkCourseId} onChange={(e) => setBulkCourseId(e.target.value)}>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
                   </option>
                 ))}
               </Select>
@@ -4067,7 +4080,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             placeholder={"1. ما هو ميل المستقيم 2x + 3y = 6؟\n-2/3\n3/2\n2/3\n-3/2\nالإجابة: 1\n\n2. إذا كان جا(س) = 0.5 فإن س = ؟\n30\n45\n60\n90\nالإجابة: 1"}
             aria-label="نص الأسئلة المجمعة"
           />
-          <Button type="button" onClick={handleBulkImport} disabled={bulkBusy || !bulkText.trim()} variant="primary" className="w-full">
+          <Button type="button" onClick={handleBulkImport} disabled={bulkBusy || !bulkText.trim() || !bulkCourseId} variant="primary" className="w-full">
             {bulkBusy ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             {bulkBusy ? "جارٍ الإدراج..." : "معالجة وإدراج الأسئلة في البنك"}
           </Button>
@@ -5815,6 +5828,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       {/* ── Global overlays ── */}
       {/* Login sessions review */}
       {activeCategory === "users" && activeSubFeature === "login_sessions" && <LoginSessionsSection />}
+      {activeCategory === "users" && activeSubFeature === "parent_links" && <ParentLinkPanel />}
 
       {/* Community moderator stats */}
       {activeCategory === "communications" && activeSubFeature === "moderator_stats" && <ModeratorStatsSection />}
@@ -5847,8 +5861,8 @@ function LoginSessionsSection() {
   const [rows, setRows] = useState<Array<{ id: string; userId: string; userName: string; userEmail: string; userRole: string; expiresAt: string; createdAt: string }>>([]);
   const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => {
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
-    fetch("/api/v1/admin/sessions", { headers: { cookie: "dros_session=" + cookie } })
+
+    fetch("/api/v1/admin/sessions")
       .then((r) => r.json())
       .then((j) => { if (j.ok) setRows(j.data.sessions || []); })
       .catch(() => {});
@@ -5894,8 +5908,8 @@ function LoginSessionsSection() {
 function ModeratorStatsSection() {
   const [data, setData] = useState<{ totals: { replies: number; approvedPosts: number; pendingPosts: number; rejectedPosts: number }; top: Array<{ userId: string; userName: string; repliesCount: number; lastReplyAt: string }> } | null>(null);
   useEffect(() => {
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
-    fetch("/api/v1/admin/community/stats", { headers: { cookie: "dros_session=" + cookie } })
+
+    fetch("/api/v1/admin/community/stats")
       .then((r) => r.json())
       .then((j) => { if (j.ok) setData(j.data); })
       .catch(() => {});
@@ -5989,13 +6003,13 @@ function CgMembersManager() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
-    if (!cookie) return;
-    fetch("/api/v1/admin/community-groups", { headers: { cookie: "dros_session=" + cookie } })
+
+
+    fetch("/api/v1/admin/community-groups")
       .then((r) => r.json())
       .then((j) => {
         if (j.ok) {
-          const list = j.data || [];
+          const list = j.data?.groups ?? [];
           setGroups(list.map((g: any) => ({ id: g.id, name: g.name, scope: g.scope })));
           setSelected((prev) => prev || (list[0]?.id ?? ""));
         }
@@ -6009,8 +6023,8 @@ function CgMembersManager() {
       setMembers([]);
       return;
     }
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
-    fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } })
+
+    fetch(`/api/v1/admin/community-groups/${selected}/members`)
       .then((r) => r.json())
       .then((j) => { if (j.ok) setMembers(j.data?.members || []); })
       .catch(() => {});
@@ -6019,8 +6033,8 @@ function CgMembersManager() {
   async function add() {
     if (!selected || !email.trim()) return;
     setBusy(true);
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
-    const res = await fetch(`/api/v1/admin/users/lookup?email=${encodeURIComponent(email.trim())}`, { headers: { cookie: "dros_session=" + cookie } });
+
+    const res = await fetch(`/api/v1/admin/users/lookup?email=${encodeURIComponent(email.trim())}`);
     const lookup = await res.json();
     if (!lookup?.ok) {
       setBusy(false);
@@ -6029,13 +6043,13 @@ function CgMembersManager() {
     }
     const addRes = await fetch(`/api/v1/admin/community-groups/${selected}/members`, {
       method: "POST",
-      headers: { "content-type": "application/json", cookie: "dros_session=" + cookie },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({ userId: lookup.data.userId }),
     });
     setBusy(false);
     if (addRes.ok) {
       setEmail("");
-      const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } });
+      const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`);
       const j = await r.json();
       if (j.ok) setMembers(j.data?.members || []);
     } else {
@@ -6046,12 +6060,11 @@ function CgMembersManager() {
   async function remove(userId: string) {
     if (!selected) return;
     if (!confirm("حذف هذا العضو من المجموعة؟")) return;
-    const cookie = (typeof document !== "undefined" ? document.cookie.match(/dros_session=([^;]+)/)?.[1] ?? "" : "");
+
     await fetch(`/api/v1/admin/community-groups/${selected}/members?userId=${userId}`, {
       method: "DELETE",
-      headers: { cookie: "dros_session=" + cookie },
     });
-    const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`, { headers: { cookie: "dros_session=" + cookie } });
+    const r = await fetch(`/api/v1/admin/community-groups/${selected}/members`);
     const j = await r.json();
     if (j.ok) setMembers(j.data?.members || []);
   }

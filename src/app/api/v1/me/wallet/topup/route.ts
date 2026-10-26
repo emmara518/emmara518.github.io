@@ -2,6 +2,7 @@ import { requireApiUser } from "@/lib/auth";
 import { can } from "@/lib/rbac";
 import { err, ok, parseJson } from "@/lib/http";
 import { topUpSchema } from "@/lib/contracts";
+import { isWalletSelfTopUpEnabled } from "@/lib/feature-flags";
 import { topUpWallet } from "@/lib/services/billing.service";
 
 /** Demo top-up (manual provider). A real PSP adapter plugs in behind this boundary. */
@@ -9,6 +10,9 @@ export async function POST(request: Request) {
   const auth = await requireApiUser();
   if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
   if (!can(auth.user.role, "wallet:use")) return err(403, "FORBIDDEN", "لا تملك استخدام المحفظة");
+  if (!isWalletSelfTopUpEnabled()) {
+    return err(403, "TOPUP_DISABLED", "الشحن الذاتي للمحفظة متوقف مؤقتاً — استخدم كود الشحن أو تواصل مع الإدارة");
+  }
 
   const parsed = await parseJson(request, topUpSchema);
   if ("response" in parsed) return parsed.response;
