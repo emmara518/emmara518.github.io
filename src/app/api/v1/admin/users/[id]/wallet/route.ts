@@ -1,4 +1,4 @@
-import { requirePermission } from "@/lib/permission-guard";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -12,7 +12,7 @@ const adjustWalletSchema = z.object({
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requirePermission("wallet.adjust");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
 

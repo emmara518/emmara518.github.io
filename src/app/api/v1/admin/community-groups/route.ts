@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { listCommunityGroupsAdmin, createCommunityGroup } from "@/lib/services/admin.service";
@@ -19,8 +18,9 @@ const groupSchema = z.object({
 });
 
 export async function GET() {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
+  const gate = await requirePermission("community.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   try {
     const groups = await listCommunityGroupsAdmin();
     return ok({ groups });
@@ -31,9 +31,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الإنشاء");
+  const gate = await requirePermission("community.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, groupSchema);
   if ("response" in parsed) return parsed.response;

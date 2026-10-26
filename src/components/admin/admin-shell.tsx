@@ -9,14 +9,20 @@ import { AdminTopbar } from "./admin-topbar";
 interface AdminShellProps {
   actorName: string;
   actorRole: string;
+  actorPermissions: readonly string[];
   children: ReactNode;
 }
 
-export function AdminShell({ actorName, actorRole, children }: AdminShellProps) {
+export function AdminShell({
+  actorName,
+  actorRole,
+  actorPermissions,
+  children,
+}: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <AdminNavProvider>
+    <AdminNavProvider actorPermissions={actorPermissions} actorRole={actorRole}>
       <div className="flex min-h-screen bg-bg font-sans text-ink">
         {/* Desktop sidebar */}
         <div className="hidden shrink-0 lg:block">
@@ -24,6 +30,7 @@ export function AdminShell({ actorName, actorRole, children }: AdminShellProps) 
             className="sticky top-0 h-screen"
             actorName={actorName}
             actorRole={actorRole}
+            actorPermissions={actorPermissions}
           />
         </div>
 
@@ -67,6 +74,7 @@ export function AdminShell({ actorName, actorRole, children }: AdminShellProps) 
             className="h-full border-e-0"
             actorName={actorName}
             actorRole={actorRole}
+            actorPermissions={actorPermissions}
             onCloseMobile={() => setMobileOpen(false)}
           />
         </div>

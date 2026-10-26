@@ -59,7 +59,12 @@ import {
 } from "lucide-react";
 import { Badge, Button, Card, Input, Select, Textarea } from "./ui";
 import { Field } from "./ui-field";
-import { CATEGORIES, findSubFeature, type CategoryId } from "./admin/nav-config";
+import {
+  findSubFeature,
+  visibleCategories,
+  visibleSubFeatures,
+  type CategoryId,
+} from "./admin/nav-config";
 import { AssistantsPanel } from "./admin/assistants-panel";
 import { useAdminNav } from "./admin/admin-nav-context";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -312,6 +317,7 @@ function RevenueChart({ data }: { data: { month: string; total: number }[] }) {
 
 export function AdminConsole({
   actor,
+  actorPermissions,
   canManageUsers,
   overview,
   courses,
@@ -333,6 +339,7 @@ export function AdminConsole({
   fetchErrors = [],
 }: {
   actor: { name: string; role: Role };
+  actorPermissions: readonly string[];
   canManageUsers: boolean;
   overview: Overview;
   courses: CourseRow[];
@@ -1898,10 +1905,11 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
 
   /* ── Feature: command palette (Ctrl+K / "/"/ "?") ── */
   const paletteCommands = useMemo<PaletteCommand[]>(() => {
-    const navCommands: PaletteCommand[] = CATEGORIES.filter(
-      (cat) => !cat.superAdminOnly || actor.role === "admin",
+    const navCommands: PaletteCommand[] = visibleCategories(
+      actorPermissions,
+      actor.role,
     ).flatMap((cat) =>
-      cat.subFeatures.map((sub) => ({
+      visibleSubFeatures(cat, actorPermissions, actor.role).map((sub) => ({
         id: `nav-${cat.id}-${sub.id}`,
         label: sub.label,
         group: cat.label,
@@ -1976,9 +1984,22 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         run: () => window.open("/courses", "_blank"),
       },
     ];
-    return [...actions, ...navCommands];
+    const can = (permission: string) =>
+      actor.role === "admin" || actorPermissions.includes(permission);
+    const allowedActions = actions.filter((action) => {
+      if (
+        action.id === "act-generate-codes" ||
+        action.id === "act-add-student" ||
+        action.id === "act-manual-payment"
+      ) {
+        return actor.role === "admin";
+      }
+      if (action.id === "act-broadcast") return can("notifications.manage");
+      return true;
+    });
+    return [...allowedActions, ...navCommands];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [density, autoRefresh]);
+  }, [density, autoRefresh, actor.role, actorPermissions]);
 
   const { open: paletteOpen, setOpen: setPaletteOpen } = useCommandPalette(paletteCommands);
 
@@ -2751,6 +2772,12 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
     },
   ];
 
+  const visibleUserColumns = canManageUsers
+    ? userColumns
+    : userColumns.filter(
+        (column) => !["status", "wallet", "balance"].includes(column.key),
+      );
+
   const fileColumns: Column<CourseFileRow>[] = [
     {
       key: "title",
@@ -2967,7 +2994,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             <RefreshCw size={14} className="text-brand" />
             <span>تحديث</span>
           </button>
-          <button
+          {canManageUsers && (<><button
             type="button"
             onClick={() => selectSubFeature("billing_codes", "create_codes")}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:brightness-110"
@@ -2990,7 +3017,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
           >
             <CreditCard size={14} className="text-brand" />
             <span>دفع سنتر</span>
-          </button>
+          </button></>)}
         </div>
       </div>
 
@@ -3134,6 +3161,15 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
       </div>
 
       {/* ═══ ASSISTANTS & PERMISSIONS (Super Admin only) ═══ */}
+      {!activeCategory && (
+        <Card className="p-8 text-center">
+          <p className="text-base font-bold text-ink">لا توجد أقسام متاحة لحسابك</p>
+          <p className="mt-1 text-sm text-muted">
+            تواصل مع المدير العام لمنحك الصلاحيات المناسبة.
+          </p>
+        </Card>
+      )}
+
       {activeCategory === "assistants" && actor.role === "admin" && <AssistantsPanel />}
 
       {/* ═══ 1. OVERVIEW & REPORTS ═══ */}
@@ -4539,7 +4575,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
             }
           />
           <AdminTable
-            columns={userColumns}
+            columns={visibleUserColumns}
             rows={filteredUsers}
             rowPending={(u) => pendingIds.has(`user-${u.id}`)}
             mobileTitle={(u) => (
@@ -5791,6 +5827,7 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
         subscriptions={localSubscriptions}
         orders={orders}
         attempts={attempts}
+        canAdjustWallet={canManageUsers}
         onClose={() => setProfileUser(null)}
         onAdjustWallet={(s) => {
           setProfileUser(null);

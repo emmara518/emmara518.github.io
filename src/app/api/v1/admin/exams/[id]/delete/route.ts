@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok } from "@/lib/http";
 import { db } from "@/db";
 import { exams, auditLogs } from "@/db/schema";
@@ -8,10 +7,9 @@ import { toEnvelope } from "@/lib/errors";
 import { uuid } from "@/lib/contracts";
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية حذف الامتحانات");
-
+  const gate = await requirePermission("exams.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
   if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {

@@ -1,10 +1,10 @@
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok } from "@/lib/http";
-import { requirePermission } from "@/lib/permission-guard";
 import { listActiveSessionsAdmin } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
 
 export async function GET() {
-  const gate = await requirePermission("students.view");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
   try {

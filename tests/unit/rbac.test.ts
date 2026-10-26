@@ -14,6 +14,8 @@ import {
   HIGH_RISK_PERMISSIONS,
   isGranularPermission,
   hasGranularPermission,
+  TEACHER_GRANTS,
+  effectiveGranularPermissions,
   type Role,
   type Permission,
   type GranularPermission,
@@ -81,8 +83,8 @@ describe("RBAC — legacy permission matrix (exhaustive)", () => {
     student: ["catalog:read", "course:enroll", "course:learn", "exam:attempt", "progress:write", "wallet:use"],
     parent: ["catalog:read", "children:read"],
     center: ["catalog:read", "admin:read"],
-    teacher: ["catalog:read", "admin:read", "admin:write", "audit:read"],
-    assistant: ["admin:read"],
+    teacher: ["catalog:read"],
+    assistant: [],
     admin: ALL_PERMISSIONS.filter((p) => p !== "children:read"),
   };
 
@@ -125,8 +127,8 @@ describe("RBAC — legacy permission matrix (exhaustive)", () => {
     expect(can("student", "audit:read")).toBe(false);
   });
 
-  it("assistant gets ONLY admin:read (shell access)", () => {
-    expect(permissionsFor("assistant")).toEqual(["admin:read"]);
+  it("assistant has no legacy permissions (granular only)", () => {
+    expect(permissionsFor("assistant")).toEqual([]);
   });
 
   it("teacher cannot manage users", () => {
@@ -176,9 +178,12 @@ describe("RBAC — granular permissions", () => {
     }
   });
 
-  it("hasGranularPermission: teacher full access (legacy preserved)", () => {
-    for (const p of GRANULAR_PERMISSIONS) {
+  it("hasGranularPermission: teacher gets only the explicit teaching allowlist", () => {
+    for (const p of TEACHER_GRANTS) {
       expect(hasGranularPermission("teacher", [], p)).toBe(true);
+    }
+    for (const p of GRANULAR_PERMISSIONS.filter((x) => !TEACHER_GRANTS.includes(x))) {
+      expect(hasGranularPermission("teacher", [], p)).toBe(false);
     }
   });
 
@@ -188,6 +193,19 @@ describe("RBAC — granular permissions", () => {
       expect(hasGranularPermission("assistant", [], p)).toBe(false);
       expect(hasGranularPermission("assistant", [p], p)).toBe(true);
       expect(hasGranularPermission("assistant", [p], p === "wallet.adjust" ? "audit.view" : "wallet.adjust")).toBe(false);
+    }
+  });
+
+  it("effectiveGranularPermissions: admin all, teacher allowlist, assistant grants, others none", () => {
+    expect(effectiveGranularPermissions("admin", [])).toEqual([...GRANULAR_PERMISSIONS]);
+    expect(effectiveGranularPermissions("teacher", [])).toEqual([...TEACHER_GRANTS]);
+    expect(effectiveGranularPermissions("assistant", ["students.view", "students.view"])).toEqual(["students.view"]);
+    expect(effectiveGranularPermissions("student", ["students.view"])).toEqual([]);
+  });
+
+  it("teacher cannot access financial, account, activation or PII permissions", () => {
+    for (const p of ["wallet.view", "wallet.adjust", "orders.view", "orders.manage", "subscriptions.view", "subscriptions.manage", "users.view", "users.edit", "students.view", "students.edit", "activation.view", "activation.create", "activation.revoke", "audit.view", "notifications.manage"] as const) {
+      expect(hasGranularPermission("teacher", [], p)).toBe(false);
     }
   });
 

@@ -1,5 +1,5 @@
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
-import { requirePermission } from "@/lib/permission-guard";
 import { z } from "zod";
 import { cancelSubscriptionAdmin } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
@@ -9,7 +9,7 @@ const cancelSchema = z.object({
 });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requirePermission("subscriptions.manage");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
   const { id } = await params;

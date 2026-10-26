@@ -1,5 +1,5 @@
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
-import { requirePermission } from "@/lib/permission-guard";
 import { z } from "zod";
 import { db } from "@/db";
 import { coupons, auditLogs } from "@/db/schema";
@@ -19,7 +19,7 @@ const batchCouponSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const gate = await requirePermission("activation.create");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
 

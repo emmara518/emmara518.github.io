@@ -13,9 +13,9 @@ import {
   PanelLeftOpen,
   X,
 } from "lucide-react";
-import { CATEGORIES, visibleCategories } from "./nav-config";
+import { visibleCategories, visibleSubFeatures } from "./nav-config";
 import { useAdminNav } from "./admin-nav-context";
-import { ROLE_LABELS, permissionsFor, type Role } from "@/lib/rbac";
+import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 
 const COLLAPSE_KEY = "admin-sidebar-collapsed";
@@ -26,6 +26,7 @@ interface AdminSidebarProps {
   variant?: "desktop" | "mobile";
   actorName: string;
   actorRole: string;
+  actorPermissions: readonly string[];
   onCloseMobile?: () => void;
 }
 
@@ -34,6 +35,7 @@ export function AdminSidebar({
   variant = "desktop",
   actorName,
   actorRole,
+  actorPermissions,
   onCloseMobile,
 }: AdminSidebarProps) {
   const router = useRouter();
@@ -104,8 +106,7 @@ export function AdminSidebar({
   const isRail = !isMobile && collapsed;
   const roleLabel = ROLE_LABELS[actorRole as Role] ?? actorRole;
   const initials = actorName.trim().charAt(0) || "م";
-  const actorPerms = permissionsFor((actorRole as Role) || "student");
-  const cats = visibleCategories(actorPerms, actorRole);
+  const cats = visibleCategories(actorPermissions, actorRole);
 
   return (
     <aside
@@ -159,9 +160,15 @@ export function AdminSidebar({
       {/* ── Navigation ── */}
       <nav aria-label="تنقل لوحة الإدارة" className="custom-scrollbar flex-1 overflow-y-auto overflow-x-hidden p-3">
         <ul className={cn("space-y-1", isRail && "space-y-2")}>
+          {cats.length === 0 && !isRail ? (
+            <li className="rounded-xl border border-dashed border-line px-3 py-4 text-center text-xs leading-relaxed text-muted">
+              لا توجد أقسام متاحة لحسابك. تواصل مع المدير العام لمنح الصلاحيات.
+            </li>
+          ) : null}
           {cats.map((cat) => {
             const CatIcon = cat.icon;
             const isActiveCat = cat.id === activeCategory;
+            const subs = visibleSubFeatures(cat, actorPermissions, actorRole);
 
             /* Icon rail mode */
             if (isRail) {
@@ -191,14 +198,14 @@ export function AdminSidebar({
             // Falls back to the static sub-feature count when there are no
             // pending items, so the number is never wrong (it always
             // represents something meaningful).
-            const hubPending = cat.subFeatures.reduce(
+            const hubPending = subs.reduce(
               (sum, sub) => sum + (badges[sub.id] ?? 0),
               0
             );
             const hubBadgeLabel =
               hubPending > 0
                 ? `${hubPending} بند بانتظار المراجعة في ${cat.label}`
-                : `${cat.subFeatures.length} ميزة في ${cat.label}`;
+                : `${subs.length} ميزة في ${cat.label}`;
             return (
               <li key={cat.id}>
                 {/* Hub header */}
@@ -237,7 +244,7 @@ export function AdminSidebar({
                           : "bg-surface2 text-muted"
                     )}
                   >
-                    {hubPending > 0 ? hubPending : cat.subFeatures.length}
+                    {hubPending > 0 ? hubPending : subs.length}
                   </span>
                   <ChevronDown
                     size={14}
@@ -257,7 +264,7 @@ export function AdminSidebar({
                   )}
                 >
                   <ul className="ms-6 me-1 space-y-0.5 overflow-hidden border-s border-line ps-2 pt-0.5">
-                    {cat.subFeatures.map((sub) => {
+                    {subs.map((sub) => {
                       const SubIcon = sub.icon;
                       const isActiveSub = isActiveCat && sub.id === activeSubFeature;
                       const badgeCount = badges[sub.id] ?? 0;

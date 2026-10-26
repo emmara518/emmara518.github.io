@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { reorderPaymentChannels } from "@/lib/services/admin.service";
@@ -10,22 +9,17 @@ const reorderSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(["admin"]);
-  if (!("user" in auth)) return new Response(JSON.stringify({ ok: false, error: { code: "UNAUTHENTICATED", message: "يجب تسجيل الدخول" } }), { status: 401 });
-  if (!["admin"].includes(auth.user.role)) {
-    return new Response(JSON.stringify({ ok: false, error: { code: "FORBIDDEN", message: "لا تملك صلاحية إعادة الترتيب" } }), { status: 403, headers: { "content-type": "application/json" } });
-  }
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
 
   const parsed = await parseJson(request, reorderSchema);
   if ("response" in parsed) return parsed.response;
 
   try {
-    const result = await reorderPaymentChannels(
-      { id: auth.user.id, name: auth.user.name, role: auth.user.role } as any,
-      parsed.data.ids
-    );
-    return new Response(JSON.stringify({ ok: true, data: result }), { status: 200, headers: { "content-type": "application/json" } });
+    const result = await reorderPaymentChannels(gate.user, parsed.data.ids);
+    return ok(result);
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: { code: "INTERNAL", message: "حدث خطأ غير متوقع" } }), { status: 500, headers: { "content-type": "application/json" } });
+    const envelope = toEnvelope(e);
+    return err(envelope.status, envelope.code, envelope.message);
   }
 }

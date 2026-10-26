@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -21,9 +20,9 @@ const upsertSchema = z.object({
 });
 
 export async function GET() {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
-  if (!can(auth.user.role, "admin:read")) return err(403, "FORBIDDEN", "لا تملك صلاحية القراءة");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   try {
     const channels = await listPaymentChannels();
@@ -35,9 +34,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية إنشاء قنوات الدفع");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, upsertSchema);
   if ("response" in parsed) return parsed.response;

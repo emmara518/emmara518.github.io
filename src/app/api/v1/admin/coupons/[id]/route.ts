@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -13,10 +12,9 @@ const couponPatchSchema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية إدارة الأكواد");
-
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const parsed = await parseJson(request, couponPatchSchema);
   if ("response" in parsed) return parsed.response;
   const { id } = await params;
@@ -44,10 +42,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية حذف الأكواد");
-
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
   if (!uuid.safeParse(id).success) return err(422, "VALIDATION", "معرف غير صالح");
   try {

@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import {
@@ -12,8 +11,9 @@ import { toEnvelope } from "@/lib/errors";
 const memberSchema = z.object({ userId: z.string().uuid() });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
+  const gate = await requirePermission("community.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
   try {
     return ok({ members: await listCommunityGroupMembersAdmin(id) });
@@ -24,9 +24,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الإضافة");
+  const gate = await requirePermission("community.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
   const parsed = await parseJson(request, memberSchema);
   if ("response" in parsed) return parsed.response;
@@ -39,9 +39,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:write")) return err(403, "FORBIDDEN", "لا تملك صلاحية الحذف");
+  const gate = await requirePermission("community.manage");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
   const url = new URL(request.url);
   const userId = url.searchParams.get("userId");

@@ -4,7 +4,8 @@ import { db, ensureDbReady } from "@/db";
 import { eq, or } from "drizzle-orm";
 import { users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
-import { can, isAdminRole } from "@/lib/rbac";
+import { isAdminRole, type GranularPermission } from "@/lib/rbac";
+import { effectivePermissionsForUser } from "@/lib/permission-guard";
 import {
   getAdminOverview,
   listCoursesAdmin,
@@ -74,6 +75,9 @@ export default async function AdminPage() {
     }
   }
   const user = sessionUser;
+  const actorPermissions = await effectivePermissionsForUser(user);
+  const isAdmin = user.role === "admin";
+  const has = (permission: GranularPermission) => actorPermissions.includes(permission);
 
   // Each admin section fetch is wrapped so that a DB failure is
   // surfaced in the UI as a non-blocking banner instead of silently
@@ -92,6 +96,24 @@ export default async function AdminPage() {
     }
   };
   const fetchErrors: { section: string; message: string }[] = [];
+
+  /** Load a section only when the actor holds its permission; otherwise
+   *  return the empty fallback so unauthorized data never enters the RSC
+   *  payload. */
+  const load = <T,>(
+    allowed: boolean,
+    section: string,
+    fallback: T,
+    loader: () => Promise<T>,
+  ): Promise<T> =>
+    allowed ? safe(section, fallback, loader()) : Promise.resolve(fallback);
+
+  const emptyOverview = {
+    stats: { students: 0, publishedCourses: 0, revenueCents: 0, activeSubscriptions: 0 },
+    revenueByMonth: [],
+    recentOrders: [],
+    recentAudit: [],
+  };
 
   const [
     overview,
@@ -112,29 +134,30 @@ export default async function AdminPage() {
     stageRows,
     lessonRows,
   ] = await Promise.all([
-    safe("overview", { stats: { students: 0, publishedCourses: 0, revenueCents: 0, activeSubscriptions: 0 }, revenueByMonth: [], recentOrders: [], recentAudit: [] }, getAdminOverview()),
-    safe("courses", [] as Awaited<ReturnType<typeof listCoursesAdmin>>, listCoursesAdmin()),
-    safe("users", [] as Awaited<ReturnType<typeof listUsersAdmin>>, listUsersAdmin()),
-    safe("coupons", [] as Awaited<ReturnType<typeof listCouponsAdmin>>, listCouponsAdmin()),
-    safe("orders", [] as Awaited<ReturnType<typeof listOrdersAdmin>>, listOrdersAdmin()),
-    safe("grades", [] as Awaited<ReturnType<typeof listGrades>>, listGrades()),
-    safe("subjects", [] as Awaited<ReturnType<typeof listSubjects>>, listSubjects()),
-    safe("exams", [] as Awaited<ReturnType<typeof listExamsAdmin>>, listExamsAdmin()),
-    safe("exam_attempts", [] as Awaited<ReturnType<typeof listExamAttemptsAdmin>>, listExamAttemptsAdmin()),
-    safe("videos", [] as Awaited<ReturnType<typeof listVideosAdmin>>, listVideosAdmin()),
-    safe("course_files", [] as Awaited<ReturnType<typeof listCourseFilesAdmin>>, listCourseFilesAdmin()),
-    safe("question_bank", [] as Awaited<ReturnType<typeof listQuestionBankAdmin>>, listQuestionBankAdmin()),
-    safe("subscriptions", [] as Awaited<ReturnType<typeof listSubscriptionsAdmin>>, listSubscriptionsAdmin()),
-    safe("invoices", [] as Awaited<ReturnType<typeof listInvoicesAdmin>>, listInvoicesAdmin()),
-    safe("community_posts", [] as Awaited<ReturnType<typeof listCommunityPostsAdmin>>, listCommunityPostsAdmin()),
-    safe("stages", [] as Awaited<ReturnType<typeof listStagesAdmin>>, listStagesAdmin()),
-    safe("lessons", [] as Awaited<ReturnType<typeof listLessonsAdmin>>, listLessonsAdmin()),
+    load(isAdmin, "overview", emptyOverview, getAdminOverview),
+    load(has("courses.view"), "courses", [] as Awaited<ReturnType<typeof listCoursesAdmin>>, listCoursesAdmin),
+    load(has("students.view"), "users", [] as Awaited<ReturnType<typeof listUsersAdmin>>, listUsersAdmin),
+    load(isAdmin, "coupons", [] as Awaited<ReturnType<typeof listCouponsAdmin>>, listCouponsAdmin),
+    load(isAdmin, "orders", [] as Awaited<ReturnType<typeof listOrdersAdmin>>, listOrdersAdmin),
+    load(has("courses.view"), "grades", [] as Awaited<ReturnType<typeof listGrades>>, listGrades),
+    load(has("courses.view"), "subjects", [] as Awaited<ReturnType<typeof listSubjects>>, listSubjects),
+    load(has("exams.view"), "exams", [] as Awaited<ReturnType<typeof listExamsAdmin>>, listExamsAdmin),
+    load(has("students.view"), "exam_attempts", [] as Awaited<ReturnType<typeof listExamAttemptsAdmin>>, listExamAttemptsAdmin),
+    load(has("content.view"), "videos", [] as Awaited<ReturnType<typeof listVideosAdmin>>, listVideosAdmin),
+    load(has("content.view"), "course_files", [] as Awaited<ReturnType<typeof listCourseFilesAdmin>>, listCourseFilesAdmin),
+    load(has("exams.view"), "question_bank", [] as Awaited<ReturnType<typeof listQuestionBankAdmin>>, listQuestionBankAdmin),
+    load(isAdmin, "subscriptions", [] as Awaited<ReturnType<typeof listSubscriptionsAdmin>>, listSubscriptionsAdmin),
+    load(isAdmin, "invoices", [] as Awaited<ReturnType<typeof listInvoicesAdmin>>, listInvoicesAdmin),
+    load(has("community.manage"), "community_posts", [] as Awaited<ReturnType<typeof listCommunityPostsAdmin>>, listCommunityPostsAdmin),
+    load(has("courses.view"), "stages", [] as Awaited<ReturnType<typeof listStagesAdmin>>, listStagesAdmin),
+    load(has("content.view"), "lessons", [] as Awaited<ReturnType<typeof listLessonsAdmin>>, listLessonsAdmin),
   ]);
 
   return (
     <AdminConsole
       actor={{ name: user.name, role: user.role }}
-      canManageUsers={can(user.role, "users:manage")}
+      actorPermissions={actorPermissions}
+      canManageUsers={isAdmin}
       overview={{
         stats: overview.stats,
         revenueByMonth: overview.revenueByMonth,

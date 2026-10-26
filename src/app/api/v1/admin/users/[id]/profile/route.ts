@@ -1,5 +1,5 @@
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { hashPassword } from "@/lib/auth";
-import { requirePermission } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -16,7 +16,7 @@ const editStudentSchema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requirePermission("students.edit");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
 

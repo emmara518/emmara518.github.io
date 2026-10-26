@@ -34,7 +34,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Permission } from "@/lib/rbac";
+import type { GranularPermission } from "@/lib/rbac";
 
 /* ── Primary Functional Hubs (shared by console, sidebar, topbar & palette) ── */
 export type CategoryId =
@@ -51,6 +51,10 @@ export interface SubFeatureDef {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Optional granular gate for this sub-feature. */
+  requires?: GranularPermission[];
+  /** When true, only the Super Admin sees this sub-feature. */
+  superAdminOnly?: boolean;
 }
 
 export interface CategoryDef {
@@ -59,9 +63,9 @@ export interface CategoryDef {
   description: string;
   icon: LucideIcon;
   subFeatures: SubFeatureDef[];
-  /** Optional RBAC gate. A category is visible if `requires` is empty
-   *  or the actor's role grants at least one of these permissions. */
-  requires?: Permission[];
+  /** Optional granular gate. A category is visible if `requires` is empty
+   *  or the actor holds at least one of these permissions. */
+  requires?: GranularPermission[];
   /** When true, only the Super Admin (role === "admin") sees the category. */
   superAdminOnly?: boolean;
 }
@@ -72,6 +76,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "الرئيسية والتقارير",
     icon: Home,
     description: "إحصائيات المنصة، آخر التحديثات، وتقارير النشاط العام",
+    superAdminOnly: true,
     subFeatures: [
       { id: "home", label: "نظرة عامة", icon: Gauge },
       { id: "statistics", label: "الإحصائيات الشاملة", icon: PieChart },
@@ -83,7 +88,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "المناهج والمقررات",
     icon: BookOpen,
     description: "الكورسات، الفيديوهات، المذكرات، والمراحل الدراسية",
-    requires: ["admin:write"],
+    requires: ["courses.view", "content.view"],
     subFeatures: [
       { id: "courses_table", label: "جدول الكورسات", icon: ListVideo },
       { id: "courses_manage", label: "إضافة مقرر جديد", icon: FilePlus2 },
@@ -97,7 +102,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "الامتحانات وبنك الأسئلة",
     icon: GraduationCap,
     description: "إنشاء الاختبارات، بنوك الأسئلة، واستيراد وتصحيح النتائج",
-    requires: ["admin:write"],
+    requires: ["exams.view"],
     subFeatures: [
       { id: "exams_table", label: "جدول الامتحانات", icon: ClipboardList },
       { id: "exam_groups_table", label: "مجموعات الامتحانات", icon: Layers },
@@ -105,7 +110,7 @@ export const CATEGORIES: CategoryDef[] = [
       { id: "questions_table", label: "بنك الأسئلة", icon: Database },
       { id: "questions_manage", label: "إضافة سؤال فردي", icon: HelpCircle },
       { id: "bulk_questions_add", label: "إضافة أكثر من سؤال", icon: ListPlus },
-      { id: "exam_results_table", label: "نتائج الامتحانات", icon: Trophy },
+      { id: "exam_results_table", label: "نتائج الامتحانات", icon: Trophy , requires: ["students.view"] },
     ],
   },
   {
@@ -113,7 +118,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "الأكواد والشحن والمالية",
     icon: KeyRound,
     description: "توليد أكواد التفعيل، الدفع اليدوي، الفواتير، والاشتراكات",
-    requires: ["admin:write"],
+    superAdminOnly: true,
     subFeatures: [
       { id: "create_codes", label: "إنشاء وتوليد أكواد", icon: Sparkles },
       { id: "codes_table", label: "جدول الأكواد النشطة", icon: KeyRound },
@@ -130,13 +135,13 @@ export const CATEGORIES: CategoryDef[] = [
     label: "المستخدمون والطلاب",
     icon: Users,
     description: "إدارة الطلاب، تعيين المسؤولين، وتعديل المحافظ",
-    requires: ["admin:read"],
+    requires: ["students.view"],
     subFeatures: [
       { id: "users_table", label: "جدول المستخدمين", icon: Users },
-      { id: "add_student", label: "إضافة طالب جديد", icon: UserPlus },
-      { id: "manage_admin", label: "إدارة المسؤولين والمشرفين", icon: ShieldCheck },
+      { id: "add_student", label: "إضافة طالب جديد", icon: UserPlus , superAdminOnly: true },
+      { id: "manage_admin", label: "إدارة المسؤولين والمشرفين", icon: ShieldCheck , superAdminOnly: true },
       { id: "users_stats", label: "إحصائيات الطلاب", icon: BarChart3 },
-      { id: "login_sessions", label: "مراجعة جلسات الدخول", icon: History },
+      { id: "login_sessions", label: "مراجعة جلسات الدخول", icon: History , superAdminOnly: true },
     ],
   },
   {
@@ -144,12 +149,12 @@ export const CATEGORIES: CategoryDef[] = [
     label: "التنبيهات والمجتمع",
     icon: MessageSquare,
     description: "تنبيهات جماعية للطلاب، وإشراف ومتابعة منشورات المجتمع",
-    requires: ["admin:write"],
+    requires: ["community.manage", "notifications.manage"],
     subFeatures: [
-      { id: "sms_messages", label: "إرسال تنبيه جماعي", icon: Send },
-      { id: "community_groups", label: "مجموعات المجتمع", icon: Users },
-      { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب", icon: MessagesSquare },
-      { id: "moderator_stats", label: "إحصائيات المشرفين", icon: BarChart3 },
+      { id: "sms_messages", label: "إرسال تنبيه جماعي", icon: Send, requires: ["notifications.manage"] },
+      { id: "community_groups", label: "مجموعات المجتمع", icon: Users, requires: ["community.manage"] },
+      { id: "forum_pending_topics", label: "منشورات ومجتمع الطلاب", icon: MessagesSquare, requires: ["community.manage"] },
+      { id: "moderator_stats", label: "إحصائيات المشرفين", icon: BarChart3, requires: ["community.manage"] },
     ],
   },
   {
@@ -157,7 +162,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "البحث المتقدم والفلاتر",
     icon: SlidersHorizontal,
     description: "بحث دقيق في الطلاب والمشتركين حسب الكورس والحالة وتاريخ التسجيل وأكثر",
-    requires: ["admin:read"],
+    requires: ["students.view"],
     subFeatures: [
       { id: "users_advanced", label: "بحث الطلاب المتقدم", icon: UserSearch },
     ],
@@ -167,7 +172,7 @@ export const CATEGORIES: CategoryDef[] = [
     label: "المساعدون والصلاحيات",
     icon: ShieldCheck,
     description: "إنشاء حسابات المساعدين وتحديد صلاحياتهم بدقة (للمدير العام فقط).",
-    requires: ["admin:read"],
+    requires: ["users.view"],
     superAdminOnly: true,
     subFeatures: [
       { id: "assistants_manage", label: "إدارة المساعدين والصلاحيات", icon: UserPlus },
@@ -175,31 +180,46 @@ export const CATEGORIES: CategoryDef[] = [
   },
 ];
 
-export function findCategory(id: string): CategoryDef | undefined {
+export function findCategory(id: string | null | undefined): CategoryDef | undefined {
+  if (!id) return undefined;
   return CATEGORIES.find((c) => c.id === id);
 }
 
-/** Returns the categories an actor is allowed to see based on RBAC.
- *  If the actor has no permissions (e.g. dev preview fallback) the
- *  full set is returned so the dev path keeps working. */
+/** Returns the categories an actor is allowed to see based on granular RBAC.
+ *  Super Admin sees all; everyone else sees only categories they hold a
+ *  required permission for. An empty permission set yields no categories. */
 export function visibleCategories(
   actorPermissions: readonly string[] | undefined,
   actorRole?: string,
 ): CategoryDef[] {
-  const base =
-    !actorPermissions || actorPermissions.length === 0
-      ? CATEGORIES
-      : CATEGORIES.filter((cat) => {
-          if (!cat.requires || cat.requires.length === 0) return true;
-          return cat.requires.some((p) => actorPermissions.includes(p));
-        });
-  return base.filter((cat) => !cat.superAdminOnly || actorRole === "admin");
+  if (actorRole === "admin") return CATEGORIES;
+  const perms = actorPermissions ?? [];
+  return CATEGORIES.filter((cat) => {
+    if (cat.superAdminOnly) return false;
+    if (!cat.requires || cat.requires.length === 0) return true;
+    return cat.requires.some((p) => perms.includes(p));
+  });
+}
+
+/** Returns the sub-features an actor may see inside a category. */
+export function visibleSubFeatures(
+  category: CategoryDef,
+  actorPermissions: readonly string[] | undefined,
+  actorRole?: string,
+): SubFeatureDef[] {
+  if (actorRole === "admin") return category.subFeatures;
+  const perms = actorPermissions ?? [];
+  return category.subFeatures.filter((sub) => {
+    if (sub.superAdminOnly) return false;
+    return !sub.requires || sub.requires.some((p) => perms.includes(p));
+  });
 }
 
 /** Locates a sub-feature anywhere in the tree, returning its owning category. */
 export function findSubFeature(
-  id: string
+  id: string | null | undefined
 ): { category: CategoryDef; sub: SubFeatureDef } | undefined {
+  if (!id) return undefined;
   for (const category of CATEGORIES) {
     const sub = category.subFeatures.find((s) => s.id === id);
     if (sub) return { category, sub };

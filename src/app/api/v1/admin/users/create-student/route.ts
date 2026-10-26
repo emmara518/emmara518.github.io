@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES } from "@/lib/rbac";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { registerSchema } from "@/lib/contracts";
 import { hashPassword } from "@/lib/auth";
@@ -8,8 +7,9 @@ import { users, walletAccounts, notifications } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "منطقة إدارية");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const parsed = await parseJson(request, registerSchema);
   if ("response" in parsed) return parsed.response;

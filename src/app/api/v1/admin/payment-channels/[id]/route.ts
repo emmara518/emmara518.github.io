@@ -1,4 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
@@ -18,6 +18,8 @@ const patchSchema = z.object({
 });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
   const { id } = await params;
   try {
     const rows = await db
@@ -34,8 +36,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(["admin"]);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const { id } = await params;
   const parsed = await parseJson(request, patchSchema);
@@ -55,9 +58,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(["admin"]);
-  if (!("user" in auth)) return err(auth.status, "UNAUTHENTICATED", "يجب تسجيل الدخول");
-  if (auth.user.role !== "admin") return err(403, "FORBIDDEN", "لا تملك صلاحية الحذف");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
 
   const { id } = await params;
   try {

@@ -1,5 +1,4 @@
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES, can } from "@/lib/rbac";
+import { requirePermission } from "@/lib/permission-guard";
 import { err, ok } from "@/lib/http";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -7,10 +6,9 @@ import { eq } from "drizzle-orm";
 import { toEnvelope } from "@/lib/errors";
 
 export async function GET(request: Request) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "يجب تسجيل الدخول");
-  if (!can(auth.user.role, "admin:read")) return err(403, "FORBIDDEN", "لا تملك صلاحية البحث");
-
+  const gate = await requirePermission("students.view");
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const url = new URL(request.url);
   const email = url.searchParams.get("email")?.trim().toLowerCase();
   if (!email) return err(400, "MISSING_EMAIL", "البريد الإلكتروني مطلوب");

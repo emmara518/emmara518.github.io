@@ -1,14 +1,14 @@
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import path from "node:path";
 import { promises as fsp } from "node:fs";
-import { requireApiUser } from "@/lib/auth";
-import { ADMIN_ROLES } from "@/lib/rbac";
 import { err } from "@/lib/http";
 import { getPaymentRequestScreenshot } from "@/lib/services/payment-requests.service";
 
 /** Serves a payment-proof screenshot to authenticated staff only. */
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiUser(ADMIN_ROLES);
-  if (!("user" in auth)) return err(auth.status, auth.status === 401 ? "UNAUTHENTICATED" : "FORBIDDEN", "صلاحيات الإدارة مطلوبة");
+  const gate = await requireSuperAdmin();
+  if ("response" in gate) return gate.response;
+  const auth = { user: gate.user };
   const { id } = await params;
 
   const row = await getPaymentRequestScreenshot(id);

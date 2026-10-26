@@ -1,11 +1,11 @@
-import { requirePermission } from "@/lib/permission-guard";
+import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { adminUserPatchSchema } from "@/lib/contracts";
 import { setUserActive, setUserRole } from "@/lib/services/admin.service";
 import { toEnvelope } from "@/lib/errors";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requirePermission("students.edit");
+  const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
   const auth = { user: gate.user };
 

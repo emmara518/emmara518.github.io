@@ -1,7 +1,12 @@
 import type { NextResponse } from "next/server";
 import { requireApiUser, type SessionUser } from "./auth";
 import { err } from "./http";
-import { CONSOLE_ROLES, hasGranularPermission, type GranularPermission } from "./rbac";
+import {
+  CONSOLE_ROLES,
+  effectiveGranularPermissions,
+  hasGranularPermission,
+  type GranularPermission,
+} from "./rbac";
 import { getAssistantPermissionSet } from "./assistant-permissions";
 
 /**
@@ -13,11 +18,20 @@ import { getAssistantPermissionSet } from "./assistant-permissions";
  *   // gate.user is the authenticated actor
  *
  * Enforced for every request, independent of any UI visibility. Assistants
- * are default-deny; Super Admins are implicitly allowed everything; teacher
- * keeps its legacy full access.
+ * are default-deny; Super Admins are implicitly allowed everything; teachers
+ * receive only the explicit teaching allowlist.
  */
 
 export type PermissionGrant = { user: SessionUser; granted: GranularPermission[] };
+
+/** Resolve the effective granular permissions for the current console actor. */
+export async function effectivePermissionsForUser(
+  user: SessionUser,
+): Promise<GranularPermission[]> {
+  const granted =
+    user.role === "assistant" ? await getAssistantPermissionSet(user.id) : [];
+  return effectiveGranularPermissions(user.role, granted);
+}
 
 export async function requirePermission(
   permission: GranularPermission,

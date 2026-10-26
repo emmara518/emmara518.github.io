@@ -61,10 +61,12 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   student: ["catalog:read", "course:enroll", "course:learn", "exam:attempt", "progress:write", "wallet:use"],
   parent: ["catalog:read", "children:read"],
   center: ["catalog:read", "admin:read"],
-  teacher: ["catalog:read", "admin:read", "admin:write", "audit:read"],
-  // Assistants get the admin console read shell only; every granular
-  // capability is explicit (see ROLE_GRANULAR_DEFAULTS below).
-  assistant: ["admin:read"],
+  // Teachers manage teaching content only. Financial, account and PII
+  // capabilities are granular and deliberately absent from this legacy list.
+  teacher: ["catalog:read"],
+  // Assistants get the console shell via CONSOLE_ROLES; every capability is
+  // an explicit granular grant (default deny). No legacy admin:read.
+  assistant: [],
   admin: [
     "catalog:read",
     "course:enroll",
@@ -121,6 +123,8 @@ export const GRANULAR_PERMISSIONS = [
   "exams.create",
   "exams.edit",
   "exams.manage",
+  "assignments.manage",
+  "community.manage",
   "wallet.view",
   "wallet.adjust",
   "notifications.view",
@@ -140,12 +144,12 @@ export function isGranularPermission(value: string): value is GranularPermission
 export const PERMISSION_GROUPS: { key: string; label: string; permissions: GranularPermission[] }[] = [
   { key: "students", label: "الطلاب والمستخدمون", permissions: ["students.view", "students.edit", "users.view", "users.edit"] },
   { key: "courses", label: "الكورسات والمقررات", permissions: ["courses.view", "courses.create", "courses.edit", "courses.delete"] },
-  { key: "content", label: "المحتوى (دروس/فيديو/ملفات)", permissions: ["content.view", "content.create", "content.edit", "content.delete"] },
+  { key: "content", label: "المحتوى (دروس/فيديو/ملفات/واجبات)", permissions: ["content.view", "content.create", "content.edit", "content.delete", "assignments.manage"] },
   { key: "activation", label: "الأكواد والتفعيل", permissions: ["activation.view", "activation.create", "activation.revoke"] },
   { key: "orders", label: "الطلبات والاشتراكات", permissions: ["orders.view", "orders.manage", "subscriptions.view", "subscriptions.manage"] },
   { key: "exams", label: "الامتحانات وبنك الأسئلة", permissions: ["exams.view", "exams.create", "exams.edit", "exams.manage"] },
   { key: "wallet", label: "المحفظة والمالية", permissions: ["wallet.view", "wallet.adjust"] },
-  { key: "notifications", label: "التنبيهات والمجتمع", permissions: ["notifications.view", "notifications.manage"] },
+  { key: "notifications", label: "التنبيهات والمجتمع", permissions: ["notifications.view", "notifications.manage", "community.manage"] },
   { key: "audit", label: "سجل التدقيق", permissions: ["audit.view"] },
 ];
 
@@ -160,9 +164,30 @@ export const HIGH_RISK_PERMISSIONS: readonly GranularPermission[] = [
 ];
 
 /**
+ * Explicit teaching allowlist. Teachers keep content operations only.
+ * Financial, account, PII, activation and broadcast permissions are absent.
+ */
+export const TEACHER_GRANTS: readonly GranularPermission[] = [
+  "courses.view",
+  "courses.create",
+  "courses.edit",
+  "courses.delete",
+  "content.view",
+  "content.create",
+  "content.edit",
+  "content.delete",
+  "exams.view",
+  "exams.create",
+  "exams.edit",
+  "exams.manage",
+  "assignments.manage",
+  "community.manage",
+];
+
+/**
  * Pure permission decision for a granular capability.
  * - admin (Super Admin): implicit full access.
- * - teacher: legacy full admin access preserved (unchanged behaviour).
+ * - teacher: ONLY the explicit teaching allowlist above.
  * - assistant: ONLY explicitly granted permissions (default deny).
  * - everyone else: denied.
  */
@@ -172,7 +197,20 @@ export function hasGranularPermission(
   permission: GranularPermission,
 ): boolean {
   if (role === "admin") return true;
-  if (role === "teacher") return true;
+  if (role === "teacher") return TEACHER_GRANTS.includes(permission);
   if (role === "assistant") return (granted ?? []).includes(permission);
   return false;
+}
+
+/** Effective granular permissions for console navigation and data loading. */
+export function effectiveGranularPermissions(
+  role: Role,
+  granted: readonly string[] | undefined,
+): GranularPermission[] {
+  if (role === "admin") return [...GRANULAR_PERMISSIONS];
+  if (role === "teacher") return [...TEACHER_GRANTS];
+  if (role === "assistant") {
+    return [...new Set((granted ?? []).filter(isGranularPermission))];
+  }
+  return [];
 }

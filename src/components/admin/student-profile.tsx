@@ -19,6 +19,7 @@ export function StudentProfileModal({
   attempts,
   onClose,
   onAdjustWallet,
+  canAdjustWallet = false,
 }: {
   student: UserRow | null;
   subscriptions: SubscriptionRow[];
@@ -26,6 +27,7 @@ export function StudentProfileModal({
   attempts: AttemptRow[];
   onClose: () => void;
   onAdjustWallet: (student: UserRow) => void;
+  canAdjustWallet?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -133,13 +135,15 @@ export function StudentProfileModal({
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onAdjustWallet(student)}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition-all hover:brightness-110"
-            >
-              <Wallet size={14} /> تعديل المحفظة
-            </button>
+            {canAdjustWallet ? (
+              <button
+                type="button"
+                onClick={() => onAdjustWallet(student)}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-sm font-semibold text-white transition-all hover:brightness-110"
+              >
+                <Wallet size={14} /> تعديل المحفظة
+              </button>
+            ) : null}
             <span className="text-xs text-muted">
               مسجل منذ <span dir="ltr">{formatDate(student.createdAt)}</span>
             </span>

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { isAdminRole } from "@/lib/rbac";
+import { effectivePermissionsForUser } from "@/lib/permission-guard";
 import { AdminShell } from "@/components/admin/admin-shell";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +20,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   const actorName = sessionUser?.name ?? "مستر محمد سعيد";
   const actorRole = sessionUser?.role ?? "teacher";
+  const actorPermissions = sessionUser ? await effectivePermissionsForUser(sessionUser) : [];
 
   return (
-    <AdminShell actorName={actorName} actorRole={actorRole}>
+    <AdminShell
+      actorName={actorName}
+      actorRole={actorRole}
+      actorPermissions={actorPermissions}
+    >
       {children}
     </AdminShell>
   );
