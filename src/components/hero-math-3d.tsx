@@ -365,10 +365,9 @@ export function HeroMath3DUniverse() {
         ) : (
           <div className="flex items-center justify-between font-mono text-xs text-muted">
             <div className="flex items-center gap-2">
-              <span className="text-neon-lime font-bold">DEMO ACCESS</span>
-              <span className="text-slate-300">student@dros-math.com / 12345678</span>
+              <span className="text-neon-lime font-bold">INTERACTIVE PREVIEW</span>
+              <span className="text-slate-300">Hover a symbol to explore</span>
             </div>
-            <span className="text-emerald-400 font-bold text-xs">متاح للتجربة فوراً</span>
           </div>
         )}
       </div>

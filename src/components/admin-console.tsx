@@ -621,10 +621,6 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
   const [bulkBusy, setBulkBusy] = useState(false);
 
   /* Add student */
-  const [newStudentName, setNewStudentName] = useState("");
-  const [newStudentEmail, setNewStudentEmail] = useState("");
-  const [newStudentPhone, setNewStudentPhone] = useState("");
-  const [newStudentPass, setNewStudentPass] = useState("12345678");
 
   /* Community groups management */
   const [cgList, setCgList] = useState<{ id: string; name: string; description: string; scope: string; courseId?: string | null; courseTitle?: string; stageId?: string | null; stageName?: string; coverImageUrl?: string | null; isActive: boolean; moderationRequired: boolean; sortOrder: number; postsCount: number; membersCount: number; createdAt: string }[]>([]);
@@ -1528,25 +1524,6 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
     pushToast("ok", "تم رفع الملف بنجاح");
   }
 
-  async function handleAddStudent(e: FormEvent) {
-    e.preventDefault();
-    const done = await api("/api/v1/admin/users/create-student", {
-      method: "POST",
-      body: JSON.stringify({
-        name: newStudentName,
-        email: newStudentEmail,
-        password: newStudentPass,
-        phone: newStudentPhone,
-      }),
-    });
-    if (done) {
-      pushToast("ok", `تم تسجيل حساب الطالب «${newStudentName}» بنجاح.`);
-      setNewStudentName("");
-      setNewStudentEmail("");
-      setNewStudentPhone("");
-      setActiveSubFeature("users_table");
-    }
-  }
 
   async function handleCreateExam(e: FormEvent) {
     e.preventDefault();
@@ -4614,26 +4591,9 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               </Button>
             }
           />
-          <form onSubmit={handleAddStudent} className="space-y-4">
-            <Field label="الاسم الرباعي للطالب">
-              <Input required value={newStudentName} onChange={(e) => setNewStudentName(e.target.value)} placeholder="أحمد محمد السيد علي" />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="البريد الإلكتروني">
-                <Input required type="email" dir="ltr" value={newStudentEmail} onChange={(e) => setNewStudentEmail(e.target.value)} placeholder="student@gmail.com" />
-              </Field>
-              <Field label="رقم الموبايل / واتساب">
-                <Input dir="ltr" value={newStudentPhone} onChange={(e) => setNewStudentPhone(e.target.value)} placeholder="01012345678" />
-              </Field>
-            </div>
-            <Field label="كلمة المرور الافتراضية" hint="يُنصح بأن يغيّر الطالب كلمة المرور بعد أول دخول">
-              <Input required dir="ltr" value={newStudentPass} onChange={(e) => setNewStudentPass(e.target.value)} />
-            </Field>
-            <Button type="submit" disabled={busy} variant="primary" className="w-full">
-              {busy ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
-              تسجيل الطالب وتفعيل الحساب
-            </Button>
-          </form>
+          <div className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm font-semibold leading-relaxed text-ink">
+            إنشاء حساب الطالب معطّل مؤقتاً حتى يتم تفعيل تدفق آمن لتعيين كلمة المرور. استخدم إدارة المستخدمين الحالية أو اطلب من المالك تفعيل التدفق الآمن.
+          </div>
         </Card>
       )}
 

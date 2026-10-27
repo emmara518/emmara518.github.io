@@ -3,7 +3,7 @@ import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { PGlite } from "@electric-sql/pglite";
 import { Pool } from "pg";
 import { SCHEMA_SQL } from "./init-sql";
-import { seedDatabase } from "./seed";
+import { isDemoSeedAllowed, seedDatabase } from "./seed";
 import * as schema from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -64,20 +64,19 @@ if (globalForDb.__drosMathDbInstance) {
         try {
           if (pool) {
             await pool.query(SCHEMA_SQL);
-            if (process.env.NODE_ENV === "production") {
-              // Production safety: NEVER silently seed demo data. An empty
-              // production database must be initialized explicitly by the
-              // operator (npx tsx src/db/seed.ts), never fabricated at boot.
+            if (!isDemoSeedAllowed()) {
+              // Demo seeding is restricted to explicit development/test runs.
+              // An empty production database must be initialized by the operator
+              // through a secure, non-demo provisioning process.
               const { rows } = await pool.query(
                 "SELECT (SELECT count(*)::int FROM users) AS users, (SELECT count(*)::int FROM courses) AS courses",
               );
               if ((rows[0]?.users ?? 0) === 0) {
                 console.error(
-                  "[db] PRODUCTION DATABASE IS EMPTY — demo seeding is disabled in production. " +
-                    "Initialize explicitly (npx tsx src/db/seed.ts) and create the admin account manually.",
+                  "[db] DATABASE IS EMPTY — demo seeding is disabled outside development/test.",
                 );
               } else {
-                console.log("[db] External PostgreSQL initialized (production mode — no auto-seed)");
+                console.log("[db] External PostgreSQL initialized (demo seeding disabled)");
               }
             } else {
               await seedDatabase(dbInstance);
@@ -104,8 +103,12 @@ if (!dbInstance) {
     globalForDb.__drosMathInitPromise = (async () => {
       try {
         await pglite.exec(SCHEMA_SQL);
-        await seedDatabase(dbInstance);
-        console.log("[db] Embedded database initialized & seeded successfully");
+        if (isDemoSeedAllowed()) {
+          await seedDatabase(dbInstance);
+          console.log("[db] Embedded database initialized & seeded successfully");
+        } else {
+          console.log("[db] Embedded database initialized (demo seeding disabled)");
+        }
       } catch (err: any) {
         if (!err.message?.includes("already exists")) {
           console.error("[db] Error initializing embedded database:", err);

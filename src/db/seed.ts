@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { sql } from "drizzle-orm";
 import {
@@ -38,14 +39,26 @@ import {
  * All copy is original demo content.
  */
 
-const DEMO_PASSWORD = "12345678";
-/** The single master admin account — username «admin» / password «admin». */
+/** The single master admin account. */
 const MASTER_ADMIN_EMAIL = "admin";
-const MASTER_ADMIN_PASSWORD = "admin";
+
 const YT_PLACEHOLDER = "M7lc1UVf-VE";
 const YT_PLAYLIST = "PL_DROSMATH_DEMO";
 
+export function isDemoSeedAllowed(env: Record<string, string | undefined> = process.env): boolean {
+  return env.NODE_ENV === "development" || env.NODE_ENV === "test";
+}
+
+function resolveSeedPassword(name: "DEMO_SEED_PASSWORD" | "MASTER_ADMIN_PASSWORD"): string {
+  const configured = process.env[name]?.trim();
+  return configured || crypto.randomBytes(32).toString("base64url");
+}
+
+
 export async function seedDatabase(targetDb: any) {
+  if (!isDemoSeedAllowed()) {
+    throw new Error("Demo seeding is disabled outside development/test");
+  }
   // Check if data is already seeded
   try {
     const existingStages = await targetDb.select().from(academicStages).limit(1);
@@ -56,8 +69,8 @@ export async function seedDatabase(targetDb: any) {
     // Table might not exist yet or empty, continue
   }
 
-  const passwordHash = bcrypt.hashSync(DEMO_PASSWORD, 10);
-  const masterAdminHash = bcrypt.hashSync(MASTER_ADMIN_PASSWORD, 10);
+  const passwordHash = bcrypt.hashSync(resolveSeedPassword("DEMO_SEED_PASSWORD"), 10);
+  const masterAdminHash = bcrypt.hashSync(resolveSeedPassword("MASTER_ADMIN_PASSWORD"), 10);
 
   /* ── academic structure ── */
   const [prep, secondary] = await targetDb
@@ -581,6 +594,9 @@ export async function seedDatabase(targetDb: any) {
 }
 
 async function main() {
+  if (!isDemoSeedAllowed()) {
+    throw new Error("Demo seeding is disabled outside development/test");
+  }
   const { db, pool } = await import("./index");
   console.log("→ wiping existing data…");
   await db.execute(sql`TRUNCATE TABLE

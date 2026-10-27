@@ -1,5 +1,7 @@
 # AGENT 06 — AUTH / RBAC / SECURITY AUDIT (DROS MATH)
 
+> Security note: demo credential values are redacted. The referenced demo accounts require owner verification; disable or rotate them if active.
+
 Scope: every route under `src/app/api/v1/`, the `/admin` page, the `src/lib/`
 auth and RBAC helpers, and live HTTP probes against `http://localhost:3000`.
 
@@ -8,9 +10,9 @@ Test users used during probing (all from the dev seed `src/db/seed.ts`):
 | Role    | Email                        | Password    |
 | ------- | ---------------------------- | ----------- |
 | admin   | `admin`                      | `admin`     |
-| teacher | `teacher@dros-math.com`      | `12345678`  |
-| student | `student@dros-math.com`      | `12345678`  |
-| parent  | `parent@dros-math.com`       | `12345678`  |
+| teacher | `[REDACTED_DEMO_EMAIL]`      | `[REDACTED_DEMO_PASSWORD]`  |
+| student | `[REDACTED_DEMO_EMAIL]`      | `[REDACTED_DEMO_PASSWORD]`  |
+| parent  | `[REDACTED_DEMO_EMAIL]`       | `[REDACTED_DEMO_PASSWORD]`  |
 
 The master admin account is hard-coded in `src/db/seed.ts:42-44` and
 `src/lib/auth.ts:17` (`MASTER_ADMIN_EMAIL = "admin"`, password `"admin"`). The
@@ -121,7 +123,7 @@ verified live (see IDOR §5). In any non-dev environment this is a P0.
   dashboard HTML in dev.
 * `src/components/auth-forms.tsx:79-85` exposes a "one-click login" button
   (only when `NODE_ENV === "development"`) that submits the
-  `student@dros-math.com / 12345678` or `teacher@dros-math.com / 12345678`
+  `[REDACTED_DEMO_EMAIL] / [REDACTED_DEMO_PASSWORD]` or `[REDACTED_DEMO_EMAIL] / [REDACTED_DEMO_PASSWORD]`
   combo.
 * Both backdoors are dev-only and guarded by `NODE_ENV` checks — fine in
   principle, but easy to forget when promoting a build. There is no warning
@@ -250,7 +252,7 @@ export const ADMIN_ROLES: readonly Role[] = ["teacher", "admin"];
 Every `/api/v1/admin/*` route that uses `requireApiUser(ADMIN_ROLES)` without
 the secondary `can(role, "users:manage")` check effectively treats teachers
 as full admins. Live verification — I logged in as the seeded teacher
-(`teacher@dros-math.com / 12345678`) and confirmed I could:
+(`[REDACTED_DEMO_EMAIL] / [REDACTED_DEMO_PASSWORD]`) and confirmed I could:
 
 | Teacher action                                                           | Result                                |
 | ------------------------------------------------------------------------ | ------------------------------------- |
@@ -292,7 +294,7 @@ Files: `src/db/seed.ts:42-44` + `src/lib/contracts.ts:39-43`
 ```ts
 // src/db/seed.ts
 const MASTER_ADMIN_EMAIL = "admin";
-const MASTER_ADMIN_PASSWORD = "admin";
+const MASTER_ADMIN_PASSWORD = "[REDACTED]";
 
 // src/lib/contracts.ts
 export const loginSchema = z.object({
@@ -433,10 +435,10 @@ The route does `db.update(coupons).set(updateData).where(eq(coupons.id, id))`
 and unconditionally writes an `auditLogs` row, returning `{id, success:true,
 ...updateData}`. Drizzle's update returns the row count; a missing id
 matches zero rows but the handler reports success. Live probe with
-`id=00000000-0000-0000-0000-000000000000`:
+`id=[REDACTED_ID]-0000-0000-0000-000000000000`:
 
 ```
-{"ok":true,"data":{"id":"00000000-…","success":true,"isActive":false}}
+{"ok":true,"data":{"id":"[REDACTED_DEMO_PASSWORD]-…","success":true,"isActive":false}}
 ```
 
 This is misleading and makes it easy to corrupt audit log data (every
@@ -674,7 +676,7 @@ audit, with the responses shown verbatim.
 
 | Test                                                                                          | Result                                          |
 | --------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Parent A (`parent@dros-math.com`) requests `GET /api/v1/parent/children/<random-student-id>`  | 403 NOT_LINKED                                  |
+| Parent A (`[REDACTED_DEMO_EMAIL]`) requests `GET /api/v1/parent/children/<random-student-id>`  | 403 NOT_LINKED                                  |
 | Student requests `GET /api/v1/parent/children/<any-id>`                                       | 403 FORBIDDEN ("هذه المنطقة لأولياء الأمور")   |
 | Student requests `PUT /api/v1/me/preferences` with no id (no other user's prefs reachable)    | writes own prefs; no id param exists in schema  |
 | Student requests `POST /api/v1/me/payment-requests` (multipart with their own screenshot)     | 201, creates row owned by their user id         |

@@ -74,15 +74,6 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
     await performLogin(email, password);
   }
 
-  const IS_DEV = process.env.NODE_ENV === "development";
-
-  const quickLogin = (who: "student" | "teacher") => async () => {
-    if (!IS_DEV) return;
-    const targetEmail = `${who}@dros-math.com`;
-    setEmail(targetEmail);
-    setPassword("12345678");
-    await performLogin(targetEmail, "12345678");
-  };
 
   return (
     <form onSubmit={submit} className="space-y-4">
@@ -118,27 +109,6 @@ export function LoginForm({ authDisabled = false }: { authDisabled?: boolean }) 
         تسجيل الدخول
       </Button>
 
-      {IS_DEV && (
-        <div className="space-y-2 pt-2">
-          <p className="text-center font-mono text-xs tracking-wider text-muted">— تسجيل دخول فوري بنقرة واحدة —</p>
-          <div className="grid grid-cols-2 gap-2">
-            {([
-              ["student", "طالب"],
-              ["teacher", "مدرّس"],
-            ] as const).map(([who, label]) => (
-              <button
-                key={who}
-                type="button"
-                disabled={loading}
-                onClick={quickLogin(who)}
-                className="rounded-lg border border-line bg-surface2 px-2 py-2 text-sm font-extrabold text-ink transition-colors hover:border-neon-lime hover:text-neon-lime cursor-pointer disabled:opacity-50"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       <p className="pt-2 text-center text-sm text-muted">
         ليس لديك حساب؟{" "}
