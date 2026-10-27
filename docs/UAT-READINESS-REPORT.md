@@ -4,9 +4,10 @@
 **Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
 **Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
 **Secure setup commit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
-**Current local HEAD at audit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
+**Final invitation gate commit:** `a10fdcd13b52681f365e4718935afff5cc436d6a`
+**Current local HEAD at audit:** `a10fdcd13b52681f365e4718935afff5cc436d6a`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `SECURE STUDENT SETUP PASS — UAT INFRASTRUCTURE STILL BLOCKED`
+**Final verdict:** `CODE GATES PASS — UAT INFRASTRUCTURE STILL BLOCKED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -72,6 +73,41 @@ Commit `a477976` replaces the disabled student-provisioning endpoint with a manu
 
 Tests cover token entropy/hash, malformed tokens, expiry bounds, route authorization, rate-limit wiring, fragment handling, transaction/consumption/revocation wiring, and schema/migration presence. The local smoke exercises successful setup, invalid token, expiry, replay, revocation, concurrent consumption, and post-setup login.
 
+## 1C. Final Invitation Security Gate
+
+### Rate limiting
+
+- Backend selection: Redis when `REDIS_URL` is configured; otherwise the shared Postgres pool when an external `DATABASE_URL` is present. Embedded PGlite in development has no limiter backend and remains inert.
+- Invitation creation, setup, and revocation now pass `failClosed: true`; a limiter backend error returns `503 RATE_LIMIT_UNAVAILABLE` instead of silently allowing the request.
+- Legacy non-invitation routes retain their previous fail-open behavior on backend errors.
+- Limits are shared across serverless instances only when Redis or the external Postgres pool is actually available. No isolated Preview rate-limit backend is verified.
+- Unit test with a deterministic adapter verified the real `429` response and `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset` headers: PASS.
+- Live `429` against a real Redis/Postgres backend: **NOT TESTED**. The embedded local limiter is inert, so the 38/38 smoke does not prove serverless rate-limit behavior.
+
+### Token and response leakage
+
+- Raw setup token exists only in the one-time setup URL returned to the initiating admin; only its SHA-256 verifier is stored.
+- No token or setup URL is written to logs, audit events, analytics, or student/admin listings.
+- Setup page reads the token from the URL fragment, clears it with `history.replaceState`, and does not include it in the initial page request.
+- `/setup-password` returns `Referrer-Policy: no-referrer` and `Cache-Control: private, no-store, max-age=0`; invitation and setup API success responses also set no-store/no-referrer headers.
+- Production setup URL construction now fails with `503` when `NEXT_PUBLIC_APP_URL` is missing, invalid, non-HTTPS, or does not match the request origin. Regression tests cover missing and mismatched origins.
+- Invalid, expired, revoked, replayed, and concurrent token use were exercised in the 38/38 smoke: PASS.
+
+### Migration readiness
+
+- `drizzle/0002_student_invitations.sql` is in the push range and creates the invitation table, token uniqueness, email/expiry indexes, and creator foreign key.
+- The migration was applied twice to an isolated PGlite test database; columns, indexes, and foreign key were verified: PASS.
+- The application’s existing `SCHEMA_SQL` also includes the invitation table and runs idempotent DDL at startup. That is existing architecture, not a new migration runner; explicit UAT migration is still recommended before starting the app.
+- No migration was run against Production or any unverified database.
+
+**UAT-only migration procedure (not executed):**
+
+1. Verify `DATABASE_URL` target with a read-only query and owner-approved UAT identity; do not print credentials.
+2. Take a recoverable backup/snapshot of the isolated UAT database.
+3. Run with `psql "$UAT_DATABASE_URL" -v ON_ERROR_STOP=1 -f drizzle/0002_student_invitations.sql`.
+4. Verify `student_invitations` columns, indexes, and `student_invitations_created_by_users_id_fk`.
+5. No automatic rollback is claimed. Dropping the table is destructive and requires explicit owner approval.
+
 ## 2. Vercel Configuration and Production Risk
 
 The local `.vercel/project.json` points to `egypthub/emmara518-github-io`, which is the correct Vercel project for this repository.
@@ -111,7 +147,7 @@ No Production setting or Vercel configuration was changed. Production Branch was
 |---|---|
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS, 0 errors; 1 pre-existing warning at `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
-| `npx vitest run tests/unit` | PASS: 11 files, 288 tests |
+| `npx vitest run tests/unit` | PASS: 13 files, 295 tests |
 | Post-remediation local UAT smoke | PASS: 38/38 scenarios |
 | Scratch production build with Google-font stub | PASS; standalone prepared |
 | Standalone `/api/health` | PASS: `200 {"ok":true}` |
@@ -150,7 +186,7 @@ A pre-remediation controlled smoke ran at implementation HEAD `8fc344f`: **47/47
 
 ### 4A. Post-Remediation Regression Smoke
 
-A fresh 38-scenario local smoke ran against isolated PGlite data at HEAD `a477976`: **38/38 PASS**. It used generated test passwords and setup tokens supplied through environment variables; no discovered credentials were used and no values were printed.
+A fresh 38-scenario local smoke ran against isolated PGlite data at HEAD `a10fdcd`: **38/38 PASS**. It used generated test passwords and setup tokens supplied through environment variables; no discovered credentials were used and no values were printed.
 
 - Valid admin/teacher/student/parent logins: PASS.
 - Invalid login rejected `401`: PASS.
@@ -234,6 +270,7 @@ Do not push or deploy until the Preview environment is isolated.
 5. Set a unique Preview `SESSION_SECRET`; use UAT-only or test-mode payment credentials. Remove Production payment credentials from Preview.
 6. Configure private storage in Preview: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
 7. Remove or ignore the legacy `S3_PUBLIC_URL` variable.
+8. Configure an isolated rate-limit backend (dedicated Redis or the isolated UAT Postgres) and verify a real `429` response from the protected Preview.
 
 ### B. Prove protection and isolation
 
@@ -257,7 +294,8 @@ This creates a new remote branch at the current report HEAD (implementation code
 1. Approve migration or disposal of the three legacy proof files; do not delete them without approval.
 2. Rotate exposed credentials and revoke stale sessions.
 3. Review why the current Production deployment was built from a dirty feature branch and decide whether Production should be redeployed from a verified commit.
-4. Implement and test a secure student password-setup/invitation flow before re-enabling student provisioning.
+4. Apply `drizzle/0002_student_invitations.sql` only to the verified isolated UAT database using the procedure in section 1C.
+5. Verify the invitation setup link uses the protected Preview URL via `NEXT_PUBLIC_APP_URL`.
 
 ## 8. Push Readiness
 
