@@ -1,87 +1,100 @@
-# DROS MATH — UAT Readiness Report
+# DROS MATH - Final UAT Readiness Report
 
 **Candidate branch:** `feat/prod-hardening`
-**Candidate code HEAD:** `dd6932b59b20c2d77be39b9a484b5b0eb35e27b8`
+**Candidate HEAD:** `f3e60a6` (test-only commit after implementation HEAD `dd6932b`)
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Status:** UAT candidate prepared; storage live verification and legacy migration are owner-gated.
+**Final verdict:** `CONDITIONALLY READY — SPECIFIC SCENARIOS BLOCKED`
 
-No Production deployment, Production database write, or Production load test was performed.
+No Production deployment, Production database write, Production environment change, or Production load test was performed.
 
-## 1. Commits
+## 1. Exact Repository State
 
-| Phase | Commit | Scope |
-|---|---|---|
-| Baseline | `f4ba929` | Existing production-hardening baseline |
-| A | `8f3abeb` | Content-only teacher access, Super Admin financial/PII gates, granular assistant permissions |
-| B | `52c0fba` | Registration/top-up flags, manual parent linking, exam reveal policy, locked-content API, admin-console fixes |
-| C | `dd6932b` | Private S3 storage adapter, signed delivery, fail-closed uploads, upload inventory exclusion |
+- Branch: `feat/prod-hardening`
+- Implementation commits present: `8f3abeb`, `52c0fba`, `dd6932b`
+- Report/test commits: `6372e2e` (prior report), `f3e60a6` (storage validation tests)
+- Git remote: `https://github.com/emmara518/emmara518.github.io.git`
+- No upstream is configured for `feat/prod-hardening`; the branch is local-only.
+- Working tree retains the pre-existing local-only `src/db/index.ts` modification and unrelated untracked QA artifacts. They are outside the candidate commits.
 
-Working tree intentionally retains the pre-existing local-only `src/db/index.ts` change and unrelated untracked audit/test artifacts. They are not part of the candidate commits.
+## 2. Automated Verification
 
-## 2. Permission Matrix
-
-| Capability | Super Admin | Teacher | Assistant (zero grants) | Assistant (`students.view`) | Student |
-|---|---:|---:|---:|---:|---:|
-| Admin overview/reports | Yes | No | No | No | No |
-| Courses/content/exams/assignments | Yes | Yes | No | No | No |
-| Community moderation/community groups | Yes | Yes | No | No | No |
-| Users list | Yes | No | No | Yes | No |
-| User PII/profile/wallet/orders/subscriptions | Yes | No | No | No | No |
-| Payment channels, coupons, manual enrollment, broadcast | Yes | No | No | No | No |
-| Assistants/permissions | Yes | No | No | No | No |
-| Parent/student manual linking | Yes | No | No | No | No |
-
-Teacher grants are limited to `courses.*`, `content.*`, `exams.*`, `assignments.manage`, and `community.manage`. Assistants are default-deny and receive only explicit granular permissions.
-
-## 3. Verified Runtime Behaviour
-
-Local runtime used PGlite test data and synthetic accounts only. No Production data was read or modified.
-
-### Phase A
-
-- Teacher: content/exams/community APIs `200`.
-- Teacher: users, orders, payment requests, manual enrollment, profile admin password, freeze, wallet, broadcast `403`.
-- Anonymous: admin users/payment channels `401`.
-- Super Admin: unknown payment channel `404`; H-28 fixed.
-- Zero-permission assistant: all tested admin APIs `403`; `/admin` rendered no student/teacher emails and no sections.
-- `students.view` assistant: `/admin/users` `200`; orders/profile/wallet `403`.
-- Sidebar and admin page data are permission-gated; zero-permission assistant now makes no unauthorized exam bootstrap requests.
-
-### Phase B
-
-- `POST /api/v1/auth/register` → `403 REGISTRATION_DISABLED`.
-- `POST /api/v1/auth/register-parent` → `403 REGISTRATION_DISABLED`.
-- Student `POST /api/v1/me/wallet/topup` → `403 TOPUP_DISABLED`.
-- Super Admin manual parent link → `200`.
-- Exam submission with `showResultsImmediately=false` → `201`, `revealed:false`, `correctIndex:null`, `correct:null`, `explanation:null`.
-- Default max attempts: `5` when unset.
-- Sequential course API: enrolled learner received the first video ID and `null` for subsequent locked videos.
-- Non-enrolled course API: no locked video IDs.
-- H-26 exam-groups/community-groups sections load without crashes.
-- H-27 bulk-question course selector is present and required.
-- Admin console produces no console errors on the tested sections.
-
-### Phase C
-
-- Upload without S3 configuration → `503 STORAGE_NOT_CONFIGURED`; no file was written to `public/`.
-- New keys use `course-files/`, `proofs/`, and `replies/` prefixes.
-- Private reads use short-lived signed URLs; legacy `/uploads/*` keys remain readable only through gated routes.
-- `.vercelignore` excludes `/public/uploads`.
-- Existing local uploads: 3 files, 3,977,775 bytes total, all under `public/uploads/proofs/`. Two are byte-identical.
-
-## 4. Automated Verification
-
-| Check | Result |
+| Command | Actual result |
 |---|---|
-| `npm run typecheck` | Pass |
-| `npm run lint` | Pass, 0 errors; 1 pre-existing warning in `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
-| `npx vitest run tests/unit` | Pass: 9 files, 268 tests |
-| Production build in scratch copy with Google-font stub | Pass; standalone prepared |
-| Standalone `/api/health` | `200 {"ok":true}` |
+| `npm run typecheck` | PASS |
+| `npm run lint` | PASS, 0 errors; 1 pre-existing warning at `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
+| `npx vitest run tests/unit` | PASS: 9 files, 271 tests |
+| Scratch production build with Google-font stub | PASS; standalone prepared |
+| Standalone `/api/health` | PASS: `200 {"ok":true}` |
 
-The scratch build emitted non-fatal PGlite page-data warnings because the scratch copy intentionally excluded `data/`; the build completed and the standalone server started successfully. No font stub was committed.
+The scratch build used a temporary font stub only; no stub was committed. It emitted non-fatal PGlite page-data warnings because the scratch copy excluded `data/`; the build and standalone startup completed.
 
-## 5. Storage Inventory
+## 3. Local Functional and Security Smoke Test
+
+A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101`. It created only synthetic UAT records. Result: **47/47 checks PASS**.
+
+| Area | Verified result |
+|---|---|
+| Admin login and data load | PASS |
+| Teacher content read/edit | PASS: courses, exams, community groups; course edit `200` |
+| Teacher restricted endpoints | PASS: users, orders, payment requests, payment channels, assistants all `403` |
+| Teacher privilege escalation | PASS: admin role change and admin password change `403` |
+| Teacher wallet access | PASS: `403` |
+| Zero-permission assistant | PASS: users/orders/courses/exams `403`; `/admin` has no sections or student/teacher PII |
+| `students.view` assistant | PASS: users `200`; orders and wallet `403`; admin page limited to users |
+| Teacher sidebar/page | PASS: content categories only; no billing or users categories |
+| Student registration | PASS: `403 REGISTRATION_DISABLED` |
+| Parent registration | PASS: `403 REGISTRATION_DISABLED` |
+| Auto parent-link disabled | PASS: local registration enabled only for the test; parent children list unchanged |
+| Self top-up | PASS: `403 TOPUP_DISABLED` |
+| Super Admin wallet adjustment | PASS: `200` |
+| Sequential video locks | PASS: first video ID present; 8/8 later videos returned `null` |
+| Exam room | PASS: 5 questions; no answer fields exposed |
+| Exam submission with reveal disabled | PASS: `201`, `revealed:false`, all `correctIndex`/`correct`/`explanation` null |
+| Manual parent link | PASS: Super Admin `200`; teacher `403`; parent portal lists linked children |
+| H-28 payment channels | PASS: Super Admin `200`; teacher `403` |
+| Course-file upload without S3 | PASS: `503 STORAGE_NOT_CONFIGURED` |
+| File delivery authentication | PASS: unauthenticated `401` |
+| Payment proof MIME validation | PASS: `422 INVALID_FILE_TYPE` |
+| Payment proof without S3 | PASS: `503 STORAGE_NOT_CONFIGURED` |
+| Audit visibility | PASS: admin page includes audit heading and recorded entity |
+
+### H-26 / H-27 / H-28
+
+No separate authoritative H-26/H-27/H-28 finding document exists in the repository; only the prior UAT report names the symptoms. Verification used the current code and those reported symptoms:
+
+- H-26: exam groups and community groups load without crashes or console errors.
+- H-27: bulk-question entry includes a required course selector.
+- H-28: payment-channel read is Super Admin-only; teacher `403`, Super Admin `200`.
+
+## 4. Preview Isolation Gate
+
+**Status: BLOCKED.** No DROS MATH Vercel project was found in the accessible team.
+
+Evidence:
+
+- Vercel CLI is authenticated as `momoemara321-4058`; the only accessible team is `egypthub`.
+- Project filters for `dros`, `math`, `mohamed`, and `saeed` returned no projects.
+- The local `.vercel/project.json` points to `egypthub/emmara518-github-io` (`prj_2AX…`), which matches the Git origin `emmara518/emmara518.github.io`, not DROS MATH.
+- That linked project's Preview and Production scopes share the same `DATABASE_URL` variable name and include Neon/Postgres and payment/storage credentials. Values were not read. It is not an acceptable isolated DROS UAT target.
+- No DROS Preview URL or deployment identifier exists. No deployment was made.
+
+Because isolation and Deployment Protection could not be proven, no Preview runtime test was executed and no Preview data was written.
+
+## 5. Storage and Legacy Proof Files
+
+Required configuration names (values not printed):
+
+`S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optional `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS`.
+
+Status:
+
+- Course files, payment proofs, and reply media all use the private storage adapter.
+- No S3 configuration causes `503 STORAGE_NOT_CONFIGURED`; no local/public fallback occurs.
+- New uploads do not create `public/uploads/course-files`.
+- Signed URL generation is short-lived and occurs after route authorization. Live signed delivery was not exercised because no bucket is configured.
+- `.vercelignore` excludes `/public/uploads`.
+
+Legacy proof inventory (not migrated, not deleted):
 
 | Object | Bytes | SHA-256 |
 |---|---:|---|
@@ -89,39 +102,78 @@ The scratch build emitted non-fatal PGlite page-data warnings because the scratc
 | `public/uploads/proofs/db0c59dd-20e5-4c21-804f-f2f577094b69.png` | 1,988,863 | `D334080F9377D82D62F1A1BE826CDE84220A6D0B3AABE69699F469D969286156` |
 | `public/uploads/proofs/e992bbdd-7cef-4154-900f-170d148eef70.png` | 1,988,863 | `D334080F9377D82D62F1A1BE826CDE84220A6D0B3AABE69699F469D969286156` |
 
-No local `course-files` or `replies` legacy objects were found. These objects were not deleted or copied to S3.
+No local `course-files` or `replies` legacy objects were found. Two proof files are byte-identical.
 
-## 6. UAT Script
+## 6. UAT Smoke Status
 
-1. Log in as a teacher. Confirm only courses/content, exams, assignments, and community sections appear. Directly call financial/PII/admin endpoints and confirm `403`.
-2. Log in as a zero-permission assistant. Confirm `/admin` shows no sections and makes no unauthorized data requests. Log in as `students.view` assistant and confirm only the users table is available.
-3. Submit student and parent registration. Confirm `403 REGISTRATION_DISABLED` for both.
-4. Attempt student self top-up. Confirm `403 TOPUP_DISABLED`; verify code redemption and Super Admin manual enrollment still work.
-5. As Super Admin, manually link a parent to a student. Confirm the parent sees the child. Confirm automatic guardian-phone linking does not occur.
-6. Submit an exam with `showResultsImmediately=false`. Confirm score is visible but answers/explanations are hidden; confirm reveal after the window. Confirm unset max attempts defaults to 5.
-7. Open a sequential course as an enrolled learner. Confirm the first video is playable and later videos are locked. Confirm non-enrolled users receive no locked video IDs.
-8. Upload a course file, payment proof, and community reply media. Confirm each upload succeeds only with private S3 configured, downloads through a short-lived signed URL, and direct public bucket access is denied. Confirm proof screenshots are Super Admin-only and reply media is participant/enrollment-gated.
-9. Open exam groups, community groups, and bulk-question entry. Confirm no crash and that the bulk flow requires a course.
+| Scenario | Status | Evidence |
+|---|---|---|
+| Student login and course access | PASS (local) | Synthetic student; course API `200` |
+| Locked versus unlocked lessons | PASS (local) | First video ID present; later IDs `null` |
+| Protected exam answers | PASS (local) | Submission `201`; answers/explanations null |
+| Teacher content operations | PASS (local) | Read `200`; course edit `200` |
+| Teacher denied financial/admin operations | PASS (local) | Restricted routes `403` |
+| Zero-permission assistant | PASS (local) | APIs `403`; admin page empty |
+| Granted assistant permission | PASS (local) | `students.view` users `200`; other admin data `403` |
+| Parent/student registration | PASS (local) | Both `403 REGISTRATION_DISABLED` |
+| Auto parent-link disabled | PASS (local) | Parent children unchanged |
+| Disabled top-up | PASS (local) | `403 TOPUP_DISABLED` |
+| Admin workflows/audit visibility | PASS (local) | Admin page includes audit entry |
+| Private S3 delivery | BLOCKED | No bucket/credentials |
+| Preview protection | BLOCKED | No DROS Vercel project |
+| Preview database isolation | BLOCKED | No DROS Preview target |
+| Preview functional smoke | BLOCKED | Stopped before any Preview write |
 
-## 7. Blockers and Owner Actions
+## 7. Remaining Owner Actions
 
-### Required before UAT sign-off
+### A. Create and protect the correct Preview
 
-- [ ] Provide a private S3-compatible bucket and credentials: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optional `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
-- [ ] Block all public bucket access and confirm direct object URLs return `403`.
-- [ ] Migrate or explicitly discard the 3 legacy proof objects above; update their database keys to `proofs/...`.
-- [ ] Configure the isolated UAT database and Vercel deployment protection. Do not point UAT at Production.
-- [ ] Set `PUBLIC_REGISTRATION_ENABLED=false`, `AUTO_PARENT_LINK_ENABLED=false`, and `WALLET_SELF_TOPUP_ENABLED=false` in UAT.
-- [ ] Rotate exposed credentials and revoke stale sessions before UAT.
-- [ ] Review audit logs and confirm no Production mutations occurred.
+1. Vercel Dashboard -> Add New -> Project.
+2. Import the correct DROS MATH repository. Do not reuse `egypthub/emmara518-github-io`; it is unrelated to this application.
+3. Set Framework Preset to `Next.js` and Root Directory to `.`.
+4. Push `feat/prod-hardening` at `f3e60a6` to the correct Git remote.
+5. Create a Preview deployment from that branch. Do not promote it to Production.
+6. Settings -> Deployment Protection -> Vercel Authentication -> Standard Protection for Preview. Verify an incognito request returns the Vercel authentication page.
 
-### Verification gaps
+### B. Isolate Preview data and services
 
-- Live S3 upload and signed-URL delivery were not exercised because no bucket credentials were provided. Fail-closed behaviour was verified with `503 STORAGE_NOT_CONFIGURED`.
-- Production commit/deployment was not inspected or modified; no Production claim is made.
-- No Production load or 10K campaign was run.
-- The pre-existing local `src/db/index.ts` modification and unrelated untracked artifacts remain outside the candidate commits.
+1. Settings -> Environment Variables -> Preview.
+2. Set `DATABASE_URL` to a dedicated UAT database. Do not reuse the Production database or the shared Neon/Postgres values.
+3. Set `PUBLIC_REGISTRATION_ENABLED=false`, `AUTO_PARENT_LINK_ENABLED=false`, and `WALLET_SELF_TOPUP_ENABLED=false`.
+4. Set a unique Preview `SESSION_SECRET`; use UAT-only or test-mode payment credentials. Remove Production payment credentials from Preview.
+5. Verify the target with a read-only Preview query: `select current_database(), current_user, inet_server_addr();`. Compare the result with Production; do not print credentials.
 
-## 8. Release Decision
+### C. Configure private storage
 
-**Conditional UAT-ready.** The application-side Phase A/B/C changes are committed and tested. UAT can start after the private bucket, isolated environment, legacy-object decision, credential rotation, and deployment protection items above are completed.
+1. Create a private S3-compatible bucket with public access blocked.
+2. Settings -> Environment Variables -> Preview: set `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
+3. Verify a direct object URL returns `403`, an authorized signed download succeeds, and a valid upload succeeds.
+4. Migrate or explicitly discard the three legacy proof objects only after owner approval; update their `payment_requests.screenshot_key` values to `proofs/...` if migrated.
+
+### D. Credentials and approval
+
+1. Rotate exposed database, storage, payment, and session credentials before UAT.
+2. Revoke stale sessions.
+3. Confirm in writing that Preview is isolated and that the three legacy proof objects may be migrated or discarded.
+
+## 8. Limitations
+
+- No Preview deployment was created, so Preview protection, database isolation, and Preview smoke remain unverified.
+- Live S3 upload and signed-URL delivery were not exercised; fail-closed behavior was verified.
+- The three legacy proof objects were not migrated or deleted.
+- No Production commit/deployment was inspected or modified.
+- No capacity or high-volume load claim is made; capacity testing is out of scope.
+- Local PGlite test data is disposable and is not Production data.
+
+## 9. Acceptance Script for Mr. Mohamed Saeed
+
+1. Open the protected Preview URL in an incognito window; confirm Vercel authentication is required.
+2. Log in as a teacher; confirm content-only navigation and `403` on users/orders/payment channels.
+3. Log in as a zero-permission assistant; confirm no admin sections. Log in as a `students.view` assistant; confirm users only.
+4. Submit student and parent registration; confirm both are rejected with `REGISTRATION_DISABLED`.
+5. Attempt self top-up; confirm `TOPUP_DISABLED`. Verify Super Admin wallet adjustment still works.
+6. Open a sequential course; confirm the first lesson is playable and later lessons are locked. Confirm locked responses contain no video IDs.
+7. Submit an exam with immediate results disabled; confirm score is visible but answers and explanations are hidden.
+8. Manually link a parent as Super Admin; confirm the parent sees the child and automatic phone linking does not occur.
+9. Upload a course file, proof, and reply media; confirm private signed delivery works. If storage is not configured, confirm uploads are rejected with `503`.
+10. Open exam groups, community groups, and bulk-question entry; confirm no crashes and that a course is required.
