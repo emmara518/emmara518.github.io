@@ -2,7 +2,7 @@
 
 **Candidate branch:** `feat/prod-hardening`
 **Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
-**Current local HEAD at audit:** `d3ed868ce94acabb7bf311a4ee214ccea2719f56`
+**Current local HEAD at audit:** `f55433022399e54d2f8edbe2c1fecfc5d0214919`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
 **Final verdict:** `BLOCKED — OWNER ACTION REQUIRED`
 
@@ -20,7 +20,8 @@ Evidence:
 - Remote `main` contains the full Next.js application: 274 tracked files, `package.json`, `next.config.ts`, `src/app/api/**`, and API routes. It is not a static-only repository.
 - Remote `ui-redesign-2026` is the static mirror branch: `index.html`, `assets/`, `pages/`, `static/`, and a Pages workflow; it has no application API or Next.js source.
 - Remote `uiux/pass-1` also contains the full application.
-- The local branch is based on `origin/main` at `d78f170`; it is **18 commits ahead and 0 behind**. The hardening commits are therefore additive and can be pushed as a new branch without rewriting history.
+- The local branch is based on `origin/main` at `d78f170`; it is **19 commits ahead and 0 behind**. A push would publish 19 commits on a new branch without rewriting history.
+- The pending range contains 138 files. Only `.env.example` is environment-related; no `.env`, `data/`, `backups/`, `public/uploads/`, `.next/`, `node_modules/`, or `.vercel/` path is in the push range. Untracked QA artifacts remain outside the commits.
 - Remote branches currently present: `main`, `ui-redesign-2026`, `uiux/pass-1`. Remote `feat/prod-hardening` is absent.
 - Vercel project link verified through the Vercel API: type `github`, repo `emmara518.github.io`, org `emmara518`, and `productionBranch` `main`.
 
@@ -43,6 +44,7 @@ Actual Vercel evidence:
 - Deployment Protection is configured as `all_except_custom_domains` with Git fork protection enabled, but the observed public Production response means protection is not proven effective for the exposed URL. No Preview exists to test its actual behavior.
 - There are **zero Preview deployments** (`vercel ls --environment preview` returned an empty list).
 - `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and the Neon/Postgres variables target `Production, Preview, Development` together. Database isolation is therefore **not proven**.
+- No independent UAT database connection was available, so the read-only identity query was not executed and no database was contacted.
 - `SESSION_SECRET`, payment credentials, `S3_*`, `REDIS_URL`, and email credentials target `Production, Preview` together. Preview credentials are not proven separate from Production.
 - Preview does not contain `PUBLIC_REGISTRATION_ENABLED`, `AUTO_PARENT_LINK_ENABLED`, or `WALLET_SELF_TOPUP_ENABLED`; the application defaults for these flags are closed, but there is no Preview to verify.
 - Preview still contains legacy `S3_PUBLIC_URL`; the newer optional storage variables `S3_FORCE_PATH_STYLE` and `S3_SIGNED_URL_TTL_SECONDS` are not present.
@@ -72,7 +74,7 @@ The scratch build used a temporary font stub only; no stub was committed. The cu
 
 ## 4. Local Functional and Security Smoke Test
 
-A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. Later commits through `d3ed868` changed documentation only; unit, typecheck, lint, and build were re-run at the current HEAD.
+A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. Later commits through `f554330` changed documentation only; unit, typecheck, lint, and build were re-run at the current HEAD.
 
 | Area | Verified result |
 |---|---|
@@ -142,7 +144,7 @@ No local `course-files` or `replies` legacy objects were found. Two proof files 
 | Deployment Protection configured | PARTIAL — SSO setting exists, but public Production URL returned 200 |
 | Preview Deployment Protection proven | BLOCKED — zero Preview deployments |
 | Preview database isolated from Production | BLOCKED — shared variable target; no Preview to verify |
-| Preview environment flags | PARTIAL — flags absent, defaults closed; no Preview to verify |
+| Preview environment flags | BLOCKED — flags absent; defaults closed but no Preview to verify |
 | Preview S3/test credentials isolated | BLOCKED — shared credential names; no Preview |
 | Preview smoke test | BLOCKED — stopped before any Preview write |
 
