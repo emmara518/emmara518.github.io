@@ -3,9 +3,9 @@
 **Candidate branch:** `feat/prod-hardening`
 **Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
 **Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
-**Current local HEAD at audit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
+**Current local HEAD at audit:** `dfdbf3737832488d1c7e8ec21b0de86e739775a9`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `CODE REMEDIATION PASS — PRODUCTION ACCOUNT STATUS STILL BLOCKED`
+**Final verdict:** `POST-REMEDIATION REGRESSION PASS — UAT ENVIRONMENT STILL BLOCKED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -21,7 +21,7 @@ Evidence:
 - Remote `main` contains the full Next.js application: 274 tracked files, `package.json`, `next.config.ts`, `src/app/api/**`, and API routes. It is not a static-only repository.
 - Remote `ui-redesign-2026` is the static mirror branch: `index.html`, `assets/`, `pages/`, `static/`, and a Pages workflow; it has no application API or Next.js source.
 - Remote `uiux/pass-1` also contains the full application.
-- The local branch is based on `origin/main` at `d78f170`; it is **21 commits ahead and 0 behind**. A push would publish 21 commits on a new branch without rewriting history.
+- The local branch is based on `origin/main` at `d78f170`; it is **22 commits ahead and 0 behind**. A push would publish 22 commits on a new branch without rewriting history.
 - The pending range contains 143 files. Only `.env.example` is environment-related; no `.env`, `data/`, `backups/`, `public/uploads/`, `.next/`, `node_modules/`, or `.vercel/` path is in the push range. Untracked QA artifacts remain outside the commits.
 - Remote branches currently present: `main`, `ui-redesign-2026`, `uiux/pass-1`. Remote `feat/prod-hardening` is absent.
 - Vercel project link verified through the Vercel API: type `github`, repo `emmara518.github.io`, org `emmara518`, and `productionBranch` `main`.
@@ -43,7 +43,7 @@ Commit `dab5681` addresses the public demo-credential findings:
 
 **Current code exposure:** no reusable demo password or fixed student default is present in production-visible UI. Demo account emails remain as non-secret seed identifiers; production seeding is disabled.
 
-**Production account status:** `BLOCKED — OWNER VERIFICATION REQUIRED`. The original values remain in public Git history and may still be active in Production. Source cleanup does not rotate or disable accounts.
+**Production account status:** `BLOCKED — OWNER VERIFICATION REQUIRED`. The original values remain in public Git history and may still be active in Production. Source cleanup does not rotate or disable accounts. No Production account was accessed, verified, disabled, or modified by this task.
 
 ### Owner checklist for exposed demo accounts
 
@@ -94,6 +94,7 @@ No Production setting or Vercel configuration was changed. Production Branch was
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS, 0 errors; 1 pre-existing warning at `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
 | `npx vitest run tests/unit` | PASS: 10 files, 280 tests |
+| Post-remediation local UAT smoke | PASS: 30/30 scenarios |
 | Scratch production build with Google-font stub | PASS; standalone prepared |
 | Standalone `/api/health` | PASS: `200 {"ok":true}` |
 
@@ -128,6 +129,33 @@ A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` a
 | Payment proof MIME validation | PASS: `422 INVALID_FILE_TYPE` |
 | Payment proof without S3 | PASS: `503 STORAGE_NOT_CONFIGURED` |
 | Audit visibility | PASS: admin page includes audit heading and recorded entity |
+
+### 4A. Post-Remediation Regression Smoke
+
+A fresh 30-scenario local smoke ran against isolated PGlite data at HEAD `dfdbf37`: **30/30 PASS**. It used generated test passwords supplied through environment variables; no discovered credentials were used and no values were printed.
+
+- Valid admin/teacher/student/parent logins: PASS.
+- Invalid login rejected `401`: PASS.
+- `/auth/me` and logout/session invalidation: PASS.
+- Teacher content reads: PASS; restricted admin/financial endpoints `403`: PASS.
+- Zero-permission assistant denied admin data and page sections: PASS.
+- `students.view` assistant sees users only: PASS.
+- Registration and self top-up remain disabled: PASS.
+- Super Admin student provisioning returns `503 STUDENT_PROVISIONING_DISABLED`: PASS as a safe denial.
+- Teacher student provisioning returns `403`: PASS.
+- Admin wallet adjustment: PASS.
+- Sequential video locks: PASS.
+- Exam room and hidden-answer submission: PASS.
+- Manual parent link and parent portal: PASS.
+- Course upload without S3: `503`; file delivery unauthenticated: `401`: PASS.
+- Production-visible `/login` and `/`: no demo credentials or removed controls: PASS.
+- Admin audit view and session logout: PASS.
+
+The previous 47-scenario smoke was **not rerun**. Student creation itself remains **BLOCKED** because provisioning is intentionally disabled; the denial path passed, and no account was created.
+
+### Secure Student Setup Evaluation
+
+No password-reset, invitation, setup-token, expiry/replay, or email-delivery implementation exists in the current codebase. `EMAIL_PROVIDER` and related names exist only as configuration placeholders; no verified delivery path is available. Provisioning therefore remains disabled. Implementing it requires an owner-approved secure delivery mechanism and a single-use, expiring setup-token flow before re-enablement.
 
 ### H-26 / H-27 / H-28
 
