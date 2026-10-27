@@ -1,9 +1,10 @@
 # DROS MATH - Final UAT Readiness Report
 
 **Candidate branch:** `feat/prod-hardening`
-**Candidate HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
+**Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
+**Current local HEAD at audit:** `d3ed868ce94acabb7bf311a4ee214ccea2719f56`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `CONDITIONALLY READY — SPECIFIC SCENARIOS BLOCKED`
+**Final verdict:** `BLOCKED — OWNER ACTION REQUIRED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -19,8 +20,9 @@ Evidence:
 - Remote `main` contains the full Next.js application: 274 tracked files, `package.json`, `next.config.ts`, `src/app/api/**`, and API routes. It is not a static-only repository.
 - Remote `ui-redesign-2026` is the static mirror branch: `index.html`, `assets/`, `pages/`, `static/`, and a Pages workflow; it has no application API or Next.js source.
 - Remote `uiux/pass-1` also contains the full application.
-- The local branch is based on `origin/main` at `d78f170`; it is **17 commits ahead and 0 behind**. The hardening commits are therefore additive and can be pushed as a new branch without rewriting history.
+- The local branch is based on `origin/main` at `d78f170`; it is **18 commits ahead and 0 behind**. The hardening commits are therefore additive and can be pushed as a new branch without rewriting history.
 - Remote branches currently present: `main`, `ui-redesign-2026`, `uiux/pass-1`. Remote `feat/prod-hardening` is absent.
+- Vercel project link verified through the Vercel API: type `github`, repo `emmara518.github.io`, org `emmara518`, and `productionBranch` `main`.
 
 The repository is suitable as the source for UAT. The GitHub description mentioning a "static mirror" is misleading for `main`; it describes the separate `ui-redesign-2026` static branch. The local source-map document naming `ui-redesign-2026` as the source is stale.
 
@@ -30,6 +32,7 @@ The local `.vercel/project.json` points to `egypthub/emmara518-github-io`, which
 
 Actual Vercel evidence:
 
+- Production Branch is `main` (verified through the Vercel API); no change was needed or made.
 - The latest Production deployment metadata records:
   - `githubCommitRepo`: `emmara518.github.io`
   - `githubCommitRef`: `feat/prod-hardening`
@@ -37,10 +40,11 @@ Actual Vercel evidence:
   - `gitDirty`: `1`
 - Production `/api/health/version` returns `{"release":"f4ba929","environment":"production"}`.
 - The Production `.vercel.app` URL returns HTTP `200` without authentication in a read-only request.
-- Deployment Protection is configured as `all_except_custom_domains` with Git fork protection enabled, but the observed public Production response means protection is not proven effective for the exposed URL.
+- Deployment Protection is configured as `all_except_custom_domains` with Git fork protection enabled, but the observed public Production response means protection is not proven effective for the exposed URL. No Preview exists to test its actual behavior.
 - There are **zero Preview deployments** (`vercel ls --environment preview` returned an empty list).
-- `DATABASE_URL` is a single Vercel variable targeting `Production, Preview, Development`; the same pattern applies to the Neon/Postgres variables. Database isolation is therefore **not proven**.
-- Preview does not contain `PUBLIC_REGISTRATION_ENABLED`, `AUTO_PARENT_LINK_ENABLED`, or `WALLET_SELF_TOPUP_ENABLED`; the application defaults for these flags are closed.
+- `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and the Neon/Postgres variables target `Production, Preview, Development` together. Database isolation is therefore **not proven**.
+- `SESSION_SECRET`, payment credentials, `S3_*`, `REDIS_URL`, and email credentials target `Production, Preview` together. Preview credentials are not proven separate from Production.
+- Preview does not contain `PUBLIC_REGISTRATION_ENABLED`, `AUTO_PARENT_LINK_ENABLED`, or `WALLET_SELF_TOPUP_ENABLED`; the application defaults for these flags are closed, but there is no Preview to verify.
 - Preview still contains legacy `S3_PUBLIC_URL`; the newer optional storage variables `S3_FORCE_PATH_STYLE` and `S3_SIGNED_URL_TTL_SECONDS` are not present.
 - GitHub API returns `422` for commits `f4ba929` and `8fc344f`; only `d78f170` (`main`) is available remotely. The current Production deployment is therefore not reproducible from the public repository.
 
@@ -52,7 +56,7 @@ Actual Vercel evidence:
 4. Preview and Production share database variable configuration; creating a Preview deployment now could point UAT at Production data.
 5. No Preview deployment exists to validate protection or isolation.
 
-No Production setting was changed.
+No Production setting or Vercel configuration was changed. Production Branch was already `main`.
 
 ## 3. Automated Verification
 
@@ -64,11 +68,11 @@ No Production setting was changed.
 | Scratch production build with Google-font stub | PASS; standalone prepared |
 | Standalone `/api/health` | PASS: `200 {"ok":true}` |
 
-The scratch build used a temporary font stub only; no stub was committed. It emitted non-fatal PGlite page-data warnings because the scratch copy excluded `data/`; the build and standalone startup completed.
+The scratch build used a temporary font stub only; no stub was committed. The current build completed cleanly and the standalone `/api/health` returned 200.
 
 ## 4. Local Functional and Security Smoke Test
 
-A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101`. It created only synthetic UAT records. Result: **47/47 checks PASS**.
+A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. Later commits through `d3ed868` changed documentation only; unit, typecheck, lint, and build were re-run at the current HEAD.
 
 | Area | Verified result |
 |---|---|
@@ -134,6 +138,7 @@ No local `course-files` or `replies` legacy objects were found. Two proof files 
 |---|---|
 | Correct source repository | PASS |
 | Vercel project linked to repository | PASS |
+| Production Branch is `main` | PASS — verified through Vercel API; no change made |
 | Deployment Protection configured | PARTIAL — SSO setting exists, but public Production URL returned 200 |
 | Preview Deployment Protection proven | BLOCKED — zero Preview deployments |
 | Preview database isolated from Production | BLOCKED — shared variable target; no Preview to verify |
@@ -157,7 +162,7 @@ Do not push or deploy until the Preview environment is isolated.
 ### B. Prove protection and isolation
 
 1. Vercel -> Settings -> Deployment Protection -> Vercel Authentication -> Standard Protection for Preview; verify an incognito Preview request is challenged.
-2. Confirm the Production branch is `main`, not `feat/prod-hardening`.
+2. Production Branch is already `main` (verified); do not manually deploy a feature branch to Production.
 3. Run a read-only Preview query such as `select current_database(), current_user, inet_server_addr();` and compare it with Production without printing credentials.
 4. Verify the Preview deployment commit after push; do not promote it.
 
@@ -169,7 +174,7 @@ After A and B are complete and the owner approves:
 git push -u origin feat/prod-hardening
 ```
 
-This creates a new remote branch at `8fc344f`; it does not rewrite `main`. Do not force-push and do not promote the resulting Preview to Production.
+This creates a new remote branch at the current report HEAD (implementation code `8fc344f` plus documentation); it does not rewrite `main`. Do not force-push and do not promote the resulting Preview to Production.
 
 ### D. Legacy files and credentials
 
@@ -177,7 +182,24 @@ This creates a new remote branch at `8fc344f`; it does not rewrite `main`. Do no
 2. Rotate exposed credentials and revoke stale sessions.
 3. Review why the current Production deployment was built from a dirty feature branch and decide whether Production should be redeployed from a verified commit.
 
-## 8. Limitations
+## 8. Push Readiness
+
+**Verdict:** `BLOCKED — OWNER ACTION REQUIRED`
+
+| Gate | Status |
+|---|---|
+| Correct repository and candidate commit | PASS |
+| Working state reviewed; no secret files staged | PASS |
+| Production Branch safe (`main`) | PASS |
+| Separate UAT database for Preview | BLOCKED |
+| Preview secrets/services separate from Production | BLOCKED |
+| Preview Deployment Protection proven | BLOCKED |
+| Uploads private or demonstrably disabled | PASS locally; BLOCKED for Preview |
+| Local security checks | PASS |
+
+No push or deployment was performed.
+
+## 9. Limitations
 
 - No Preview deployment exists, so Preview protection, database isolation, and Preview smoke remain unverified.
 - The public Production URL returned 200 without authentication; protection is not proven effective.
@@ -186,7 +208,7 @@ This creates a new remote branch at `8fc344f`; it does not rewrite `main`. Do no
 - The three legacy proof objects were not migrated or deleted.
 - No capacity or high-volume load claim is made; capacity testing is out of scope.
 
-## 9. Acceptance Script for Mr. Mohamed Saeed
+## 10. Acceptance Script for Mr. Mohamed Saeed
 
 1. Open the protected Preview URL in an incognito window; confirm authentication is required.
 2. Log in as a teacher; confirm content-only navigation and `403` on users/orders/payment channels.
