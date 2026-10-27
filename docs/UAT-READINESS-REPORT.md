@@ -2,9 +2,10 @@
 
 **Candidate branch:** `feat/prod-hardening`
 **Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
-**Current local HEAD at audit:** `f55433022399e54d2f8edbe2c1fecfc5d0214919`
+**Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
+**Current local HEAD at audit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `BLOCKED — OWNER ACTION REQUIRED`
+**Final verdict:** `CODE REMEDIATION PASS — PRODUCTION ACCOUNT STATUS STILL BLOCKED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -20,12 +21,38 @@ Evidence:
 - Remote `main` contains the full Next.js application: 274 tracked files, `package.json`, `next.config.ts`, `src/app/api/**`, and API routes. It is not a static-only repository.
 - Remote `ui-redesign-2026` is the static mirror branch: `index.html`, `assets/`, `pages/`, `static/`, and a Pages workflow; it has no application API or Next.js source.
 - Remote `uiux/pass-1` also contains the full application.
-- The local branch is based on `origin/main` at `d78f170`; it is **19 commits ahead and 0 behind**. A push would publish 19 commits on a new branch without rewriting history.
-- The pending range contains 138 files. Only `.env.example` is environment-related; no `.env`, `data/`, `backups/`, `public/uploads/`, `.next/`, `node_modules/`, or `.vercel/` path is in the push range. Untracked QA artifacts remain outside the commits.
+- The local branch is based on `origin/main` at `d78f170`; it is **21 commits ahead and 0 behind**. A push would publish 21 commits on a new branch without rewriting history.
+- The pending range contains 143 files. Only `.env.example` is environment-related; no `.env`, `data/`, `backups/`, `public/uploads/`, `.next/`, `node_modules/`, or `.vercel/` path is in the push range. Untracked QA artifacts remain outside the commits.
 - Remote branches currently present: `main`, `ui-redesign-2026`, `uiux/pass-1`. Remote `feat/prod-hardening` is absent.
 - Vercel project link verified through the Vercel API: type `github`, repo `emmara518.github.io`, org `emmara518`, and `productionBranch` `main`.
 
 The repository is suitable as the source for UAT. The GitHub description mentioning a "static mirror" is misleading for `main`; it describes the separate `ui-redesign-2026` static branch. The local source-map document naming `ui-redesign-2026` as the source is stale.
+
+## 1A. Security Remediation — Demo Credentials
+
+Commit `dab5681` addresses the public demo-credential findings:
+
+- `src/db/seed.ts`: demo seeding now requires `NODE_ENV=development` or `NODE_ENV=test`; production and unknown environments are refused before any database access. The fixed demo/master passwords were removed. Development/test passwords come from `DEMO_SEED_PASSWORD` and `MASTER_ADMIN_PASSWORD`, or are generated with `crypto.randomBytes` and are never logged.
+- `src/db/index.ts`: both external PostgreSQL and embedded PGlite bootstrap paths skip demo seeding outside development/test.
+- `src/components/auth-forms.tsx`: demo quick-login controls and shared credentials were removed.
+- `src/components/hero-math-3d.tsx`: public demo-credential display was replaced with a non-functional interactive preview label.
+- `src/components/admin-console.tsx`: the fixed new-student password and its form were removed; the panel now states that provisioning requires a secure setup flow.
+- `src/app/api/v1/admin/users/create-student/route.ts`: student provisioning is disabled with `503 STUDENT_PROVISIONING_DISABLED` until a secure setup flow exists. Authorization remains Super Admin-only.
+- `docs/audit-AGENT-06-auth-rbac-security.md`: reusable demo values were replaced with redacted placeholders and an owner-verification note.
+- `tests/unit/demo-credentials.test.ts`: regression coverage for production seed refusal, quick-login removal, hero display removal, fixed-password removal, provisioning disablement, and documentation redaction.
+
+**Current code exposure:** no reusable demo password or fixed student default is present in production-visible UI. Demo account emails remain as non-secret seed identifiers; production seeding is disabled.
+
+**Production account status:** `BLOCKED — OWNER VERIFICATION REQUIRED`. The original values remain in public Git history and may still be active in Production. Source cleanup does not rotate or disable accounts.
+
+### Owner checklist for exposed demo accounts
+
+1. Use the authorized administrative interface or approved read-only inventory to determine whether the affected demo accounts exist and are active in Production.
+2. Disable active accounts or replace their credentials through the approved Production administration process.
+3. Revoke sessions/tokens associated with affected accounts where appropriate.
+4. Review recent authentication/audit events for suspicious use without exporting personal records.
+5. Rotate the same credential in any other system where it was reused.
+6. Decide separately whether a Git history purge is necessary; a purge does not replace credential rotation and requires explicit approval.
 
 ## 2. Vercel Configuration and Production Risk
 
@@ -66,15 +93,15 @@ No Production setting or Vercel configuration was changed. Production Branch was
 |---|---|
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS, 0 errors; 1 pre-existing warning at `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
-| `npx vitest run tests/unit` | PASS: 9 files, 271 tests |
+| `npx vitest run tests/unit` | PASS: 10 files, 280 tests |
 | Scratch production build with Google-font stub | PASS; standalone prepared |
 | Standalone `/api/health` | PASS: `200 {"ok":true}` |
 
-The scratch build used a temporary font stub only; no stub was committed. The current build completed cleanly and the standalone `/api/health` returned 200.
+The scratch build used a temporary font stub only; no stub was committed. The current build completed cleanly and the standalone `/api/health` returned 200. A production-build UI check of `/login` and `/` found no demo email, `DEMO ACCESS` label, quick-login control, or fixed default password; the client static chunks contained no demo email or removed control names.
 
 ## 4. Local Functional and Security Smoke Test
 
-A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. Later commits through `f554330` changed documentation only; unit, typecheck, lint, and build were re-run at the current HEAD.
+A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. This is a pre-remediation baseline only: `dab5681` changed seed passwords, login UI, and student provisioning, so the runtime smoke was not re-run and is **NOT TESTED after remediation**. Unit, typecheck, lint, and the production build were re-run at the remediation HEAD.
 
 | Area | Verified result |
 |---|---|
@@ -183,6 +210,7 @@ This creates a new remote branch at the current report HEAD (implementation code
 1. Approve migration or disposal of the three legacy proof files; do not delete them without approval.
 2. Rotate exposed credentials and revoke stale sessions.
 3. Review why the current Production deployment was built from a dirty feature branch and decide whether Production should be redeployed from a verified commit.
+4. Implement and test a secure student password-setup/invitation flow before re-enabling student provisioning.
 
 ## 8. Push Readiness
 
