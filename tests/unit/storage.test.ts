@@ -9,6 +9,7 @@ import {
   putPrivateObject,
   readPrivateStorageConfig,
 } from "@/lib/storage";
+import { uploadCourseFile } from "@/lib/services/files.service";
 
 const read = (relative: string) =>
   fs.readFileSync(path.join(process.cwd(), relative), "utf8");
@@ -176,5 +177,44 @@ describe("Phase C storage wiring", () => {
     }
 
     expect(read("src/lib/storage.ts")).not.toContain("S3_PUBLIC_URL");
+  });
+});
+
+describe("course file validation", () => {
+  const actor = {} as Parameters<typeof uploadCourseFile>[0];
+  const base = {
+    courseId: "00000000-0000-4000-8000-000000000000",
+    title: "Validation",
+    kind: "attachment" as const,
+  };
+
+  it("rejects unsupported MIME types before storage", async () => {
+    await expect(
+      uploadCourseFile(actor, {
+        ...base,
+        file: new File(["<html></html>"], "x.html", { type: "text/html" }),
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_FILE_TYPE" });
+  });
+
+  it("rejects oversized files before storage", async () => {
+    const oversized = {
+      type: "application/pdf",
+      size: 50 * 1024 * 1024 + 1,
+      name: "x.pdf",
+      arrayBuffer: async () => new ArrayBuffer(0),
+    } as File;
+    await expect(uploadCourseFile(actor, { ...base, file: oversized })).rejects.toMatchObject({
+      code: "FILE_TOO_LARGE",
+    });
+  });
+
+  it("fails closed when storage is not configured", async () => {
+    await expect(
+      uploadCourseFile(actor, {
+        ...base,
+        file: new File(["%PDF-1.4"], "x.pdf", { type: "application/pdf" }),
+      }),
+    ).rejects.toMatchObject({ code: "STORAGE_NOT_CONFIGURED" });
   });
 });
