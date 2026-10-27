@@ -1,22 +1,60 @@
 # DROS MATH - Final UAT Readiness Report
 
 **Candidate branch:** `feat/prod-hardening`
-**Candidate HEAD:** `f3e60a6` (test-only commit after implementation HEAD `dd6932b`)
+**Candidate HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
 **Final verdict:** `CONDITIONALLY READY — SPECIFIC SCENARIOS BLOCKED`
 
-No Production deployment, Production database write, Production environment change, or Production load test was performed.
+No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
-## 1. Exact Repository State
+## 1. Repository Identity and Source Suitability
 
-- Branch: `feat/prod-hardening`
-- Implementation commits present: `8f3abeb`, `52c0fba`, `dd6932b`
-- Report/test commits: `6372e2e` (prior report), `f3e60a6` (storage validation tests)
-- Git remote: `https://github.com/emmara518/emmara518.github.io.git`
-- No upstream is configured for `feat/prod-hardening`; the branch is local-only.
-- Working tree retains the pre-existing local-only `src/db/index.ts` modification and unrelated untracked QA artifacts. They are outside the candidate commits.
+**Correct source repository:** `github.com/emmara518/emmara518.github.io`
+**Vercel project:** `egypthub/emmara518-github-io`
 
-## 2. Automated Verification
+Evidence:
+
+- Local remote and `.git/config` point to `https://github.com/emmara518/emmara518.github.io.git`; no credentials are stored in the config.
+- GitHub API identifies the public repository as `emmara518/emmara518.github.io`, default branch `main`, language TypeScript.
+- Remote `main` contains the full Next.js application: 274 tracked files, `package.json`, `next.config.ts`, `src/app/api/**`, and API routes. It is not a static-only repository.
+- Remote `ui-redesign-2026` is the static mirror branch: `index.html`, `assets/`, `pages/`, `static/`, and a Pages workflow; it has no application API or Next.js source.
+- Remote `uiux/pass-1` also contains the full application.
+- The local branch is based on `origin/main` at `d78f170`; it is **17 commits ahead and 0 behind**. The hardening commits are therefore additive and can be pushed as a new branch without rewriting history.
+- Remote branches currently present: `main`, `ui-redesign-2026`, `uiux/pass-1`. Remote `feat/prod-hardening` is absent.
+
+The repository is suitable as the source for UAT. The GitHub description mentioning a "static mirror" is misleading for `main`; it describes the separate `ui-redesign-2026` static branch. The local source-map document naming `ui-redesign-2026` as the source is stale.
+
+## 2. Vercel Configuration and Production Risk
+
+The local `.vercel/project.json` points to `egypthub/emmara518-github-io`, which is the correct Vercel project for this repository.
+
+Actual Vercel evidence:
+
+- The latest Production deployment metadata records:
+  - `githubCommitRepo`: `emmara518.github.io`
+  - `githubCommitRef`: `feat/prod-hardening`
+  - `githubCommitSha`: `f4ba929`
+  - `gitDirty`: `1`
+- Production `/api/health/version` returns `{"release":"f4ba929","environment":"production"}`.
+- The Production `.vercel.app` URL returns HTTP `200` without authentication in a read-only request.
+- Deployment Protection is configured as `all_except_custom_domains` with Git fork protection enabled, but the observed public Production response means protection is not proven effective for the exposed URL.
+- There are **zero Preview deployments** (`vercel ls --environment preview` returned an empty list).
+- `DATABASE_URL` is a single Vercel variable targeting `Production, Preview, Development`; the same pattern applies to the Neon/Postgres variables. Database isolation is therefore **not proven**.
+- Preview does not contain `PUBLIC_REGISTRATION_ENABLED`, `AUTO_PARENT_LINK_ENABLED`, or `WALLET_SELF_TOPUP_ENABLED`; the application defaults for these flags are closed.
+- Preview still contains legacy `S3_PUBLIC_URL`; the newer optional storage variables `S3_FORCE_PATH_STYLE` and `S3_SIGNED_URL_TTL_SECONDS` are not present.
+- GitHub API returns `422` for commits `f4ba929` and `8fc344f`; only `d78f170` (`main`) is available remotely. The current Production deployment is therefore not reproducible from the public repository.
+
+### Production risks
+
+1. Production is publicly reachable at the generated Vercel URL despite the SSO setting.
+2. Production runs the pre-hardening baseline `f4ba929`, not the Phase A/B/C candidate.
+3. That Production deployment was built from a dirty `feat/prod-hardening` working tree, and its commit is absent from GitHub.
+4. Preview and Production share database variable configuration; creating a Preview deployment now could point UAT at Production data.
+5. No Preview deployment exists to validate protection or isolation.
+
+No Production setting was changed.
+
+## 3. Automated Verification
 
 | Command | Actual result |
 |---|---|
@@ -28,7 +66,7 @@ No Production deployment, Production database write, Production environment chan
 
 The scratch build used a temporary font stub only; no stub was committed. It emitted non-fatal PGlite page-data warnings because the scratch copy excluded `data/`; the build and standalone startup completed.
 
-## 3. Local Functional and Security Smoke Test
+## 4. Local Functional and Security Smoke Test
 
 A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101`. It created only synthetic UAT records. Result: **47/47 checks PASS**.
 
@@ -66,20 +104,6 @@ No separate authoritative H-26/H-27/H-28 finding document exists in the reposito
 - H-27: bulk-question entry includes a required course selector.
 - H-28: payment-channel read is Super Admin-only; teacher `403`, Super Admin `200`.
 
-## 4. Preview Isolation Gate
-
-**Status: BLOCKED.** No DROS MATH Vercel project was found in the accessible team.
-
-Evidence:
-
-- Vercel CLI is authenticated as `momoemara321-4058`; the only accessible team is `egypthub`.
-- Project filters for `dros`, `math`, `mohamed`, and `saeed` returned no projects.
-- The local `.vercel/project.json` points to `egypthub/emmara518-github-io` (`prj_2AX…`), which matches the Git origin `emmara518/emmara518.github.io`, not DROS MATH.
-- That linked project's Preview and Production scopes share the same `DATABASE_URL` variable name and include Neon/Postgres and payment/storage credentials. Values were not read. It is not an acceptable isolated DROS UAT target.
-- No DROS Preview URL or deployment identifier exists. No deployment was made.
-
-Because isolation and Deployment Protection could not be proven, no Preview runtime test was executed and no Preview data was written.
-
 ## 5. Storage and Legacy Proof Files
 
 Required configuration names (values not printed):
@@ -88,7 +112,7 @@ Required configuration names (values not printed):
 
 Status:
 
-- Course files, payment proofs, and reply media all use the private storage adapter.
+- Course files, payment proofs, and reply media use the private storage adapter.
 - No S3 configuration causes `503 STORAGE_NOT_CONFIGURED`; no local/public fallback occurs.
 - New uploads do not create `public/uploads/course-files`.
 - Signed URL generation is short-lived and occurs after route authorization. Live signed delivery was not exercised because no bucket is configured.
@@ -104,70 +128,67 @@ Legacy proof inventory (not migrated, not deleted):
 
 No local `course-files` or `replies` legacy objects were found. Two proof files are byte-identical.
 
-## 6. UAT Smoke Status
+## 6. Preview Gate Status
 
-| Scenario | Status | Evidence |
-|---|---|---|
-| Student login and course access | PASS (local) | Synthetic student; course API `200` |
-| Locked versus unlocked lessons | PASS (local) | First video ID present; later IDs `null` |
-| Protected exam answers | PASS (local) | Submission `201`; answers/explanations null |
-| Teacher content operations | PASS (local) | Read `200`; course edit `200` |
-| Teacher denied financial/admin operations | PASS (local) | Restricted routes `403` |
-| Zero-permission assistant | PASS (local) | APIs `403`; admin page empty |
-| Granted assistant permission | PASS (local) | `students.view` users `200`; other admin data `403` |
-| Parent/student registration | PASS (local) | Both `403 REGISTRATION_DISABLED` |
-| Auto parent-link disabled | PASS (local) | Parent children unchanged |
-| Disabled top-up | PASS (local) | `403 TOPUP_DISABLED` |
-| Admin workflows/audit visibility | PASS (local) | Admin page includes audit entry |
-| Private S3 delivery | BLOCKED | No bucket/credentials |
-| Preview protection | BLOCKED | No DROS Vercel project |
-| Preview database isolation | BLOCKED | No DROS Preview target |
-| Preview functional smoke | BLOCKED | Stopped before any Preview write |
+| Gate | Status |
+|---|---|
+| Correct source repository | PASS |
+| Vercel project linked to repository | PASS |
+| Deployment Protection configured | PARTIAL — SSO setting exists, but public Production URL returned 200 |
+| Preview Deployment Protection proven | BLOCKED — zero Preview deployments |
+| Preview database isolated from Production | BLOCKED — shared variable target; no Preview to verify |
+| Preview environment flags | PARTIAL — flags absent, defaults closed; no Preview to verify |
+| Preview S3/test credentials isolated | BLOCKED — shared credential names; no Preview |
+| Preview smoke test | BLOCKED — stopped before any Preview write |
 
-## 7. Remaining Owner Actions
+## 7. Safe Next Steps
 
-### A. Create and protect the correct Preview
+Do not push or deploy until the Preview environment is isolated.
 
-1. Vercel Dashboard -> Add New -> Project.
-2. Import the correct DROS MATH repository. Do not reuse `egypthub/emmara518-github-io`; it is unrelated to this application.
-3. Set Framework Preset to `Next.js` and Root Directory to `.`.
-4. Push `feat/prod-hardening` at `f3e60a6` to the correct Git remote.
-5. Create a Preview deployment from that branch. Do not promote it to Production.
-6. Settings -> Deployment Protection -> Vercel Authentication -> Standard Protection for Preview. Verify an incognito request returns the Vercel authentication page.
+### A. Prepare Preview environment
 
-### B. Isolate Preview data and services
-
-1. Settings -> Environment Variables -> Preview.
-2. Set `DATABASE_URL` to a dedicated UAT database. Do not reuse the Production database or the shared Neon/Postgres values.
+1. Vercel Dashboard -> Project `emmara518-github-io` -> Settings -> Environment Variables -> Preview.
+2. Replace `DATABASE_URL` and Neon/Postgres variables with a dedicated UAT database. Do not reuse the Production values.
 3. Set `PUBLIC_REGISTRATION_ENABLED=false`, `AUTO_PARENT_LINK_ENABLED=false`, and `WALLET_SELF_TOPUP_ENABLED=false`.
 4. Set a unique Preview `SESSION_SECRET`; use UAT-only or test-mode payment credentials. Remove Production payment credentials from Preview.
-5. Verify the target with a read-only Preview query: `select current_database(), current_user, inet_server_addr();`. Compare the result with Production; do not print credentials.
+5. Configure private storage in Preview: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
+6. Remove or ignore the legacy `S3_PUBLIC_URL` variable.
 
-### C. Configure private storage
+### B. Prove protection and isolation
 
-1. Create a private S3-compatible bucket with public access blocked.
-2. Settings -> Environment Variables -> Preview: set `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
-3. Verify a direct object URL returns `403`, an authorized signed download succeeds, and a valid upload succeeds.
-4. Migrate or explicitly discard the three legacy proof objects only after owner approval; update their `payment_requests.screenshot_key` values to `proofs/...` if migrated.
+1. Vercel -> Settings -> Deployment Protection -> Vercel Authentication -> Standard Protection for Preview; verify an incognito Preview request is challenged.
+2. Confirm the Production branch is `main`, not `feat/prod-hardening`.
+3. Run a read-only Preview query such as `select current_database(), current_user, inet_server_addr();` and compare it with Production without printing credentials.
+4. Verify the Preview deployment commit after push; do not promote it.
 
-### D. Credentials and approval
+### C. Push plan (not executed)
 
-1. Rotate exposed database, storage, payment, and session credentials before UAT.
-2. Revoke stale sessions.
-3. Confirm in writing that Preview is isolated and that the three legacy proof objects may be migrated or discarded.
+After A and B are complete and the owner approves:
+
+```bash
+git push -u origin feat/prod-hardening
+```
+
+This creates a new remote branch at `8fc344f`; it does not rewrite `main`. Do not force-push and do not promote the resulting Preview to Production.
+
+### D. Legacy files and credentials
+
+1. Approve migration or disposal of the three legacy proof files; do not delete them without approval.
+2. Rotate exposed credentials and revoke stale sessions.
+3. Review why the current Production deployment was built from a dirty feature branch and decide whether Production should be redeployed from a verified commit.
 
 ## 8. Limitations
 
-- No Preview deployment was created, so Preview protection, database isolation, and Preview smoke remain unverified.
+- No Preview deployment exists, so Preview protection, database isolation, and Preview smoke remain unverified.
+- The public Production URL returned 200 without authentication; protection is not proven effective.
+- Production runs `f4ba929`, which predates the hardening commits; its deployment commit is absent from GitHub.
 - Live S3 upload and signed-URL delivery were not exercised; fail-closed behavior was verified.
 - The three legacy proof objects were not migrated or deleted.
-- No Production commit/deployment was inspected or modified.
 - No capacity or high-volume load claim is made; capacity testing is out of scope.
-- Local PGlite test data is disposable and is not Production data.
 
 ## 9. Acceptance Script for Mr. Mohamed Saeed
 
-1. Open the protected Preview URL in an incognito window; confirm Vercel authentication is required.
+1. Open the protected Preview URL in an incognito window; confirm authentication is required.
 2. Log in as a teacher; confirm content-only navigation and `403` on users/orders/payment channels.
 3. Log in as a zero-permission assistant; confirm no admin sections. Log in as a `students.view` assistant; confirm users only.
 4. Submit student and parent registration; confirm both are rejected with `REGISTRATION_DISABLED`.
