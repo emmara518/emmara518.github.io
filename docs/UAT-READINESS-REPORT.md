@@ -3,9 +3,10 @@
 **Candidate branch:** `feat/prod-hardening`
 **Implementation HEAD:** `8fc344fc0dfdaa9a503e35fef2b4cbba29204b5b`
 **Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
-**Current local HEAD at audit:** `dfdbf3737832488d1c7e8ec21b0de86e739775a9`
+**Secure setup commit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
+**Current local HEAD at audit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `POST-REMEDIATION REGRESSION PASS — UAT ENVIRONMENT STILL BLOCKED`
+**Final verdict:** `SECURE STUDENT SETUP PASS — UAT INFRASTRUCTURE STILL BLOCKED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -54,6 +55,23 @@ Commit `dab5681` addresses the public demo-credential findings:
 5. Rotate the same credential in any other system where it was reused.
 6. Decide separately whether a Git history purge is necessary; a purge does not replace credential rotation and requires explicit approval.
 
+## 1B. Secure Student Invitation Setup
+
+Commit `a477976` replaces the disabled student-provisioning endpoint with a manual one-time setup-link flow:
+
+- `student_invitations` schema: email, name, phone, SHA-256 token verifier, expiry, consumed/revoked timestamps, creator, created timestamp. Added to `schema.ts`, `init-sql.ts`, `schema-order.json`, and `drizzle/0002_student_invitations.sql`.
+- `POST /api/v1/admin/users/create-student` now requires Super Admin, validates student fields, rate-limits, rejects duplicate users and pending invitations, and returns a setup URL once. It creates no user and no password.
+- Setup URL uses `/setup-password#token=...`; the token is in the fragment and is not sent in the initial page request.
+- `POST /api/v1/auth/student-setup` rate-limits, validates the token, atomically consumes the invitation, enforces expiry/revocation/single use, hashes the student's chosen password with the existing bcrypt utility, and creates the student and wallet in one transaction.
+- Setup page clears the fragment with `history.replaceState`, provides Arabic RTL password/confirm fields, and shows invalid/expired/used/success states.
+- `/setup-password` responses set `Referrer-Policy: no-referrer` and `Cache-Control: private, no-store`.
+- `POST /api/v1/admin/student-invitations/[id]/revoke` allows Super Admin revocation.
+- Audit events record invitation id/email metadata only; raw tokens and setup URLs are never logged or audited.
+- Setup does not create a session; the student logs in normally after setting a password.
+- Manual delivery is supported without an external email provider: the administrator receives the raw setup URL once and must deliver it through an approved private channel. No email delivery is claimed.
+
+Tests cover token entropy/hash, malformed tokens, expiry bounds, route authorization, rate-limit wiring, fragment handling, transaction/consumption/revocation wiring, and schema/migration presence. The local smoke exercises successful setup, invalid token, expiry, replay, revocation, concurrent consumption, and post-setup login.
+
 ## 2. Vercel Configuration and Production Risk
 
 The local `.vercel/project.json` points to `egypthub/emmara518-github-io`, which is the correct Vercel project for this repository.
@@ -93,8 +111,8 @@ No Production setting or Vercel configuration was changed. Production Branch was
 |---|---|
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS, 0 errors; 1 pre-existing warning at `tests/ultra/fixtures/k6-ultra-smoke.js:37` |
-| `npx vitest run tests/unit` | PASS: 10 files, 280 tests |
-| Post-remediation local UAT smoke | PASS: 30/30 scenarios |
+| `npx vitest run tests/unit` | PASS: 11 files, 288 tests |
+| Post-remediation local UAT smoke | PASS: 38/38 scenarios |
 | Scratch production build with Google-font stub | PASS; standalone prepared |
 | Standalone `/api/health` | PASS: `200 {"ok":true}` |
 
@@ -102,7 +120,7 @@ The scratch build used a temporary font stub only; no stub was committed. The cu
 
 ## 4. Local Functional and Security Smoke Test
 
-A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` at implementation HEAD `8fc344f`. It created only synthetic UAT records. Result: **47/47 checks PASS**. This is a pre-remediation baseline only: `dab5681` changed seed passwords, login UI, and student provisioning, so the runtime smoke was not re-run and is **NOT TESTED after remediation**. Unit, typecheck, lint, and the production build were re-run at the remediation HEAD.
+A pre-remediation controlled smoke ran at implementation HEAD `8fc344f`: **47/47 checks PASS**. That historical result is not current validation. The post-remediation, post-invitation suite was rerun at HEAD `a477976`: **38/38 PASS** (details in section 4A). Unit, typecheck, lint, and the production build were also rerun at the current HEAD.
 
 | Area | Verified result |
 |---|---|
@@ -132,7 +150,7 @@ A controlled local smoke test ran against PGlite test data on `127.0.0.1:3101` a
 
 ### 4A. Post-Remediation Regression Smoke
 
-A fresh 30-scenario local smoke ran against isolated PGlite data at HEAD `dfdbf37`: **30/30 PASS**. It used generated test passwords supplied through environment variables; no discovered credentials were used and no values were printed.
+A fresh 38-scenario local smoke ran against isolated PGlite data at HEAD `a477976`: **38/38 PASS**. It used generated test passwords and setup tokens supplied through environment variables; no discovered credentials were used and no values were printed.
 
 - Valid admin/teacher/student/parent logins: PASS.
 - Invalid login rejected `401`: PASS.
@@ -149,7 +167,7 @@ A fresh 30-scenario local smoke ran against isolated PGlite data at HEAD `dfdbf3
 - Manual parent link and parent portal: PASS.
 - Course upload without S3: `503`; file delivery unauthenticated: `401`: PASS.
 - Production-visible `/login` and `/`: no demo credentials or removed controls: PASS.
-- Admin audit view and session logout: PASS.
+- Admin audit view and session logout: PASS.\n- Super Admin invitation creation, teacher/zero/anonymous denial, successful one-time setup, replay rejection, duplicate-email rejection, invalid-token rejection, concurrent single consumption, revocation, expiry, setup-page rendering, and post-setup login: PASS.
 
 The previous 47-scenario smoke was **not rerun**. Student creation itself remains **BLOCKED** because provisioning is intentionally disabled; the denial path passed, and no account was created.
 
@@ -212,9 +230,10 @@ Do not push or deploy until the Preview environment is isolated.
 1. Vercel Dashboard -> Project `emmara518-github-io` -> Settings -> Environment Variables -> Preview.
 2. Replace `DATABASE_URL` and Neon/Postgres variables with a dedicated UAT database. Do not reuse the Production values.
 3. Set `PUBLIC_REGISTRATION_ENABLED=false`, `AUTO_PARENT_LINK_ENABLED=false`, and `WALLET_SELF_TOPUP_ENABLED=false`.
-4. Set a unique Preview `SESSION_SECRET`; use UAT-only or test-mode payment credentials. Remove Production payment credentials from Preview.
-5. Configure private storage in Preview: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
-6. Remove or ignore the legacy `S3_PUBLIC_URL` variable.
+4. Set `NEXT_PUBLIC_APP_URL` to the protected Preview URL and `STUDENT_INVITATION_TTL_MINUTES=30`; do not reuse the Production URL for setup links.
+5. Set a unique Preview `SESSION_SECRET`; use UAT-only or test-mode payment credentials. Remove Production payment credentials from Preview.
+6. Configure private storage in Preview: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`; optionally `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`, `S3_SIGNED_URL_TTL_SECONDS=300`.
+7. Remove or ignore the legacy `S3_PUBLIC_URL` variable.
 
 ### B. Prove protection and isolation
 
