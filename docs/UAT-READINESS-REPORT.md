@@ -1,7 +1,7 @@
 # DROS MATH — UAT Readiness Report
 
 **Candidate branch:** `feat/prod-hardening`
-**Candidate HEAD:** `dd6932b59b20c2d77be39b9a484b5b0eb35e27b8`
+**Candidate code HEAD:** `dd6932b59b20c2d77be39b9a484b5b0eb35e27b8`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
 **Status:** UAT candidate prepared; storage live verification and legacy migration are owner-gated.
 
