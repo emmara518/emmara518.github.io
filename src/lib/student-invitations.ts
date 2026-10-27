@@ -31,14 +31,38 @@ export function invitationExpiresAt(now: Date = new Date()): Date {
   return new Date(now.getTime() + invitationTtlMinutes() * 60 * 1000);
 }
 
-export function buildSetupUrl(token: string): string {
-  const base = (process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000").replace(/\/+$/, "");
+export function buildSetupUrl(token: string, requestOrigin?: string): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!configured && process.env.NODE_ENV === "production") {
+    throw new ServiceError(503, "SETUP_URL_NOT_CONFIGURED", "رابط التطبيق غير مهيأ لإنشاء دعوات الطلاب");
+  }
+  const base = (configured || "http://localhost:3000").replace(/\/+$/, "");
+  let parsed: URL;
+  try {
+    parsed = new URL(base);
+  } catch {
+    throw new ServiceError(503, "SETUP_URL_INVALID", "رابط التطبيق غير صالح");
+  }
+  if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+    throw new ServiceError(503, "SETUP_URL_INVALID", "رابط التطبيق يجب أن يستخدم HTTPS");
+  }
+  if (process.env.NODE_ENV === "production" && requestOrigin) {
+    try {
+      if (new URL(requestOrigin).origin !== parsed.origin) {
+        throw new ServiceError(503, "SETUP_URL_ORIGIN_MISMATCH", "رابط التطبيق لا يطابق عنوان الطلب");
+      }
+    } catch (e) {
+      if (e instanceof ServiceError) throw e;
+      throw new ServiceError(503, "SETUP_URL_INVALID", "رابط الطلب غير صالح");
+    }
+  }
   return `${base}/setup-password#token=${token}`;
 }
 
 export async function createStudentInvitation(
   actor: SessionUser,
   input: { name: string; email: string; phone?: string | null },
+  requestOrigin?: string,
 ) {
   const email = input.email.toLowerCase().trim();
   const now = new Date();
@@ -99,7 +123,7 @@ export async function createStudentInvitation(
     email: created.email,
     name: created.name,
     expiresAt: created.expiresAt,
-    setupUrl: buildSetupUrl(token),
+    setupUrl: buildSetupUrl(token, requestOrigin),
   };
 }
 

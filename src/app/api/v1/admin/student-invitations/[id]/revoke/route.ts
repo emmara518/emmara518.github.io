@@ -8,7 +8,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const gate = await requireSuperAdmin();
   if ("response" in gate) return gate.response;
 
-  const rateLimitResponse = await applyRateLimit(request, "api", `student-invite-revoke:${gate.user.id}`);
+  const rateLimitResponse = await applyRateLimit(request, "api", `student-invite-revoke:${gate.user.id}`, { failClosed: true });
   if (rateLimitResponse) return rateLimitResponse;
 
   const { id } = await params;

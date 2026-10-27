@@ -70,10 +70,15 @@ async function dbRateLimit(
   key: string,
   max: number,
   windowMs: number,
-): Promise<{ allowed: boolean; remaining: number; resetMs: number }> {
+): Promise<{ allowed: boolean; remaining: number; resetMs: number; backendError?: boolean }> {
   if (!pool) {
-    // No external Postgres pool (embedded dev database) — no backend available.
-    return { allowed: true, remaining: max, resetMs: windowMs };
+    const backendError = process.env.NODE_ENV === "production";
+    return {
+      allowed: !backendError,
+      remaining: backendError ? 0 : max,
+      resetMs: windowMs,
+      backendError,
+    };
   }
   try {
     await ensureRateLimitTable();
@@ -107,8 +112,8 @@ async function dbRateLimit(
       client.release();
     }
   } catch (e) {
-    console.warn("[rate-limit] DB backend error — allowing request:", e instanceof Error ? e.message : e);
-    return { allowed: true, remaining: max, resetMs: windowMs };
+    console.warn("[rate-limit] DB backend error:", e instanceof Error ? e.message : e);
+    return { allowed: true, remaining: max, resetMs: windowMs, backendError: true };
   }
 }
 
@@ -116,7 +121,7 @@ export async function rateLimit(
   key: string,
   max: number,
   windowMs: number,
-): Promise<{ allowed: boolean; remaining: number; resetMs: number }> {
+): Promise<{ allowed: boolean; remaining: number; resetMs: number; backendError?: boolean }> {
   const redis = getRedisClient();
   if (!redis) {
     if (process.env.NODE_ENV !== "production") {
@@ -136,7 +141,13 @@ export async function rateLimit(
   multi.zAdd(redisKey, { score: now, value: `${now}:${Math.random()}` });
   multi.zCard(redisKey);
   multi.pExpire(redisKey, windowMs);
-  const results = await multi.exec();
+  let results;
+  try {
+    results = await multi.exec();
+  } catch (e) {
+    console.warn("[rate-limit] Redis backend error:", e instanceof Error ? e.message : e);
+    return { allowed: true, remaining: max, resetMs: windowMs, backendError: true };
+  }
 
   const count = results[2] as number;
   const allowed = count <= max;

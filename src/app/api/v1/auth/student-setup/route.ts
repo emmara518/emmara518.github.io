@@ -9,7 +9,7 @@ const setupSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const rateLimitResponse = await applyRateLimit(request, "auth");
+  const rateLimitResponse = await applyRateLimit(request, "auth", undefined, { failClosed: true });
   if (rateLimitResponse) return rateLimitResponse;
 
   const parsed = await parseJson(request, setupSchema);
@@ -17,7 +17,16 @@ export async function POST(request: Request) {
 
   try {
     const result = await consumeStudentInvitation(parsed.data.token, parsed.data.password);
-    return ok({ email: result.email });
+    return ok(
+      { email: result.email },
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+          Pragma: "no-cache",
+          "Referrer-Policy": "no-referrer",
+        },
+      },
+    );
   } catch (e) {
     const envelope = toEnvelope(e);
     return err(envelope.status, envelope.code, envelope.message);

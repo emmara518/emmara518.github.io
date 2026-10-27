@@ -45,6 +45,18 @@ describe("student invitation tokens", () => {
     const ttl = invitationExpiresAt(new Date("2026-01-01T00:00:00Z")).getTime() - new Date("2026-01-01T00:00:00Z").getTime();
     expect(ttl).toBe(30 * 60 * 1000);
   });
+
+  it("fails closed when production has no configured app URL", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
+    expect(() => buildSetupUrl(generateSetupToken())).toThrow();
+  });
+
+  it("rejects a production request origin that differs from the configured URL", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://uat.example.test");
+    expect(() => buildSetupUrl(generateSetupToken(), "https://other.example.test")).toThrow();
+  });
 });
 
 describe("student invitation wiring", () => {
@@ -71,6 +83,7 @@ describe("student invitation wiring", () => {
   it("rate-limits setup and does not expose a token in audit meta", () => {
     const route = read("src/app/api/v1/auth/student-setup/route.ts");
     expect(route).toContain("applyRateLimit");
+    expect(route).toContain("failClosed: true");
     expect(route).toContain("consumeStudentInvitation");
     const service = read("src/lib/student-invitations.ts");
     expect(service).toContain("meta: { invitationId: invitation.id }");

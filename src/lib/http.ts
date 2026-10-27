@@ -47,11 +47,22 @@ export async function applyRateLimit(
   request: Request,
   category: keyof typeof RATE_LIMITS,
   customKey?: string,
+  options?: { failClosed?: boolean },
 ): Promise<NextResponse | null> {
   const ip = getClientIp(request);
   const key = customKey ?? `${category}:${ip}`;
   const { max, windowMs } = RATE_LIMITS[category];
-  const { allowed, remaining, resetMs } = await rateLimit(key, max, windowMs);
+  const { allowed, remaining, resetMs, backendError } = await rateLimit(key, max, windowMs);
+
+  if (backendError && options?.failClosed) {
+    return NextResponse.json(
+      { ok: false, error: { code: "RATE_LIMIT_UNAVAILABLE", message: "خدمة الحد من المحاولات غير متاحة مؤقتاً — حاول لاحقاً" } },
+      {
+        status: 503,
+        headers: { "Retry-After": String(Math.ceil(resetMs / 1000)) },
+      },
+    );
+  }
 
   if (!allowed) {
     return NextResponse.json(
