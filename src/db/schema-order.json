@@ -4,6 +4,7 @@
   "grades",
   "users",
   "sessions",
+  "student_invitations",
   "user_preferences",
   "courses",
   "lessons",

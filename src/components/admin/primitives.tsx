@@ -99,6 +99,9 @@ export function statusTone(status: string): "brand" | "gold" | "success" | "mute
 
 /* ── Audit-log action codes → professional Arabic labels ── */
 const ACTION_LABELS: Record<string, string> = {
+  "student_invitations.create": "دعوة طالب",
+  "student_invitations.consume": "تفعيل حساب طالب",
+  "student_invitations.revoke": "إلغاء دعوة طالب",
   "users.create": "إنشاء مستخدم",
   "users.edit_profile": "تعديل ملف مستخدم",
   "users.toggle_status": "تجميد / تفعيل حساب",

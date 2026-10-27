@@ -98,6 +98,26 @@ export const sessions = pgTable(
  * blob. Replaces the v1 filesystem store (`data/prefs/*.json`), which cannot
  * work on serverless hosts (read-only filesystem → PUT 500 on Vercel).
  */
+export const studentInvitations = pgTable(
+  "student_invitations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    phone: text("phone"),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("student_invitations_email_idx").on(t.email),
+    index("student_invitations_expiry_idx").on(t.expiresAt),
+  ],
+);
+
 export const userPreferences = pgTable("user_preferences", {
   userId: uuid("user_id")
     .primaryKey()

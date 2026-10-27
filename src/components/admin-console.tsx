@@ -620,7 +620,13 @@ const [qCourseFilter, setQCourseFilter] = useState("all");
   const [bulkResult, setBulkResult] = useState<{ added: number; total: number; errors: string[] } | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  /* Add student */
+  /* Student invitation */
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePhone, setInvitePhone] = useState("");
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   /* Community groups management */
   const [cgList, setCgList] = useState<{ id: string; name: string; description: string; scope: string; courseId?: string | null; courseTitle?: string; stageId?: string | null; stageName?: string; coverImageUrl?: string | null; isActive: boolean; moderationRequired: boolean; sortOrder: number; postsCount: number; membersCount: number; createdAt: string }[]>([]);
@@ -1524,6 +1530,28 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
     pushToast("ok", "تم رفع الملف بنجاح");
   }
 
+
+  async function handleCreateInvitation(e: FormEvent) {
+    e.preventDefault();
+    setInviteBusy(true);
+    setInviteCopied(false);
+    const data = await api("/api/v1/admin/users/create-student", {
+      method: "POST",
+      body: JSON.stringify({
+        name: inviteName,
+        email: inviteEmail,
+        phone: invitePhone,
+      }),
+    });
+    setInviteBusy(false);
+    if (data?.invitation?.setupUrl) {
+      setInviteUrl(data.invitation.setupUrl);
+      setInviteName("");
+      setInviteEmail("");
+      setInvitePhone("");
+      pushToast("ok", "تم إنشاء رابط إعداد الحساب — انسخه الآن");
+    }
+  }
 
   async function handleCreateExam(e: FormEvent) {
     e.preventDefault();
@@ -4591,9 +4619,52 @@ const [availableExams, setAvailableExams] = useState<{ id: string; title: string
               </Button>
             }
           />
-          <div className="rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-sm font-semibold leading-relaxed text-ink">
-            إنشاء حساب الطالب معطّل مؤقتاً حتى يتم تفعيل تدفق آمن لتعيين كلمة المرور. استخدم إدارة المستخدمين الحالية أو اطلب من المالك تفعيل التدفق الآمن.
-          </div>
+          <form onSubmit={handleCreateInvitation} className="space-y-4">
+            <Field label="اسم الطالب">
+              <Input required value={inviteName} onChange={(e) => setInviteName(e.target.value)} placeholder="اسم الطالب" />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="البريد الإلكتروني">
+                <Input required type="email" dir="ltr" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="student@example.com" />
+              </Field>
+              <Field label="رقم الموبايل / واتساب">
+                <Input dir="ltr" value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} placeholder="01xxxxxxxxx" />
+              </Field>
+            </div>
+            <p className="text-xs leading-relaxed text-muted">
+              سيتم إنشاء رابط إعداد لمرة واحدة. لا يُنشأ حساب بكلمة مرور افتراضية، ولا يظهر الرابط مرة أخرى بعد إغلاق الصفحة.
+            </p>
+            <Button type="submit" disabled={inviteBusy} variant="primary" className="w-full">
+              {inviteBusy ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
+              {inviteBusy ? "جارٍ إنشاء الرابط..." : "إنشاء رابط إعداد الحساب"}
+            </Button>
+          </form>
+          {inviteUrl ? (
+            <div className="space-y-3 rounded-xl border border-gold/40 bg-gold/10 p-4">
+              <p className="text-sm font-bold text-ink">رابط إعداد الحساب — يظهر مرة واحدة فقط</p>
+              <p className="text-xs leading-relaxed text-muted">
+                أرسل هذا الرابط للطالب عبر قناة خاصة موثوقة. لا تنشره في مجموعات عامة. ينتهي الرابط بعد 30 دقيقة ويُستخدم مرة واحدة.
+              </p>
+              <code dir="ltr" className="block break-all rounded-lg border border-line bg-surface p-3 font-mono text-xs text-ink">
+                {inviteUrl}
+              </code>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(inviteUrl);
+                    setInviteCopied(true);
+                  } catch {
+                    setInviteCopied(false);
+                  }
+                }}
+              >
+                {inviteCopied ? "تم النسخ" : "نسخ الرابط"}
+              </Button>
+            </div>
+          ) : null}
         </Card>
       )}
 

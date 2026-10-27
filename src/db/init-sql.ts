@@ -110,6 +110,22 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 
 /* -- v6 user_preferences: DB-backed settings replacing the old file store.
    Additive and idempotent. -- */
+CREATE TABLE IF NOT EXISTS "student_invitations" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"email" text NOT NULL,
+	"name" text NOT NULL,
+	"phone" text,
+	"token_hash" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"consumed_at" timestamp with time zone,
+	"revoked_at" timestamp with time zone,
+	"created_by" uuid REFERENCES "users"("id") ON DELETE set null,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "student_invitations_token_hash_unique" UNIQUE("token_hash")
+);
+CREATE INDEX IF NOT EXISTS "student_invitations_email_idx" ON "student_invitations" ("email");
+CREATE INDEX IF NOT EXISTS "student_invitations_expiry_idx" ON "student_invitations" ("expires_at");
+
 CREATE TABLE IF NOT EXISTS "user_preferences" (
 	"user_id" uuid PRIMARY KEY REFERENCES "users"("id") ON DELETE cascade,
 	"density" text DEFAULT 'comfortable' NOT NULL,

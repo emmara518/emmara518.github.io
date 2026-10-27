@@ -42,12 +42,12 @@ describe("public demo credential remediation", () => {
   it("removes the fixed new-student password from the admin console", () => {
     const source = read("src/components/admin-console.tsx");
     expect(source).not.toContain("newStudentPass");
-    expect(source).toContain("تدفق آمن");
+    expect(source).toContain("رابط إعداد الحساب");
   });
 
-  it("disables student provisioning until a secure setup flow exists", () => {
+  it("uses a one-time invitation instead of a student password", () => {
     const route = read("src/app/api/v1/admin/users/create-student/route.ts");
-    expect(route).toContain("STUDENT_PROVISIONING_DISABLED");
+    expect(route).toContain("createStudentInvitation");
     expect(route).toContain("requireSuperAdmin");
     expect(route).not.toContain("registerSchema");
     expect(route).not.toContain("passwordHash");
