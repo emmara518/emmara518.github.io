@@ -5,9 +5,9 @@
 **Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
 **Secure setup commit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
 **Final invitation gate commit:** `a10fdcd13b52681f365e4718935afff5cc436d6a`
-**Current local HEAD at audit:** `a10fdcd13b52681f365e4718935afff5cc436d6a`
+**Current local HEAD at audit:** `4d03b8504fc30091787295423f19fe5da472dc88`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
-**Final verdict:** `CODE GATES PASS — UAT INFRASTRUCTURE STILL BLOCKED`
+**Final verdict:** `BLOCKED — OWNER INFRASTRUCTURE CONFIGURATION REQUIRED`
 
 No Production deployment, Production database write, Production environment change, push, or Production load test was performed.
 
@@ -256,6 +256,27 @@ No local `course-files` or `replies` legacy objects were found. Two proof files 
 | Preview environment flags | BLOCKED — flags absent; defaults closed but no Preview to verify |
 | Preview S3/test credentials isolated | BLOCKED — shared credential names; no Preview |
 | Preview smoke test | BLOCKED — stopped before any Preview write |
+
+## 6A. Current Infrastructure Evidence
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Vercel repository/team | PASS | `egypthub/emmara518-github-io` linked to `emmara518.github.io`. |
+| Production Branch | PASS | `main`; no change made. |
+| Preview deployment | BLOCKED | Zero Preview deployments. |
+| Preview protection | BLOCKED | SSO config is `all_except_custom_domains`, but Production `.vercel.app` returns `200` without authentication; no Preview exists for an incognito test. |
+| Preview database isolation | BLOCKED | `DATABASE_URL`, Neon, and Postgres variables still target `production, preview, development`; no separate UAT identity or read-only query. |
+| Preview session separation | BLOCKED | `SESSION_SECRET` still targets `production, preview`. |
+| Preview rate-limit backend | BLOCKED | `REDIS_URL` targets `production, preview`; no isolated UAT Redis. Live 429 is not tested; the embedded local limiter is inert. |
+| Preview storage | BLOCKED | `S3_*` targets `production, preview`; legacy `S3_PUBLIC_URL` remains. No private UAT bucket. |
+| Preview payment credentials | BLOCKED | Paymob/Stripe variables target `production, preview`. |
+| Preview feature flags | BLOCKED | Registration, auto-link, and top-up flags are absent; defaults are closed, but no Preview exists to verify. |
+| Invitation base URL | BLOCKED | `NEXT_PUBLIC_APP_URL` targets `production, preview`; no Preview-specific URL. Production origin validation will fail closed rather than emit a wrong-host link. |
+| Real PostgreSQL migration | NOT TESTED | Migration passed on PGlite only; no isolated UAT PostgreSQL was available. |
+| Live shared-backend 429 | NOT TESTED | Unit response verified with a deterministic adapter; no isolated Redis/Postgres backend. |
+| Production demo accounts | BLOCKED | Account status has not been verified or changed. |
+
+Local code remains green: 295 unit tests, 38/38 local smoke, typecheck/lint/build pass. These do not prove Preview readiness.
 
 ## 7. Safe Next Steps
 
