@@ -5,7 +5,7 @@
 **Security remediation commit:** `dab56814579d4afd63596efbad818b9df90dcd0e`
 **Secure setup commit:** `a477976a413a147a4fc542fce0ef1a92b77e17ab`
 **Final invitation gate commit:** `a10fdcd13b52681f365e4718935afff5cc436d6a`
-**Current local HEAD at audit:** `4d03b8504fc30091787295423f19fe5da472dc88`
+**Current local HEAD at audit:** `b772159812ba584595500fedebf7f65949245ba7`
 **Baseline:** `f4ba929a3193ae1b072b963b5c381db3ea5edaad`
 **Final verdict:** `BLOCKED — OWNER INFRASTRUCTURE CONFIGURATION REQUIRED`
 
@@ -276,7 +276,7 @@ No local `course-files` or `replies` legacy objects were found. Two proof files 
 | Live shared-backend 429 | NOT TESTED | Unit response verified with a deterministic adapter; no isolated Redis/Postgres backend. |
 | Production demo accounts | BLOCKED | Account status has not been verified or changed. |
 
-Local code remains green: 295 unit tests, 38/38 local smoke, typecheck/lint/build pass. These do not prove Preview readiness.
+Rechecked at HEAD `b772159`: Vercel configuration is unchanged, with zero Preview deployments and shared Production/Preview scopes. Local code remains green: 295 unit tests, 38/38 local smoke, typecheck/lint/build pass. These do not prove Preview readiness.
 
 ## 7. Safe Next Steps
 
