@@ -41,7 +41,14 @@ if (globalForDb.__drosMathDbInstance) {
   pool = globalForDb.__drosMathPool ?? null;
 } else if (databaseUrl && !isPlaceholderUrl(databaseUrl)) {
   try {
-    const isLocal = databaseUrl.includes("localhost") || databaseUrl.includes("127.0.0.1");
+    const isLocal = (() => {
+      try {
+        const host = new URL(databaseUrl).hostname;
+        return host === "localhost" || host === "127.0.0.1" || host === "::1";
+      } catch {
+        return false;
+      }
+    })();
     // Serverless (Vercel) runs many short-lived instances. The node-postgres
     // default pool (max=10, 10s idle) lets a handful of instances hold more
     // clients than the database/serverless pooler allows — Supabase rejects

@@ -42,12 +42,12 @@ export function parsePositiveInt(
   return value;
 }
 
-/* ── Postgres fallback backend ──────────────────────────────────────────────
+/* â”€â”€ Postgres fallback backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * When REDIS_URL is absent the limiter must still protect production.
  * Uses the application's existing Postgres pool: a sliding window of hit
  * timestamps per key. Table is created lazily (matches the SCHEMA_SQL
- * boot pattern in db/init-sql.ts). Failure of this backend fails OPEN so a
- * limiter outage can never lock users out of the platform. */
+ * boot pattern in db/init-sql.ts). Backend failure fails CLOSED so sensitive
+ * routes cannot run without a working limiter. */
 
 const globalForRL = globalThis as typeof globalThis & {
   __rlTableReady?: boolean;
@@ -113,7 +113,7 @@ async function dbRateLimit(
     }
   } catch (e) {
     console.warn("[rate-limit] DB backend error:", e instanceof Error ? e.message : e);
-    return { allowed: true, remaining: max, resetMs: windowMs, backendError: true };
+    return { allowed: false, remaining: 0, resetMs: windowMs, backendError: true };
   }
 }
 
@@ -125,8 +125,8 @@ export async function rateLimit(
   const redis = getRedisClient();
   if (!redis) {
     if (process.env.NODE_ENV !== "production") {
-      // Dev convenience: embedded database has no pool → limiter is inert.
-      console.warn("[rate-limit] Redis not configured — using Postgres fallback");
+      // Dev convenience: embedded database has no pool â†’ limiter is inert.
+      console.warn("[rate-limit] Redis not configured â€” using Postgres fallback");
     }
     return dbRateLimit(key, max, windowMs);
   }
@@ -146,7 +146,7 @@ export async function rateLimit(
     results = await multi.exec();
   } catch (e) {
     console.warn("[rate-limit] Redis backend error:", e instanceof Error ? e.message : e);
-    return { allowed: true, remaining: max, resetMs: windowMs, backendError: true };
+    return { allowed: false, remaining: 0, resetMs: windowMs, backendError: true };
   }
 
   const count = results[2] as number;

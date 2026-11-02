@@ -125,7 +125,7 @@ export function LessonRoom({ room, initialVideoId }: { room: LearningRoomData; i
       const res = await fetch(`/api/v1/videos/${current.id}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoId: current.id, watchedSeconds: current.durationSec, completed: true }),
+        body: JSON.stringify({ videoId: current.id, watchedSeconds: current.durationSec }),
       });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.ok) {

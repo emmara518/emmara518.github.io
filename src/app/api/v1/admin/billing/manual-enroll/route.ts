@@ -4,7 +4,7 @@ import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
 import { users, courses, subscriptions, orders, invoices, auditLogs } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { ServiceError, toEnvelope } from "@/lib/errors";
 
 const manualEnrollSchema = z.object({
@@ -31,17 +31,30 @@ export async function POST(request: Request) {
         .limit(1);
       const student = studentRows[0];
       if (!student) {
-        throw new ServiceError(404, "USER_NOT_FOUND", "لم يتم العثور على حساب الطالب");
+        throw new ServiceError(404, "USER_NOT_FOUND", "Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ø­Ø³Ø§Ø¨ Ø§Ù„Ø·Ø§Ù„Ø¨");
       }
 
       const courseRows = await tx
-        .select({ id: courses.id, title: courses.title, priceCents: courses.priceCents })
+        .select({ id: courses.id, title: courses.title, priceCents: courses.priceCents, status: courses.status })
         .from(courses)
         .where(eq(courses.id, parsed.data.courseId))
         .limit(1);
       const course = courseRows[0];
-      if (!course) {
-        throw new ServiceError(404, "COURSE_NOT_FOUND", "الكورس غير موجود");
+      if (!course || course.status !== "published") {
+        throw new ServiceError(404, "COURSE_NOT_FOUND", "OU,U�U^O�O3 O�USO� U.U^O�U^O_");
+      }
+
+      // Serialize enrollment for this student/course so a retry cannot create
+      // a second order/invoice without a subscription.
+      await tx.execute(sql`SELECT id FROM courses WHERE id = ${course.id} FOR UPDATE`);
+      const existingRows = await tx
+        .select({ id: subscriptions.id, status: subscriptions.status })
+        .from(subscriptions)
+        .where(and(eq(subscriptions.userId, student.id), eq(subscriptions.courseId, course.id)))
+        .limit(1);
+      const existing = existingRows[0];
+      if (existing?.status === "active") {
+        throw new ServiceError(409, "ALREADY_ENROLLED", "Student is already enrolled in this course");
       }
 
       const amountCents = Math.round(parsed.data.amountEgp * 100);
@@ -64,15 +77,19 @@ export async function POST(request: Request) {
         totalCents: amountCents,
       });
 
-      await tx
-        .insert(subscriptions)
-        .values({
+      if (existing) {
+        await tx
+          .update(subscriptions)
+          .set({ status: "active", orderId: order.id, startsAt: new Date() })
+          .where(eq(subscriptions.id, existing.id));
+      } else {
+        await tx.insert(subscriptions).values({
           userId: student.id,
           courseId: course.id,
           orderId: order.id,
           status: "active",
-        })
-        .onConflictDoNothing();
+        });
+      }
 
       await tx.insert(auditLogs).values({
         actorId: auth.user.id,

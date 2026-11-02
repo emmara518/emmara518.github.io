@@ -16,6 +16,7 @@ import { ServiceError } from "../errors";
 import { listInvoices, getWalletSummary, hasActiveSubscription } from "./billing.service";
 import { getCourseBySlug, getCourseCurriculum } from "./catalog.service";
 import { listMyAttempts } from "./exams.service";
+import { mergeWatchedSeconds, normalizeWatchedSeconds } from "../learning-policy";
 import type { SessionUser } from "../auth";
 
 /** Student dashboard & learning room read models. */
@@ -520,76 +521,110 @@ export async function markVideoProgress(
   completed: boolean,
 ) {
   void completed;
-  const videoRows = await db
-    .select({
-      id: videos.id,
-      courseId: lessons.courseId,
-      isFreePreview: lessons.isFreePreview,
-      durationSec: videos.durationSec,
-      lessonOrder: lessons.sortOrder,
-      videoOrder: videos.sortOrder,
-      requireSequential: courses.requireSequentialProgress,
-    })
-    .from(videos)
-    .innerJoin(lessons, eq(videos.lessonId, lessons.id))
-    .innerJoin(courses, eq(lessons.courseId, courses.id))
-    .where(eq(videos.id, videoId))
-    .limit(1);
-  const video = videoRows[0];
-  if (!video) throw new ServiceError(404, "VIDEO_NOT_FOUND", "Video not found");
-
-  if (!video.isFreePreview) {
-    const enrolled = await hasActiveSubscription(userId, video.courseId);
-    if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "Active enrollment required");
-  }
-
-  const serverCompleted = video.durationSec > 0 && watchedSeconds >= video.durationSec;
-  if (serverCompleted && video.requireSequential && !video.isFreePreview) {
-    const ordered = await db
-      .select({ id: videos.id })
+  return db.transaction(async (tx) => {
+    const videoRows = await tx
+      .select({
+        id: videos.id,
+        courseId: lessons.courseId,
+        isFreePreview: lessons.isFreePreview,
+        durationSec: videos.durationSec,
+        requireSequential: courses.requireSequentialProgress,
+      })
       .from(videos)
       .innerJoin(lessons, eq(videos.lessonId, lessons.id))
-      .where(eq(lessons.courseId, video.courseId))
-      .orderBy(asc(lessons.sortOrder), asc(videos.sortOrder));
-    const index = ordered.findIndex((row) => row.id === video.id);
-    const previousIds = index > 0 ? ordered.slice(0, index).map((row) => row.id) : [];
-    if (previousIds.length > 0) {
-      const completedRows = await db
-        .select({ videoId: studentProgress.videoId })
-        .from(studentProgress)
-        .where(
-          and(
-            eq(studentProgress.userId, userId),
-            inArray(studentProgress.videoId, previousIds),
-            isNotNull(studentProgress.completedAt),
-          ),
-        );
-      if (completedRows.length !== previousIds.length) {
-        throw new ServiceError(403, "SEQUENCE_LOCKED", "Complete the previous lesson first");
+      .innerJoin(courses, eq(lessons.courseId, courses.id))
+      .where(eq(videos.id, videoId))
+      .limit(1);
+    const video = videoRows[0];
+    if (!video) throw new ServiceError(404, "VIDEO_NOT_FOUND", "Video not found");
+
+    // Serialize progress for a course so two concurrent completions cannot
+    // both pass the sequence guard against a stale snapshot.
+    await tx.execute(sql`SELECT id FROM courses WHERE id = ${video.courseId} FOR UPDATE`);
+
+    if (!video.isFreePreview) {
+      const enrolled = await hasActiveSubscription(userId, video.courseId, tx);
+      if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "Active enrollment required");
+    }
+
+    let normalized: { watchedSeconds: number; completed: boolean };
+    try {
+      normalized = normalizeWatchedSeconds(watchedSeconds, video.durationSec);
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "INVALID_WATCHED_SECONDS";
+      throw new ServiceError(
+        422,
+        code,
+        code === "EXCESSIVE_WATCHED_SECONDS"
+          ? "Watched seconds cannot exceed the video duration"
+          : "Watched seconds must be a non-negative whole number",
+      );
+    }
+
+    if (normalized.completed && video.requireSequential && !video.isFreePreview) {
+      const ordered = await tx
+        .select({ id: videos.id })
+        .from(videos)
+        .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+        .where(eq(lessons.courseId, video.courseId))
+        .orderBy(asc(lessons.sortOrder), asc(videos.sortOrder));
+      const index = ordered.findIndex((row) => row.id === video.id);
+      const previousIds = index > 0 ? ordered.slice(0, index).map((row) => row.id) : [];
+      if (previousIds.length > 0) {
+        const completedRows = await tx
+          .select({ videoId: studentProgress.videoId })
+          .from(studentProgress)
+          .where(
+            and(
+              eq(studentProgress.userId, userId),
+              inArray(studentProgress.videoId, previousIds),
+              isNotNull(studentProgress.completedAt),
+            ),
+          );
+        if (completedRows.length !== previousIds.length) {
+          throw new ServiceError(403, "SEQUENCE_LOCKED", "Complete the previous lesson first");
+        }
       }
     }
-  }
 
-  await db
-    .insert(studentProgress)
-    .values({
-      userId,
-      courseId: video.courseId,
-      videoId,
-      watchedSeconds,
-      completedAt: serverCompleted ? new Date() : null,
-      updatedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [studentProgress.userId, studentProgress.videoId],
-      set: {
-        watchedSeconds: sql`GREATEST(${studentProgress.watchedSeconds}, ${watchedSeconds})`,
-        completedAt: serverCompleted ? new Date() : undefined,
+    const existingRows = await tx
+      .select({
+        watchedSeconds: studentProgress.watchedSeconds,
+        completedAt: studentProgress.completedAt,
+      })
+      .from(studentProgress)
+      .where(and(eq(studentProgress.userId, userId), eq(studentProgress.videoId, videoId)))
+      .limit(1);
+    const existing = existingRows[0];
+    const finalWatched = mergeWatchedSeconds(existing?.watchedSeconds ?? 0, normalized.watchedSeconds);
+    const completedAt = existing?.completedAt ?? (normalized.completed ? new Date() : null);
+
+    if (existing) {
+      await tx
+        .update(studentProgress)
+        .set({
+          watchedSeconds: finalWatched,
+          completedAt,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(studentProgress.userId, userId), eq(studentProgress.videoId, videoId)));
+    } else {
+      await tx.insert(studentProgress).values({
+        userId,
+        courseId: video.courseId,
+        videoId,
+        watchedSeconds: finalWatched,
+        completedAt,
         updatedAt: new Date(),
-      },
-    });
+      });
+    }
 
-  return { videoId, completed: serverCompleted, watchedSeconds };
+    return {
+      videoId,
+      completed: completedAt !== null,
+      watchedSeconds: finalWatched,
+    };
+  });
 }
 
 /** Counts one view each time the student opens a video, enforcing maxViews. */

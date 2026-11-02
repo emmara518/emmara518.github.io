@@ -1,20 +1,41 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1787336513881,
-      "tag": "0000_lonely_callisto",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1787686563014,
-      "tag": "0001_low_skaar",
-      "breakpoints": true
-    }
-  ]
+    "version":  "7",
+    "dialect":  "postgresql",
+    "entries":  [
+                    {
+                        "idx":  0,
+                        "version":  "7",
+                        "when":  1787336513881,
+                        "tag":  "0000_lonely_callisto",
+                        "breakpoints":  true
+                    },
+                    {
+                        "idx":  1,
+                        "version":  "7",
+                        "when":  1787686563014,
+                        "tag":  "0001_low_skaar",
+                        "breakpoints":  true
+                    },
+                    {
+                        "idx":  2,
+                        "version":  "7",
+                        "when":  1793629749935,
+                        "tag":  "0003_exam_attempt_starts",
+                        "breakpoints":  true
+                    },
+                    {
+                        "idx":  3,
+                        "version":  "7",
+                        "when":  1793632221956,
+                        "tag":  "0004_exam_schema_reconciliation",
+                        "breakpoints":  true
+                    },
+                    {
+                        "idx":  4,
+                        "version":  "7",
+                        "when":  1793632639639,
+                        "tag":  "0005_session_token_hash",
+                        "breakpoints":  true
+                    }
+                ]
 }

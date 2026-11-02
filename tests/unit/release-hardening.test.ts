@@ -18,13 +18,16 @@ describe("release hardening invariants", () => {
     const route = read("src/app/api/v1/admin/billing/manual-enroll/route.ts");
     expect(route).toContain("db.transaction");
     expect(route).toContain("crypto.randomUUID");
+    expect(route).toContain("ALREADY_ENROLLED");
+    expect(route).not.toContain("onConflictDoNothing()");
     expect(route).not.toContain("Date.now().toString().slice(-6)");
   });
 
   it("video completion is server-derived and sequence-checked", () => {
     const dashboard = read("src/lib/services/dashboard.service.ts");
-    expect(dashboard).toContain("serverCompleted");
+    expect(dashboard).toContain("normalizeWatchedSeconds");
     expect(dashboard).toContain("SEQUENCE_LOCKED");
+    expect(dashboard).toContain("FOR UPDATE");
     expect(dashboard).not.toContain("completedAt: completed ?");
   });
 
@@ -33,6 +36,10 @@ describe("release hardening invariants", () => {
     expect(exams).toContain("FOR UPDATE");
     expect(exams).toContain("INVALID_ANSWERS");
     expect(exams).toContain("db.transaction");
+    expect(exams).toContain("EXAM_NOT_STARTED");
+    expect(exams).toContain("EXAM_TIME_EXPIRED");
+    expect(exams).toContain("ATTEMPT_ALREADY_SUBMITTED");
+    expect(exams).toContain("examAttemptStarts");
   });
 
   it("session tokens are hashed at rest", () => {

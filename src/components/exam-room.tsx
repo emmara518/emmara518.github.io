@@ -26,6 +26,12 @@ export type ExamRoomData = {
   }[];
   attemptsCount: number;
   bestScore: number | null;
+  attemptStart: {
+    id: string;
+    startedAt: string | Date;
+    expiresAt: string | Date;
+    perQuestionSec: number | null;
+  };
 };
 
 type ResultData = {
@@ -46,7 +52,9 @@ type ResultData = {
 
 export function ExamRoom({ room }: { room: ExamRoomData }) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [secondsLeft, setSecondsLeft] = useState(room.exam.durationMin * 60);
+  const [secondsLeft, setSecondsLeft] = useState(() =>
+    Math.max(0, Math.ceil((new Date(room.attemptStart.expiresAt).getTime() - Date.now()) / 1000)),
+  );
   const [phase, setPhase] = useState<"running" | "submitting" | "result">("running");
   const [result, setResult] = useState<ResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +83,13 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
       });
       const json = await res.json();
       if (!json.ok) {
-        setError(json.error?.message ?? "تعذر تسليم الاختبار");
+        setError(json.error?.message ?? "Could not submit the exam");
+        const terminal = ["EXAM_TIME_EXPIRED", "QUESTION_TIME_EXPIRED", "ATTEMPT_ALREADY_SUBMITTED", "ATTEMPTS_EXHAUSTED"];
+        if (terminal.includes(json.error?.code)) {
+          submittedRef.current = true;
+          setPhase("result");
+          return;
+        }
         submittedRef.current = false;
         setPhase("running");
         return;
@@ -150,11 +164,7 @@ export function ExamRoom({ room }: { room: ExamRoomData }) {
             </Link>
             <button
               onClick={() => {
-                submittedRef.current = false;
-                setAnswers({});
-                setResult(null);
-                setSecondsLeft(room.exam.durationMin * 60);
-                setPhase("running");
+                window.location.reload();
               }}
               className={buttonStyles("outline", "md")}
             >

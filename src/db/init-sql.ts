@@ -10,6 +10,11 @@ EXCEPTION
 	WHEN duplicate_object THEN null;
 END $$;
 DO $$ BEGIN
+	CREATE TYPE "public"."exam_type" AS ENUM('graded', 'practice', 'quiz', 'surprise', 'final', 'diagnostic');
+EXCEPTION
+	WHEN duplicate_object THEN null;
+END $$;
+DO $$ BEGIN
 	CREATE TYPE "public"."file_kind" AS ENUM('book', 'worksheet', 'exam_paper', 'attachment');
 EXCEPTION
 	WHEN duplicate_object THEN null;
@@ -198,12 +203,38 @@ CREATE TABLE IF NOT EXISTS "question_bank" (
 CREATE TABLE IF NOT EXISTS "exams" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"course_id" uuid NOT NULL REFERENCES "courses"("id") ON DELETE cascade,
+	"group_id" uuid,
 	"title" text NOT NULL,
+	"description" text DEFAULT '' NOT NULL,
 	"mode" "exam_mode" DEFAULT 'graded' NOT NULL,
+	"type" "exam_type" DEFAULT 'graded' NOT NULL,
+	"available_from" timestamp with time zone,
+	"available_until" timestamp with time zone,
 	"duration_min" integer DEFAULT 20 NOT NULL,
+	"per_question_sec" integer,
+	"max_attempts" integer,
+	"passing_score" integer DEFAULT 50 NOT NULL,
+	"shuffle_questions" boolean DEFAULT false NOT NULL,
+	"show_results_immediately" boolean DEFAULT true NOT NULL,
+	"prerequisite_exam_id" uuid,
 	"is_published" boolean DEFAULT true NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "group_id" uuid;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "description" text DEFAULT '' NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "type" "exam_type" DEFAULT 'graded' NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "available_from" timestamp with time zone;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "available_until" timestamp with time zone;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "per_question_sec" integer;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "max_attempts" integer;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "passing_score" integer DEFAULT 50 NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "shuffle_questions" boolean DEFAULT false NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "show_results_immediately" boolean DEFAULT true NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "prerequisite_exam_id" uuid;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "is_active" boolean DEFAULT true NOT NULL;
+ALTER TABLE "exams" ADD COLUMN IF NOT EXISTS "sort_order" integer DEFAULT 0 NOT NULL;
 
 CREATE TABLE IF NOT EXISTS "exam_questions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -222,6 +253,19 @@ CREATE TABLE IF NOT EXISTS "exam_attempts" (
 	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"submitted_at" timestamp with time zone DEFAULT now() NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS "exam_attempt_starts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"exam_id" uuid NOT NULL REFERENCES "exams"("id") ON DELETE cascade,
+	"user_id" uuid NOT NULL REFERENCES "users"("id") ON DELETE cascade,
+	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"question_order" jsonb NOT NULL,
+	"submitted_at" timestamp with time zone,
+	"attempt_id" uuid REFERENCES "exam_attempts"("id") ON DELETE set null
+);
+CREATE INDEX IF NOT EXISTS "exam_starts_exam_user_idx" ON "exam_attempt_starts" ("exam_id", "user_id");
+CREATE INDEX IF NOT EXISTS "exam_starts_expiry_idx" ON "exam_attempt_starts" ("expires_at");
 
 CREATE TABLE IF NOT EXISTS "assignments" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

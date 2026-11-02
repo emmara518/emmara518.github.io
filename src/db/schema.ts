@@ -339,6 +339,33 @@ export const examAttempts = pgTable(
   (t) => [index("attempts_exam_idx").on(t.examId), index("attempts_user_idx").on(t.userId)],
 );
 
+/**
+ * Authoritative exam clock. One open row per student/exam; submission consumes
+ * it. Started/expires timestamps are server-generated and never accepted from
+ * the client.
+ */
+export const examAttemptStarts = pgTable(
+  "exam_attempt_starts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    examId: uuid("exam_id")
+      .notNull()
+      .references(() => exams.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    questionOrder: jsonb("question_order").$type<string[]>().notNull(),
+    submittedAt: timestamp("submitted_at", { withTimezone: true }),
+    attemptId: uuid("attempt_id").references(() => examAttempts.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    index("exam_starts_exam_user_idx").on(t.examId, t.userId),
+    index("exam_starts_expiry_idx").on(t.expiresAt),
+  ],
+);
+
 export const assignments = pgTable("assignments", {
   id: uuid("id").defaultRandom().primaryKey(),
   courseId: uuid("course_id")

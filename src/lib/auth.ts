@@ -63,6 +63,7 @@ export async function destroySession(): Promise<void> {
     const token = store.get(SESSION_COOKIE)?.value;
     if (token) {
       await db.delete(sessions).where(eq(sessions.token, hashSessionToken(token)));
+      await db.delete(sessions).where(eq(sessions.token, token));
     }
     store.delete(SESSION_COOKIE);
   } catch (err) {
@@ -80,24 +81,47 @@ export async function destroySession(): Promise<void> {
  * decision per request and removes the connection churn that helped exhaust
  * the database pool.
  */
+export async function resolveSessionUser(token: string): Promise<SessionUser | null> {
+  const tokenHash = hashSessionToken(token);
+  const baseSelect = {
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    role: users.role,
+    avatarUrl: users.avatarUrl,
+  };
+  let rows = await db
+    .select(baseSelect)
+    .from(sessions)
+    .innerJoin(users, eq(sessions.userId, users.id))
+    .where(and(eq(sessions.token, tokenHash), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
+    .limit(1);
+
+  // Compatibility bridge for sessions created before token hashing. The first
+  // authenticated request upgrades the row in place; the raw token is never
+  // returned or logged. Migration 0005 hashes rows at rest when pgcrypto is
+  // available.
+  if (!rows[0]) {
+    const legacy = await db
+      .select(baseSelect)
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
+      .limit(1);
+    if (legacy[0]) {
+      await db.update(sessions).set({ token: tokenHash }).where(eq(sessions.token, token));
+      rows = legacy;
+    }
+  }
+  return rows[0] ?? null;
+}
+
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   try {
     const store = await cookies();
     const token = store.get(SESSION_COOKIE)?.value;
     if (!token) return null;
-    const rows = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        role: users.role,
-        avatarUrl: users.avatarUrl,
-      })
-      .from(sessions)
-      .innerJoin(users, eq(sessions.userId, users.id))
-      .where(and(eq(sessions.token, hashSessionToken(token)), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
-      .limit(1);
-    return rows[0] ?? null;
+    return await resolveSessionUser(token);
   } catch (err) {
     console.warn("[auth] getSessionUser error:", err);
     return null;

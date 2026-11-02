@@ -60,7 +60,9 @@ export async function getAccountOverview(userId: string, currentToken: string | 
       id: s.id,
       createdAt: s.createdAt,
       expiresAt: s.expiresAt,
-      isCurrent: currentToken !== null && s.token === hashSessionToken(currentToken),
+      isCurrent:
+        currentToken !== null &&
+        (s.token === hashSessionToken(currentToken) || s.token === currentToken),
     })),
   };
 }

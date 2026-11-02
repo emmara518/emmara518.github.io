@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
-import { Baloo_Bhaijaan_2, Cairo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { getSessionUser } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
@@ -40,25 +39,45 @@ const graphikArabic = localFont({
   fallback: ["Segoe UI", "Tahoma", "sans-serif"],
 });
 
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+const cairo = localFont({
+  src: [
+    {
+      path: "../../public/fonts/Cairo-Variable.ttf",
+      weight: "200 1000",
+      style: "normal",
+    },
+  ],
   variable: "--font-cairo",
   display: "swap",
+  preload: true,
+  fallback: ["Cairo", "Segoe UI", "Tahoma", "sans-serif"],
 });
 
-const baloo = Baloo_Bhaijaan_2({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800"],
+const baloo = localFont({
+  src: [
+    {
+      path: "../../public/fonts/BalooBhaijaan2-Variable.ttf",
+      weight: "400 800",
+      style: "normal",
+    },
+  ],
   variable: "--font-baloo",
   display: "swap",
+  preload: false,
+  fallback: ["Baloo Bhaijaan 2", "Cairo", "Segoe UI", "sans-serif"],
 });
 
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const plexMono = localFont({
+  src: [
+    { path: "../../public/fonts/IBMPlexMono-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-Bold.ttf", weight: "700", style: "normal" },
+  ],
   variable: "--font-plex-mono",
   display: "swap",
+  preload: false,
+  fallback: ["IBM Plex Mono", "Courier New", "monospace"],
 });
 
 export const metadata: Metadata = {
