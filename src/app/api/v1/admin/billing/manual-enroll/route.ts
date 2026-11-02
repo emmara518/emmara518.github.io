@@ -1,10 +1,11 @@
+import crypto from "node:crypto";
 import { requireSuperAdmin } from "@/lib/permission-guard";
 import { err, ok, parseJson } from "@/lib/http";
 import { z } from "zod";
 import { db } from "@/db";
 import { users, courses, subscriptions, orders, invoices, auditLogs } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { toEnvelope } from "@/lib/errors";
+import { ServiceError, toEnvelope } from "@/lib/errors";
 
 const manualEnrollSchema = z.object({
   studentEmail: z.string().email(),
@@ -22,82 +23,78 @@ export async function POST(request: Request) {
   if ("response" in parsed) return parsed.response;
 
   try {
-    const studentRows = await db
-      .select({ id: users.id, name: users.name, email: users.email })
-      .from(users)
-      .where(eq(users.email, parsed.data.studentEmail.toLowerCase().trim()))
-      .limit(1);
+    const result = await db.transaction(async (tx) => {
+      const studentRows = await tx
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(eq(users.email, parsed.data.studentEmail.toLowerCase().trim()))
+        .limit(1);
+      const student = studentRows[0];
+      if (!student) {
+        throw new ServiceError(404, "USER_NOT_FOUND", "لم يتم العثور على حساب الطالب");
+      }
 
-    if (!studentRows[0]) {
-      return err(404, "USER_NOT_FOUND", "لم يتم العثور على طالب بهذا البريد الإلكتروني. يرجى تسجيله أولاً.");
-    }
-    const student = studentRows[0];
+      const courseRows = await tx
+        .select({ id: courses.id, title: courses.title, priceCents: courses.priceCents })
+        .from(courses)
+        .where(eq(courses.id, parsed.data.courseId))
+        .limit(1);
+      const course = courseRows[0];
+      if (!course) {
+        throw new ServiceError(404, "COURSE_NOT_FOUND", "الكورس غير موجود");
+      }
 
-    const courseRows = await db
-      .select({ id: courses.id, title: courses.title, priceCents: courses.priceCents })
-      .from(courses)
-      .where(eq(courses.id, parsed.data.courseId))
-      .limit(1);
+      const amountCents = Math.round(parsed.data.amountEgp * 100);
+      const [order] = await tx
+        .insert(orders)
+        .values({
+          userId: student.id,
+          courseId: course.id,
+          subtotalCents: course.priceCents,
+          discountCents: Math.max(0, course.priceCents - amountCents),
+          totalCents: amountCents,
+          status: "paid",
+        })
+        .returning({ id: orders.id });
 
-    if (!courseRows[0]) {
-      return err(404, "COURSE_NOT_FOUND", "المقرر المطلوب غير موجود");
-    }
-    const course = courseRows[0];
-
-    const amountCents = Math.round(parsed.data.amountEgp * 100);
-
-    // 1. Create order
-    const [order] = await db
-      .insert(orders)
-      .values({
-        userId: student.id,
-        courseId: course.id,
-        subtotalCents: course.priceCents,
-        discountCents: Math.max(0, course.priceCents - amountCents),
-        totalCents: amountCents,
-        status: "paid",
-      })
-      .returning({ id: orders.id });
-
-    // 2. Create invoice
-    const invNum = `INV-M-${Date.now().toString().slice(-6)}`;
-    await db.insert(invoices).values({
-      orderId: order.id,
-      number: invNum,
-      totalCents: amountCents,
-    });
-
-    // 3. Create or update subscription
-    await db
-      .insert(subscriptions)
-      .values({
-        userId: student.id,
-        courseId: course.id,
+      const invoiceNumber = `INV-M-${crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase()}`;
+      await tx.insert(invoices).values({
         orderId: order.id,
-        status: "active",
-      })
-      .onConflictDoNothing();
+        number: invoiceNumber,
+        totalCents: amountCents,
+      });
 
-    // 4. Audit
-    await db.insert(auditLogs).values({
-      actorId: auth.user.id,
-      action: "billing.manual_enroll",
-      entity: "subscriptions",
-      entityId: order.id,
-      meta: {
-        studentEmail: student.email,
+      await tx
+        .insert(subscriptions)
+        .values({
+          userId: student.id,
+          courseId: course.id,
+          orderId: order.id,
+          status: "active",
+        })
+        .onConflictDoNothing();
+
+      await tx.insert(auditLogs).values({
+        actorId: auth.user.id,
+        action: "billing.manual_enroll",
+        entity: "subscriptions",
+        entityId: order.id,
+        meta: {
+          studentEmail: student.email,
+          courseTitle: course.title,
+          amountEgp: parsed.data.amountEgp,
+          method: parsed.data.method,
+        },
+      });
+
+      return {
+        studentName: student.name,
         courseTitle: course.title,
-        amountEgp: parsed.data.amountEgp,
-        method: parsed.data.method,
-      },
+        invoiceNumber,
+      };
     });
 
-    return ok({
-      success: true,
-      studentName: student.name,
-      courseTitle: course.title,
-      invoiceNumber: invNum,
-    }, { status: 201 });
+    return ok({ success: true, ...result }, { status: 201 });
   } catch (e) {
     const envelope = toEnvelope(e);
     return err(envelope.status, envelope.code, envelope.message);

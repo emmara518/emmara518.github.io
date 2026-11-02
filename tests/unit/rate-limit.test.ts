@@ -49,8 +49,9 @@ describe("rate-limit HTTP responses", () => {
     });
   });
 
-  it("preserves legacy fail-open behavior when failClosed is not requested", async () => {
+  it("fails closed when the backend is unavailable", async () => {
     state.result = { allowed: true, remaining: 5, resetMs: 60_000, backendError: true };
-    await expect(applyRateLimit(new Request("http://localhost/test"), "auth")).resolves.toBeNull();
+    const response = await applyRateLimit(new Request("http://localhost/test"), "auth");
+    expect(response?.status).toBe(503);
   });
 });

@@ -49,12 +49,13 @@ export async function applyRateLimit(
   customKey?: string,
   options?: { failClosed?: boolean },
 ): Promise<NextResponse | null> {
+  void options;
   const ip = getClientIp(request);
   const key = customKey ?? `${category}:${ip}`;
   const { max, windowMs } = RATE_LIMITS[category];
   const { allowed, remaining, resetMs, backendError } = await rateLimit(key, max, windowMs);
 
-  if (backendError && options?.failClosed) {
+  if (backendError) {
     return NextResponse.json(
       { ok: false, error: { code: "RATE_LIMIT_UNAVAILABLE", message: "خدمة الحد من المحاولات غير متاحة مؤقتاً — حاول لاحقاً" } },
       {

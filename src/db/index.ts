@@ -7,6 +7,8 @@ import { isDemoSeedAllowed, seedDatabase } from "./seed";
 import * as schema from "./schema";
 
 const databaseUrl = process.env.DATABASE_URL;
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const isProductionRuntime = process.env.NODE_ENV === "production" && !isBuildPhase;
 
 const isPlaceholderUrl = (url?: string) => {
   if (!url || !url.trim()) return true;
@@ -25,6 +27,7 @@ const isPlaceholderUrl = (url?: string) => {
 
 let pool: Pool | null = null;
 let dbInstance: any = null;
+let dbInitError: Error | null = null;
 
 const globalForDb = globalThis as typeof globalThis & {
   __drosMathDbInstance?: any;
@@ -53,7 +56,7 @@ if (globalForDb.__drosMathDbInstance) {
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 15_000,
       allowExitOnIdle: true,
-      ssl: isLocal ? undefined : { rejectUnauthorized: false },
+      ssl: isLocal ? undefined : { rejectUnauthorized: true },
     });
     dbInstance = drizzleNodePg(pool, { schema });
     globalForDb.__drosMathPool = pool;
@@ -63,11 +66,12 @@ if (globalForDb.__drosMathDbInstance) {
       globalForDb.__drosMathInitPromise = (async () => {
         try {
           if (pool) {
-            await pool.query(SCHEMA_SQL);
+            if (process.env.NODE_ENV !== "production") {
+              await pool.query(SCHEMA_SQL);
+            }
             if (!isDemoSeedAllowed()) {
               // Demo seeding is restricted to explicit development/test runs.
-              // An empty production database must be initialized by the operator
-              // through a secure, non-demo provisioning process.
+              // Production schema changes must go through the explicit migration process.
               const { rows } = await pool.query(
                 "SELECT (SELECT count(*)::int FROM users) AS users, (SELECT count(*)::int FROM courses) AS courses",
               );
@@ -84,17 +88,29 @@ if (globalForDb.__drosMathDbInstance) {
             }
           }
         } catch (err: any) {
+          if (isProductionRuntime) {
+            dbInitError = err instanceof Error ? err : new Error("Database schema verification failed");
+          }
           console.warn("[db] External database migration/seed check:", err?.message || err);
         }
       })();
     }
   } catch (err) {
-    console.warn("[db] Failed to initialize Pool with DATABASE_URL, falling back to embedded PGlite:", err);
+    if (isProductionRuntime) {
+      dbInitError = err instanceof Error ? err : new Error("Database initialization failed");
+      console.error("[db] Database initialization failed; embedded fallback is disabled in production.");
+    } else {
+      console.warn("[db] Failed to initialize Pool with DATABASE_URL, falling back to embedded PGlite:", err);
+    }
   }
 }
 
-if (!dbInstance) {
-  const pglite = globalForDb.__drosMathPglite ?? new PGlite();
+if (!dbInstance && isProductionRuntime) {
+  dbInitError = dbInitError ?? new Error("DATABASE_URL is required in production");
+  console.error("[db] Production database is not configured; refusing embedded fallback.");
+} else if (!dbInstance) {
+  const pgliteDataDir = process.env.PGLITE_DATA_DIR?.trim();
+  const pglite = globalForDb.__drosMathPglite ?? new PGlite(pgliteDataDir || undefined);
   globalForDb.__drosMathPglite = pglite;
   dbInstance = drizzlePglite(pglite, { schema });
   globalForDb.__drosMathDbInstance = dbInstance;
@@ -119,9 +135,11 @@ if (!dbInstance) {
 }
 
 export async function ensureDbReady(): Promise<void> {
+  if (dbInitError) throw dbInitError;
   if (globalForDb.__drosMathInitPromise) {
     await globalForDb.__drosMathInitPromise;
   }
+  if (dbInitError) throw dbInitError;
 }
 
 export { pool };
@@ -130,6 +148,7 @@ export { pool };
 function wrapWithInitCheck<T>(target: T): T {
   return new Proxy(target as any, {
     get(obj, prop, receiver) {
+      if (dbInitError) throw dbInitError;
       const orig = Reflect.get(obj, prop, receiver);
       if (typeof orig === "function") {
         return function (...args: any[]) {
@@ -154,4 +173,4 @@ function wrapWithInitCheck<T>(target: T): T {
   });
 }
 
-export const db = wrapWithInitCheck(dbInstance) as ReturnType<typeof drizzleNodePg>;
+export const db = wrapWithInitCheck(dbInstance ?? {}) as ReturnType<typeof drizzleNodePg>;

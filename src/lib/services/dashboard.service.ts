@@ -519,22 +519,55 @@ export async function markVideoProgress(
   watchedSeconds: number,
   completed: boolean,
 ) {
+  void completed;
   const videoRows = await db
     .select({
       id: videos.id,
       courseId: lessons.courseId,
       isFreePreview: lessons.isFreePreview,
+      durationSec: videos.durationSec,
+      lessonOrder: lessons.sortOrder,
+      videoOrder: videos.sortOrder,
+      requireSequential: courses.requireSequentialProgress,
     })
     .from(videos)
     .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+    .innerJoin(courses, eq(lessons.courseId, courses.id))
     .where(eq(videos.id, videoId))
     .limit(1);
   const video = videoRows[0];
-  if (!video) throw new ServiceError(404, "VIDEO_NOT_FOUND", "الفيديو غير موجود");
+  if (!video) throw new ServiceError(404, "VIDEO_NOT_FOUND", "Video not found");
 
   if (!video.isFreePreview) {
     const enrolled = await hasActiveSubscription(userId, video.courseId);
-    if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "اشترك في الكورس لمتابعة هذا الدرس");
+    if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "Active enrollment required");
+  }
+
+  const serverCompleted = video.durationSec > 0 && watchedSeconds >= video.durationSec;
+  if (serverCompleted && video.requireSequential && !video.isFreePreview) {
+    const ordered = await db
+      .select({ id: videos.id })
+      .from(videos)
+      .innerJoin(lessons, eq(videos.lessonId, lessons.id))
+      .where(eq(lessons.courseId, video.courseId))
+      .orderBy(asc(lessons.sortOrder), asc(videos.sortOrder));
+    const index = ordered.findIndex((row) => row.id === video.id);
+    const previousIds = index > 0 ? ordered.slice(0, index).map((row) => row.id) : [];
+    if (previousIds.length > 0) {
+      const completedRows = await db
+        .select({ videoId: studentProgress.videoId })
+        .from(studentProgress)
+        .where(
+          and(
+            eq(studentProgress.userId, userId),
+            inArray(studentProgress.videoId, previousIds),
+            isNotNull(studentProgress.completedAt),
+          ),
+        );
+      if (completedRows.length !== previousIds.length) {
+        throw new ServiceError(403, "SEQUENCE_LOCKED", "Complete the previous lesson first");
+      }
+    }
   }
 
   await db
@@ -544,19 +577,19 @@ export async function markVideoProgress(
       courseId: video.courseId,
       videoId,
       watchedSeconds,
-      completedAt: completed ? new Date() : null,
+      completedAt: serverCompleted ? new Date() : null,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [studentProgress.userId, studentProgress.videoId],
       set: {
-        watchedSeconds,
-        completedAt: completed ? new Date() : undefined,
+        watchedSeconds: sql`GREATEST(${studentProgress.watchedSeconds}, ${watchedSeconds})`,
+        completedAt: serverCompleted ? new Date() : undefined,
         updatedAt: new Date(),
       },
     });
 
-  return { videoId, completed };
+  return { videoId, completed: serverCompleted, watchedSeconds };
 }
 
 /** Counts one view each time the student opens a video, enforcing maxViews. */
@@ -580,37 +613,38 @@ export async function recordVideoView(userId: string, videoId: string) {
     if (!enrolled) throw new ServiceError(403, "NOT_ENROLLED", "اشترك في الكورس لمتابعة هذا الدرس");
   }
 
-  const existingRows = await db
-    .select()
-    .from(studentProgress)
-    .where(and(eq(studentProgress.userId, userId), eq(studentProgress.videoId, videoId)))
-    .limit(1);
-  const existing = existingRows[0];
-
-  if (existing && video.maxViews != null && existing.viewCount >= video.maxViews) {
-    throw new ServiceError(403, "VIEW_LIMIT_REACHED", "انتهت عدد المشاهدات المتاحة لهذا الفيديو");
-  }
-
   await db
     .insert(studentProgress)
     .values({
       userId,
       courseId: video.courseId,
       videoId,
-      viewCount: 1,
+      viewCount: 0,
       lastViewedAt: new Date(),
       updatedAt: new Date(),
     })
-    .onConflictDoUpdate({
-      target: [studentProgress.userId, studentProgress.videoId],
-      set: {
-        viewCount: sql`${studentProgress.viewCount} + 1`,
-        lastViewedAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    .onConflictDoNothing();
 
-  return { videoId, viewsLeft: video.maxViews != null ? video.maxViews - ((existing?.viewCount ?? 0) + 1) : null };
+  const conditions = [eq(studentProgress.userId, userId), eq(studentProgress.videoId, videoId)];
+  if (video.maxViews != null) {
+    conditions.push(sql`${studentProgress.viewCount} < ${video.maxViews}`);
+  }
+  const [updated] = await db
+    .update(studentProgress)
+    .set({
+      viewCount: sql`${studentProgress.viewCount} + 1`,
+      lastViewedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(and(...conditions))
+    .returning({ viewCount: studentProgress.viewCount });
+
+  if (!updated) {
+    throw new ServiceError(403, "VIEW_LIMIT_REACHED", "View limit reached");
+  }
+
+  return { videoId, viewsLeft: video.maxViews != null ? video.maxViews - updated.viewCount : null };
+
 }
 
 export async function markAllNotificationsRead(userId: string) {

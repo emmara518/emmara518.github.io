@@ -1,4 +1,5 @@
-﻿import { and, desc, eq, sql } from "drizzle-orm";
+import crypto from "node:crypto";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   courses,
@@ -45,6 +46,24 @@ export async function getOrCreateWallet(userId: string) {
   return again[0];
 }
 
+async function reserveCoupon(tx: any, couponId: string, maxUses: number): Promise<void> {
+  const [reserved] = await tx
+    .update(coupons)
+    .set({
+      usedCount: sql`${coupons.usedCount} + 1`,
+      isActive: sql`${coupons.usedCount} + 1 < ${coupons.maxUses}`,
+    })
+    .where(
+      and(
+        eq(coupons.id, couponId),
+        eq(coupons.isActive, true),
+        sql`${coupons.usedCount} < ${coupons.maxUses}`,
+      ),
+    )
+    .returning({ id: coupons.id });
+  if (!reserved) throw new ServiceError(422, "CODE_EXHAUSTED", "انتهت صلاحية الكود أو تم استهلاكه");
+}
+
 export async function hasActiveSubscription(userId: string, courseId: string): Promise<boolean> {
   const rows = await db
     .select({ id: subscriptions.id })
@@ -76,6 +95,7 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
     // coupon (percent-off course coupons only — balance codes are redeemed in the wallet)
     let discountCents = 0;
     let couponId: string | null = null;
+    let couponMaxUses = 0;
     if (code) {
       const cRows = await tx.select().from(coupons).where(eq(coupons.code, code)).limit(1);
       const coupon = cRows[0];
@@ -88,43 +108,35 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
       if (!valid) throw new ServiceError(422, "INVALID_COUPON", "كوبون الخصم غير صالح أو منتهي");
       discountCents = Math.round((course.priceCents * coupon.percentOff) / 100);
       couponId = coupon.id;
+      couponMaxUses = coupon.maxUses;
     }
 
     const totalCents = Math.max(course.priceCents - discountCents, 0);
 
-    // wallet (lock the row for update semantics via serializable-less debit guard)
-    const walletRows = await tx
-      .select()
-      .from(walletAccounts)
-      .where(eq(walletAccounts.userId, userId))
-      .limit(1);
-    const wallet = walletRows[0];
-    if (!wallet || wallet.balanceCents < totalCents) {
-      throw new ServiceError(
-        402,
-        "INSUFFICIENT_FUNDS",
-        "رصيد المحفظة غير كافٍ لإتمام الاشتراك — جرّب شحن المحفظة",
-      );
+    if (couponId) {
+      await reserveCoupon(tx, couponId, couponMaxUses);
     }
 
-    await tx
+    const [debited] = await tx
       .update(walletAccounts)
       .set({ balanceCents: sql`${walletAccounts.balanceCents} - ${totalCents}` })
-      .where(eq(walletAccounts.id, wallet.id));
+      .where(
+        and(
+          eq(walletAccounts.userId, userId),
+          sql`${walletAccounts.balanceCents} >= ${totalCents}`,
+        ),
+      )
+      .returning({ id: walletAccounts.id, balanceCents: walletAccounts.balanceCents });
+    if (!debited) {
+      throw new ServiceError(402, "INSUFFICIENT_FUNDS", "???? ??????? ??? ???? ?????? ????? ??????");
+    }
 
     await tx.insert(walletTransactions).values({
-      walletId: wallet.id,
+      walletId: debited.id,
       amountCents: -totalCents,
       kind: "purchase",
-      note: `اشتراك في كورس: ${course.title}`,
+      note: `???? ????: ${course.title}`,
     });
-
-    if (couponId) {
-      await tx
-        .update(coupons)
-        .set({ usedCount: sql`${coupons.usedCount} + 1` })
-        .where(eq(coupons.id, couponId));
-    }
 
     const [order] = await tx
       .insert(orders)
@@ -148,8 +160,7 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
     });
 
     const year = new Date().getFullYear();
-    const [{ value: seq }] = await tx.select({ value: sql<number>`count(*)::int` }).from(invoices);
-    const invoiceNumber = `INV-${year}-${(1001 + Number(seq)).toString()}`;
+    const invoiceNumber = `INV-${year}-${crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase()}`;
     await tx.insert(invoices).values({ orderId: order.id, number: invoiceNumber, totalCents });
 
     await tx.insert(subscriptions).values({
@@ -174,7 +185,7 @@ export async function purchaseCourse(userId: string, courseId: string, couponCod
       meta: { courseId, totalCents, invoiceNumber },
     });
 
-    const balance = wallet.balanceCents - totalCents;
+    const balance = debited.balanceCents;
     return {
       orderId: order.id,
       invoiceNumber,
@@ -280,13 +291,7 @@ export async function redeemCode(userId: string, rawCode: string) {
         [wallet] = await tx.insert(walletAccounts).values({ userId, balanceCents: 0 }).returning();
       }
       await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
-      await tx
-        .update(coupons)
-        .set({
-          usedCount: sql`${coupons.usedCount} + 1`,
-          isActive: coupon.usedCount + 1 >= coupon.maxUses ? false : undefined,
-        })
-        .where(eq(coupons.id, coupon.id));
+      await reserveCoupon(tx, coupon.id, coupon.maxUses);
       await tx.insert(walletTransactions).values({
         walletId: wallet.id,
         amountCents: coupon.amountCents,
@@ -325,13 +330,7 @@ export async function redeemCode(userId: string, rawCode: string) {
     }
 
     await tx.insert(couponRedemptions).values({ couponId: coupon.id, userId });
-    await tx
-      .update(coupons)
-      .set({
-        usedCount: sql`${coupons.usedCount} + 1`,
-        isActive: coupon.usedCount + 1 >= coupon.maxUses ? false : undefined,
-      })
-      .where(eq(coupons.id, coupon.id));
+    await reserveCoupon(tx, coupon.id, coupon.maxUses);
     await tx.insert(subscriptions).values({
       userId,
       courseId: course.id,

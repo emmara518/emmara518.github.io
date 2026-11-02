@@ -28,6 +28,10 @@ export type SessionUser = {
   avatarUrl: string | null;
 };
 
+export function hashSessionToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
@@ -42,7 +46,7 @@ export async function createSession(userId: string): Promise<void> {
   await db.delete(sessions).where(eq(sessions.userId, userId));
   const token = crypto.randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 24 * 60 * 60 * 1000);
-  await db.insert(sessions).values({ token, userId, expiresAt });
+  await db.insert(sessions).values({ token: hashSessionToken(token), userId, expiresAt });
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -58,7 +62,7 @@ export async function destroySession(): Promise<void> {
     const store = await cookies();
     const token = store.get(SESSION_COOKIE)?.value;
     if (token) {
-      await db.delete(sessions).where(eq(sessions.token, token));
+      await db.delete(sessions).where(eq(sessions.token, hashSessionToken(token)));
     }
     store.delete(SESSION_COOKIE);
   } catch (err) {
@@ -91,7 +95,7 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
       })
       .from(sessions)
       .innerJoin(users, eq(sessions.userId, users.id))
-      .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
+      .where(and(eq(sessions.token, hashSessionToken(token)), gt(sessions.expiresAt, new Date()), eq(users.isActive, true)))
       .limit(1);
     return rows[0] ?? null;
   } catch (err) {

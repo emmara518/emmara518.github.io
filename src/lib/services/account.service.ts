@@ -1,7 +1,7 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { courses, grades, sessions, subscriptions, users } from "@/db/schema";
-import type { SessionUser } from "../auth";
+import { hashSessionToken } from "../auth";
 
 /**
  * Student account read models — profile, subscriptions, active sessions.
@@ -60,7 +60,7 @@ export async function getAccountOverview(userId: string, currentToken: string | 
       id: s.id,
       createdAt: s.createdAt,
       expiresAt: s.expiresAt,
-      isCurrent: currentToken !== null && s.token === currentToken,
+      isCurrent: currentToken !== null && s.token === hashSessionToken(currentToken),
     })),
   };
 }
@@ -69,7 +69,7 @@ export async function getAccountOverview(userId: string, currentToken: string | 
 export async function destroyOtherSessions(userId: string, currentToken: string) {
   const rows = await db
     .delete(sessions)
-    .where(and(eq(sessions.userId, userId), ne(sessions.token, currentToken)))
+    .where(and(eq(sessions.userId, userId), ne(sessions.token, hashSessionToken(currentToken))))
     .returning({ id: sessions.id });
   return { revoked: rows.length };
 }

@@ -17,7 +17,7 @@ import { effectiveMaxAttempts, shouldRevealResults } from "../exam-policy";
  * Grading is 100% server-side; attempts persist an immutable graded snapshot.
  */
 
-export async function getExamRoom(examId: string, userId: string) {
+export async function getExamRoom(examId: string, userId: string, executor: any = db) {
   const examRows = await db
     .select({
       id: exams.id,
@@ -134,67 +134,77 @@ export async function getExamRoom(examId: string, userId: string) {
 export type ExamSubmissionAnswer = { questionId: string; choiceIndex: number | null };
 
 export async function submitAttempt(examId: string, userId: string, answers: ExamSubmissionAnswer[]) {
-  const room = await getExamRoom(examId, userId); // performs enrollment + existence checks
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT id FROM exams WHERE id = ${examId} FOR UPDATE`);
+    const room = await getExamRoom(examId, userId, tx);
+    const questionIds = room.questions.map((q) => q.id);
+    const allowed = new Set(questionIds);
+    const seen = new Set<string>();
+    for (const answer of answers) {
+      if (!allowed.has(answer.questionId) || seen.has(answer.questionId)) {
+        throw new ServiceError(422, "INVALID_ANSWERS", "Answers do not belong to this exam");
+      }
+      seen.add(answer.questionId);
+    }
 
-  const questionIds = room.questions.map((q) => q.id);
-  const full = questionIds.length
-    ? await db
-        .select({
-          id: questionBank.id,
-          correctIndex: questionBank.correctIndex,
-          marks: questionBank.marks,
-          explanation: questionBank.explanation,
-          prompt: questionBank.prompt,
-          options: questionBank.options,
-        })
-        .from(questionBank)
-        .where(inArray(questionBank.id, questionIds))
-    : [];
+    const full = questionIds.length
+      ? await tx
+          .select({
+            id: questionBank.id,
+            correctIndex: questionBank.correctIndex,
+            marks: questionBank.marks,
+            explanation: questionBank.explanation,
+            prompt: questionBank.prompt,
+            options: questionBank.options,
+          })
+          .from(questionBank)
+          .where(inArray(questionBank.id, questionIds))
+      : [];
 
-  const reveal = shouldRevealResults(room.exam.showResultsImmediately, room.exam.availableUntil);
-  const chosenMap = new Map(answers.map((a) => [a.questionId, a.choiceIndex]));
-  let score = 0;
-  const results = full.map((q) => {
-    const chosen = chosenMap.get(q.id) ?? null;
-    const correct = chosen !== null && chosen === q.correctIndex;
-    if (correct) score += q.marks;
-    return {
-      questionId: q.id,
-      prompt: q.prompt,
-      options: q.options,
-      chosen,
-      correctIndex: reveal ? q.correctIndex : null,
-      correct: reveal ? correct : null,
-      explanation: reveal ? q.explanation : null,
-      marks: q.marks,
-    };
-  });
-
-  const totalMarks = full.reduce((s, q) => s + q.marks, 0);
-
-  const [attempt] = await db
-    .insert(examAttempts)
-    .values({
-      examId,
-      userId,
-      score,
-      totalMarks,
-      answers: full.map((q) => ({
+    const reveal = shouldRevealResults(room.exam.showResultsImmediately, room.exam.availableUntil);
+    const chosenMap = new Map(answers.map((a) => [a.questionId, a.choiceIndex]));
+    let score = 0;
+    const results = full.map((q) => {
+      const chosen = chosenMap.get(q.id) ?? null;
+      const correct = chosen !== null && chosen === q.correctIndex;
+      if (correct) score += q.marks;
+      return {
         questionId: q.id,
-        choiceIndex: chosenMap.get(q.id) ?? null,
-        correct: chosenMap.get(q.id) === q.correctIndex,
-      })),
-    })
-    .returning({ id: examAttempts.id });
+        prompt: q.prompt,
+        options: q.options,
+        chosen,
+        correctIndex: reveal ? q.correctIndex : null,
+        correct: reveal ? correct : null,
+        explanation: reveal ? q.explanation : null,
+        marks: q.marks,
+      };
+    });
 
-  await db.insert(notifications).values({
-    userId,
-    title: "نتيجة امتحان",
-    body: `حصلت على ${score} من ${totalMarks} في «${room.exam.title}»`,
-    kind: "exam",
+    const totalMarks = full.reduce((s, q) => s + q.marks, 0);
+    const [attempt] = await tx
+      .insert(examAttempts)
+      .values({
+        examId,
+        userId,
+        score,
+        totalMarks,
+        answers: full.map((q) => ({
+          questionId: q.id,
+          choiceIndex: chosenMap.get(q.id) ?? null,
+          correct: chosenMap.get(q.id) === q.correctIndex,
+        })),
+      })
+      .returning({ id: examAttempts.id });
+
+    await tx.insert(notifications).values({
+      userId,
+      title: "Exam result",
+      body: `Score ${score}/${totalMarks} for ${room.exam.title}`,
+      kind: "exam",
+    });
+
+    return { attemptId: attempt.id, score, totalMarks, results, revealed: reveal, examTitle: room.exam.title };
   });
-
-  return { attemptId: attempt.id, score, totalMarks, results, revealed: reveal, examTitle: room.exam.title };
 }
 
 /** Attempt history for dashboards. */
