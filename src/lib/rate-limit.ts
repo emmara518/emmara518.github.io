@@ -11,7 +11,11 @@ function getRedisClient() {
 
   if (globalForRedis.__redis) return globalForRedis.__redis;
 
-  const client = createClient({ url });
+  const client = createClient({
+    url,
+    socket: { connectTimeout: 3000, reconnectStrategy: false },
+    disableOfflineQueue: true,
+  });
   client.on("error", (err) => console.error("[redis] error:", err));
   client.connect().catch((err) => console.error("[redis] connect failed:", err));
   globalForRedis.__redis = client;
@@ -143,7 +147,10 @@ export async function rateLimit(
   multi.pExpire(redisKey, windowMs);
   let results;
   try {
-    results = await multi.exec();
+    results = await Promise.race([
+      multi.exec(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("redis rate-limit timeout")), 5000)),
+    ]);
   } catch (e) {
     console.warn("[rate-limit] Redis backend error:", e instanceof Error ? e.message : e);
     return { allowed: false, remaining: 0, resetMs: windowMs, backendError: true };
