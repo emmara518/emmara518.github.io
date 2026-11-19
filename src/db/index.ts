@@ -95,9 +95,9 @@ if (globalForDb.__drosMathDbInstance) {
             }
           }
         } catch (err: any) {
-          if (isProductionRuntime) {
-            dbInitError = err instanceof Error ? err : new Error("Database schema verification failed");
-          }
+          // Advisory startup check. A transient pooler timeout must not poison
+          // every page for the lifetime of the instance; real query failures
+          // still surface through health and route errors.
           console.warn("[db] External database migration/seed check:", err?.message || err);
         }
       })();
