@@ -7,6 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { awsCredentialsProvider } from "@vercel/functions/oidc";
 import { ServiceError } from "./errors";
 
 const PRIVATE_PREFIXES = ["course-files/", "proofs/", "replies/"] as const;
@@ -35,8 +36,9 @@ const MIME_BY_EXT: Record<string, string> = {
 export type PrivateStorageConfig = {
   bucket: string;
   region: string;
-  accessKeyId: string;
-  secretAccessKey: string;
+  accessKeyId: string | null;
+  secretAccessKey: string | null;
+  roleArn: string | null;
   endpoint: string | null;
   forcePathStyle: boolean;
   signedUrlTtlSeconds: number;
@@ -56,7 +58,10 @@ export function readPrivateStorageConfig(
   const region = nonEmpty(env.S3_REGION);
   const accessKeyId = nonEmpty(env.S3_ACCESS_KEY_ID);
   const secretAccessKey = nonEmpty(env.S3_SECRET_ACCESS_KEY);
-  if (!bucket || !region || !accessKeyId || !secretAccessKey) return null;
+  const roleArn = nonEmpty(env.S3_ROLE_ARN) ?? nonEmpty(env.AWS_ROLE_ARN);
+  if (!bucket || !region) return null;
+  if (!roleArn && (!accessKeyId || !secretAccessKey)) return null;
+  if (!roleArn && (accessKeyId && !secretAccessKey)) return null;
 
   const configuredTtl = Number(env.S3_SIGNED_URL_TTL_SECONDS ?? DEFAULT_TTL_SECONDS);
   const signedUrlTtlSeconds =
@@ -67,8 +72,9 @@ export function readPrivateStorageConfig(
   return {
     bucket,
     region,
-    accessKeyId,
-    secretAccessKey,
+    accessKeyId: roleArn ? null : accessKeyId,
+    secretAccessKey: roleArn ? null : secretAccessKey,
+    roleArn,
     endpoint: nonEmpty(env.S3_ENDPOINT),
     forcePathStyle: env.S3_FORCE_PATH_STYLE === "true",
     signedUrlTtlSeconds,
@@ -93,8 +99,9 @@ function clientFor(config: PrivateStorageConfig): S3Client {
     config.region,
     config.endpoint ?? "",
     config.forcePathStyle ? "1" : "0",
-    config.accessKeyId,
-    config.secretAccessKey,
+    config.accessKeyId ?? "",
+    config.secretAccessKey ?? "",
+    config.roleArn ?? "",
   ].join("|");
 
   if (!cachedClient || cachedClient.signature !== signature) {
@@ -104,10 +111,12 @@ function clientFor(config: PrivateStorageConfig): S3Client {
         region: config.region,
         endpoint: config.endpoint ?? undefined,
         forcePathStyle: config.forcePathStyle,
-        credentials: {
-          accessKeyId: config.accessKeyId,
-          secretAccessKey: config.secretAccessKey,
-        },
+        credentials: config.roleArn
+          ? awsCredentialsProvider({ roleArn: config.roleArn })
+          : {
+              accessKeyId: config.accessKeyId!,
+              secretAccessKey: config.secretAccessKey!,
+            },
       }),
     };
   }

@@ -66,9 +66,25 @@ describe("private storage configuration", () => {
       region: "auto",
       accessKeyId: "key",
       secretAccessKey: "secret",
+      roleArn: null,
       endpoint: "https://storage.example.com",
       forcePathStyle: true,
       signedUrlTtlSeconds: 900,
+    });
+  });
+
+  it("supports Vercel OIDC role credentials without static keys", () => {
+    const config = readPrivateStorageConfig({
+      S3_BUCKET: "private-bucket",
+      S3_REGION: "us-east-1",
+      AWS_ROLE_ARN: "arn:aws:iam::123456789012:role/uat",
+    });
+    expect(config).toMatchObject({
+      bucket: "private-bucket",
+      region: "us-east-1",
+      accessKeyId: null,
+      secretAccessKey: null,
+      roleArn: "arn:aws:iam::123456789012:role/uat",
     });
   });
 
