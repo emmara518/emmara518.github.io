@@ -55,6 +55,7 @@ html:not(.dark) {
 
   --brand: #0F8378;
   --brand-strong: #0C5B56;
+  --brand-text: #0F8378;
   --brand-soft: #E0F0EE;
   --gold: #FFC400;
   --gold-soft: #FCEFC7;
@@ -125,6 +126,7 @@ html.dark {
 
   --brand: #287F83;
   --brand-strong: #1F6F72;
+  --brand-text: #6FBFBF;
   --brand-soft: rgba(63, 164, 167, 0.18);
   --gold: #FFC400;
   --gold-soft: rgba(255, 231, 163, 0.14);
@@ -427,7 +429,7 @@ html.dark {
   line-height: 1;
   letter-spacing: 0.12em;    /* was 0.18em */
   text-transform: uppercase;
-  color: var(--brand);
+  color: var(--brand-text);
 }
 
 /* 1.4 — Subtle corner framing marks. Quiet-pass: smaller, more transparent.
@@ -551,12 +553,12 @@ html.dark {
   line-height: 1;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--brand);       /* was gold */
+  color: var(--brand-text);       /* was gold */
 }
 .type-subhead-roman::before {
   content: "§";
   font-size: 1.1em;
-  color: var(--brand);
+  color: var(--brand-text);
 }
 
 /* 1.10 — Thin brand rule. Quiet-pass: shorter, no glow halo. */
