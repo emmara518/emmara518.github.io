@@ -101,10 +101,10 @@ html.dark {
 
   --text-primary: #E6ECEA;
   --text-secondary: #A9B3B0;
-  --text-muted: #6F7A78;
+  --text-muted: #8B9693;
   --ink: #E6ECEA;
   --ink-secondary: #A9B3B0;
-  --muted: #6F7A78;
+  --muted: #8B9693;
 
   --border: #2D3A38;
   --border-strong: #3D4D4A;
@@ -123,8 +123,8 @@ html.dark {
   --neon-lime-glow: rgba(255, 196, 0, 0.32);
   --neon-lime-soft: rgba(255, 231, 163, 0.14);
 
-  --brand: #3FA4A7;
-  --brand-strong: #287F83;
+  --brand: #287F83;
+  --brand-strong: #1F6F72;
   --brand-soft: rgba(63, 164, 167, 0.18);
   --gold: #FFC400;
   --gold-soft: rgba(255, 231, 163, 0.14);
